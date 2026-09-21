@@ -1,0 +1,577 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ─────────────────────────────────────────────
+   K-HUB Reference Design Tokens (Phase 01 Extended)
+───────────────────────────────────────────── */
+:root {
+  /* Brand & Color System extracted from Reference */
+  --background: #F8FAFC;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+
+  --primary: #16A34A;
+  --primary-hover: #15803D;
+  --primary-light: #DCFCE7;
+  --primary-foreground: #FFFFFF;
+
+  /* Text — Phase 4 contrast pass. All non-main grays meet WCAG AA 4.5:1 on white. */
+  --text-main: #0F172A;
+  --text-muted: #475569;   /* was #64748B (3.95:1) → now 7.26:1 on white */
+  --text-subtle: #64748B;  /* allowed only for non-essential / disabled */
+  --placeholder: #475569;  /* form placeholders — AA on white */
+
+  --border: #E2E8F0;
+  --border-light: #F1F5F9;
+  --input: #E2E8F0;
+  --ring: #16A34A;
+
+  /* Status Colors */
+  --status-available-bg: #DCFCE7;
+  --status-available-text: #15803D;
+  --status-soon-bg: #FEF3C7;
+  --status-soon-text: #D97706;
+  --status-booked-bg: #FEE2E2;
+  --status-booked-text: #DC2626;
+
+  /* Layout & Container Tokens */
+  --container-max: 1600px;
+  --section-py-desktop: 80px;
+  --section-py-mobile: 56px;
+  --section-gap-heading: 16px; /* heading → subtitle/body */
+
+  /* Radius Scale (Phase 4: single canonical scale) */
+  --radius-xs: 8px;      /* inputs, chips */
+  --radius-sm: 12px;     /* small buttons, mini-cards */
+  --radius-md: 16px;     /* buttons, badges */
+  --radius-lg: 20px;     /* cards */
+  --radius-xl: 24px;     /* large hero / feature cards */
+  --radius-2xl: 28px;    /* hero images */
+  --radius-pill: 9999px; /* pills, full-round */
+
+  /* Keep legacy aliases so existing components don't break. */
+  --radius-card: var(--radius-lg);
+  --radius-card-img: var(--radius-md);
+  --radius-hero-img: var(--radius-2xl);
+  --radius-btn: var(--radius-pill);
+
+  /* Transition Tokens */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-Index Hierarchy */
+  --z-base: 1;
+  --z-badge: 10;
+  --z-floating: 20;
+  --z-overlay: 40;
+  --z-navbar: 50;
+  --z-modal: 100;
+
+  /* Icon Sizing Tokens (Phase 4: standardized scale)
+     sm=14 (inline in tight text), md=16 (inline default), lg=18 (button),
+     xl=20 (button default), 2xl=24 (stat / hero feature), 3xl=32 (hero pillars). */
+  --icon-sm: 14px;
+  --icon-md: 16px;
+  --icon-lg: 18px;
+  --icon-xl: 20px;
+  --icon-2xl: 24px;
+  --icon-3xl: 32px;
+
+  /* Shadows from Reference */
+  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  --shadow-card-hover: 0 12px 30px -4px rgba(15, 23, 42, 0.08);
+  --shadow-btn-green: 0 4px 14px rgba(22, 163, 74, 0.3);
+  --shadow-floating: 0 16px 40px -8px rgba(15, 23, 42, 0.12);
+}
+
+/* ─────────────────────────────────────────────
+   Base Reset & Typography
+───────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--background);
+    color: var(--text-main);
+    line-height: 1.5;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Utility Classes (Reference Exact Matches)
+───────────────────────────────────────────── */
+
+/* Container Standard */
+.ref-container {
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+@media (min-width: 1024px) {
+  .ref-container {
+    padding-left: 80px;
+    padding-right: 80px;
+  }
+}
+
+/* Reference Card Standard */
+.ref-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+/* Status Pill Badges */
+.badge-available {
+  background-color: var(--status-available-bg);
+  color: var(--status-available-text);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+}
+
+.badge-soon {
+  background-color: var(--status-soon-bg);
+  color: var(--status-soon-text);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+}
+
+.badge-booked {
+  background-color: var(--status-booked-bg);
+  color: var(--status-booked-text);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+}
+
+/* ─────────────────────────────────────────────
+   Status Badge Classes (used by CourtCard, BookingsPage)
+   All values reference existing --status-* tokens — no new colors.
+───────────────────────────────────────────── */
+.status-available {
+  background-color: var(--status-available-bg);
+  color: var(--status-available-text);
+  font-weight: 700;
+}
+
+.status-starts-soon {
+  background-color: var(--status-soon-bg);
+  color: var(--status-soon-text);
+  font-weight: 700;
+}
+
+.status-booked {
+  background-color: var(--status-booked-bg);
+  color: var(--status-booked-text);
+  font-weight: 700;
+}
+
+/* Booking confirmation status — green, same palette as "available" */
+.status-confirmed {
+  background-color: var(--status-available-bg);
+  color: var(--status-available-text);
+  font-weight: 700;
+}
+
+/* Reserved/pending — amber, same palette as "soon" */
+.status-reserved {
+  background-color: var(--status-soon-bg);
+  color: var(--status-soon-text);
+  font-weight: 700;
+}
+
+/* Focus Ring */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────
+   Time Slot Button States
+───────────────────────────────────────────── */
+.slot-available {
+  background-color: var(--status-available-bg);
+  color: var(--status-available-text);
+  border: 2px solid var(--primary);
+}
+.slot-available:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.slot-selected {
+  background-color: var(--primary);
+  color: #FFFFFF;
+  border: 2px solid var(--primary);
+  box-shadow: var(--shadow-btn-green);
+}
+
+.slot-booked {
+  background-color: var(--status-booked-bg);
+  color: var(--status-booked-text);
+  border: 2px solid transparent;
+  opacity: 0.6;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.slot-reserved {
+  background-color: var(--status-soon-bg);
+  color: var(--status-soon-text);
+  border: 2px solid transparent;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────
+   Form Inputs & Contact Button
+───────────────────────────────────────────── */
+.khub-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background-color: #FFFFFF;
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.khub-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+.khub-input::placeholder {
+  color: var(--placeholder);
+}
+
+textarea.khub-input {
+  height: auto;
+  min-height: 120px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+/* Auto-Fill Responsive Grid */
+.grid-auto-fill {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 24px;
+}
+
+/* ─────────────────────────────────────────────
+   Phase 4: shared layout primitives
+───────────────────────────────────────────── */
+
+/* Standardized vertical section rhythm — applies to every top-level <section>. */
+.section {
+  padding-top: var(--section-py-mobile);
+  padding-bottom: var(--section-py-mobile);
+}
+@media (min-width: 1024px) {
+  .section {
+    padding-top: var(--section-py-desktop);
+    padding-bottom: var(--section-py-desktop);
+  }
+}
+
+/* Heading → subtitle/body rhythm */
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap-heading);
+  margin-bottom: 32px;
+}
+@media (min-width: 1024px) {
+  .section-head {
+    margin-bottom: 48px;
+  }
+}
+
+/* Footer top divider — always present, consistent. */
+.footer-divider {
+  margin-top: 80px;
+  border-top: 1px solid var(--border);
+}
+
+/* Muted / secondary text — sitewide WCAG AA pass */
+.text-muted {
+  color: var(--text-muted);
+}
+.text-subtle {
+  color: var(--text-subtle);
+}
+
+/* ── Icon scale (optical center with adjacent text) ── */
+.icon-inline {
+  width: var(--icon-md);
+  height: var(--icon-md);
+  flex-shrink: 0;
+}
+.icon-btn {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+  flex-shrink: 0;
+}
+.icon-feature {
+  width: var(--icon-2xl);
+  height: var(--icon-2xl);
+  flex-shrink: 0;
+}
+
+/* ── Unified filter chips ── */
+.filter-chip-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background-color: rgba(243, 244, 246, 0.9);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-chip-group::-webkit-scrollbar {
+  display: none;
+}
+.filter-chip {
+  min-height: 40px;
+  min-width: 0;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+.filter-chip:hover {
+  color: var(--text-main);
+  background-color: rgba(255, 255, 255, 0.4);
+}
+.filter-chip-active {
+  background-color: #FFFFFF;
+  color: #15803D;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+.filter-chip-active-dark {
+  background-color: #111827;
+  color: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Page hero header (below nav) ── */
+.page-hero {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+  padding-top: var(--section-py-mobile);
+  padding-bottom: var(--section-py-mobile);
+}
+@media (min-width: 1024px) {
+  .page-hero {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+}
+.page-hero-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-gap-heading);
+}
+.page-hero-inner--center {
+  text-align: center;
+  align-items: center;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Card surfaces (single radius scale) ── */
+.surface-card {
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.surface-card-sm {
+  border-radius: var(--radius-lg);
+}
+
+/* ── Icon badge (circular background for pillar/sponsor logos) ── */
+.icon-badge-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background-color: var(--primary-light);
+  color: var(--primary-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.icon-badge-circle svg {
+  width: var(--icon-2xl);
+  height: var(--icon-2xl);
+}
+
+/* ── Pricing section tint ── */
+.pricing-section {
+  background-color: #F1F5F9;
+  padding-top: var(--section-py-mobile);
+  padding-bottom: var(--section-py-mobile);
+}
+@media (min-width: 1024px) {
+  .pricing-section {
+    padding-top: var(--section-py-desktop);
+    padding-bottom: var(--section-py-desktop);
+  }
+}
+
+/* ── Stats unified container (About Us) ── */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .stats-bar {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.stats-bar-item {
+  padding: 24px 16px;
+  text-align: center;
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+@media (min-width: 1024px) {
+  .stats-bar-item {
+    border-bottom: none;
+  }
+  .stats-bar-item:last-child {
+    border-right: none;
+  }
+}
+@media (max-width: 1023px) {
+  .stats-bar-item:nth-child(2n) {
+    border-right: none;
+  }
+  .stats-bar-item:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+}
+.stat-number {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--primary);
+  line-height: 1.1;
+  display: block;
+}
+@media (min-width: 1024px) {
+  .stat-number {
+    font-size: 2.25rem;
+  }
+}
+@media (max-width: 479px) {
+  .stats-bar-item {
+    padding: 20px 10px;
+  }
+  .stat-number {
+    font-size: 1.5rem;
+  }
+}
+
+/* ── Sponsor card ── */
+.sponsor-card {
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 320px;
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.sponsor-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+.sponsor-logo-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background-color: #F8FAFC;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+.offer-badge {
+  background-color: #DCFCE7;
+  border: 1px solid #86EFAC;
+  color: #14532D;
+  font-weight: 800;
+}
+
+/* ── Price display ── */
+.price-display {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.price-display-amount {
+  font-weight: 900;
+  color: var(--text-main);
+}
+.price-display-suffix {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary-light);
+  color: var(--primary-hover);
+}

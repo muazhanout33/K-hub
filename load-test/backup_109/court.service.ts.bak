@@ -1,0 +1,155 @@
+import { Court } from '@/types';
+import { createClient } from '@/lib/supabase/client';
+import { mapDbCourtToCourt } from '@/lib/mappers';
+import { DbCourt } from '@/types/database.types';
+import { MOCK_COURTS } from '@/lib/mock-data';
+
+/** Minimal court info needed to populate a Booking's display fields. */
+export interface CourtInfo {
+  name: string;
+  image: string;
+  sportType: Court['sportType'];
+}
+
+/** Fallback court image used when a court has no image_url in the database. */
+export const FALLBACK_COURT_IMAGE =
+  'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1200&q=80';
+
+/**
+ * Synchronous getCourts for initial render & UI defaults.
+ * Guarantees immediate return without top-level await issues.
+ */
+export function getCourts(): Court[] {
+  return MOCK_COURTS;
+}
+
+/**
+ * Synchronous getCourtById for UI components.
+ */
+export function getCourtById(id: string): Court | undefined {
+  return MOCK_COURTS.find((c) => c.id === id);
+}
+
+/**
+ * Async fetch all courts from Supabase public.courts table.
+ * Filters out deleted courts (deleted_at IS NULL).
+ */
+export async function getCourtsFromSupabase(sportType?: string): Promise<Court[]> {
+  try {
+    const supabase = createClient();
+    let query = supabase
+      .from('courts')
+      .select('*')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: true });
+
+    if (sportType) {
+      query = query.ilike('sport_type', sportType);
+    }
+
+    const { data, error } = await query;
+
+    if (error || !data || data.length === 0) {
+      return MOCK_COURTS;
+    }
+
+    return (data as DbCourt[]).map(mapDbCourtToCourt);
+  } catch {
+    return MOCK_COURTS;
+  }
+}
+
+/**
+ * Async fetch a single court by ID from Supabase.
+ */
+export async function getCourtByIdFromSupabase(id: string): Promise<Court | undefined> {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('courts')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    if (error || !data) {
+      return MOCK_COURTS.find((c) => c.id === id);
+    }
+
+    return mapDbCourtToCourt(data as DbCourt);
+  } catch {
+    return MOCK_COURTS.find((c) => c.id === id);
+  }
+}
+
+/**
+ * Fetch minimal court info (name, image, sportType) for a single court.
+ * Returns fallback values if the court is not found.
+ */
+export async function getCourtInfoForBooking(courtId: string): Promise<CourtInfo> {
+  try {
+    const court = await getCourtByIdFromSupabase(courtId);
+    if (court) {
+      return {
+        name: court.name,
+        image: court.image || FALLBACK_COURT_IMAGE,
+        sportType: court.sportType,
+      };
+    }
+  } catch {
+    // fall through to mock lookup
+  }
+  const mock = MOCK_COURTS.find((c) => c.id === courtId);
+  return {
+    name: mock?.name ?? 'Court',
+    image: mock?.image || FALLBACK_COURT_IMAGE,
+    sportType: mock?.sportType ?? 'Padel',
+  };
+}
+
+/**
+ * Batch-fetch court info for an array of court IDs.
+ * Returns a Map<courtId, CourtInfo> for O(1) lookups.
+ * Deduplicates court IDs to avoid redundant queries.
+ */
+export async function getCourtInfoMap(courtIds: string[]): Promise<Map<string, CourtInfo>> {
+  const uniqueIds = [...new Set(courtIds.filter(Boolean))];
+  const map = new Map<string, CourtInfo>();
+
+  if (uniqueIds.length === 0) return map;
+
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('courts')
+      .select('id, name, image_url, sport_type')
+      .in('id', uniqueIds)
+      .is('deleted_at', null);
+
+    if (!error && data) {
+      for (const row of data as { id: string; name: string; image_url: string; sport_type: string }[]) {
+        map.set(row.id, {
+          name: row.name,
+          image: row.image_url || FALLBACK_COURT_IMAGE,
+          sportType: (row.sport_type as Court['sportType']) ?? 'Padel',
+        });
+      }
+    }
+  } catch {
+    // fall through to fill from mock
+  }
+
+  // Fill any missing IDs from mock data
+  for (const id of uniqueIds) {
+    if (!map.has(id)) {
+      const mock = MOCK_COURTS.find((c) => c.id === id);
+      map.set(id, {
+        name: mock?.name ?? 'Court',
+        image: mock?.image || FALLBACK_COURT_IMAGE,
+        sportType: mock?.sportType ?? 'Padel',
+      });
+    }
+  }
+
+  return map;
+}

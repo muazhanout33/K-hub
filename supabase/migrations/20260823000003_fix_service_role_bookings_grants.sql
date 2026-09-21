@@ -1,0 +1,27 @@
+-- ============================================================================
+-- Migration: 20260823000003_fix_service_role_bookings_grants
+--
+-- Purpose: Fix service_role 42501 (permission denied) on public.bookings.
+--
+-- Root cause: The original schema applied `GRANT ALL ON ALL TABLES IN SCHEMA
+--   public TO service_role` BEFORE the bookings table existed.
+--   `ALTER DEFAULT PRIVILEGES` only affects tables created AFTER that point.
+--   The bookings table never received grants for service_role.
+--
+-- Fix: Grant minimum required privileges on public.bookings only.
+--   - SELECT, INSERT, UPDATE, DELETE: needed for expireStaleBookingsAction,
+--     admin operations, and test cleanup.
+--
+-- Scope: This migration addresses ONLY the bookings table. Other tables
+--   (profiles, blocked_periods, notifications, payments, etc.) have the
+--   same underlying issue but are NOT addressed here — they require
+--   independent verification before granting.
+--
+-- Safety:
+--   - No schema changes, no new tables, no RLS changes
+--   - No impact on anon/authenticated roles (they already have correct grants)
+--   - EXCLUDE constraint on bookings is untouched
+--   - BEFORE UPDATE immutable-fields trigger is untouched
+-- ============================================================================
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.bookings TO service_role;

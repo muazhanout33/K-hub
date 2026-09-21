@@ -1,0 +1,2 @@
+try { $r = Invoke-WebRequest -Uri 'http://localhost:3000/' -TimeoutSec 10 -UseBasicParsing; Write-Output ('home=' + $r.StatusCode) } catch { Write-Output ('home=ERROR ' + $_.Exception.Message) }
+try { $r2 = Invoke-WebRequest -Uri 'http://localhost:3000/api/courts' -TimeoutSec 10 -UseBasicParsing; Write-Output ('api=' + $r2.StatusCode) } catch { Write-Output ('api=ERROR ' + $_.Exception.Message) }
