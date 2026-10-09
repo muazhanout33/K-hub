@@ -46,35 +46,71 @@ function addDaysToDateStr(dateStr: string, days: number): string {
 }
 
 /**
+ * Matches wall-clock timestamp digits inside a stored tstzrange string,
+ * e.g. `2026-08-25 10:00:00+00` or `2026-08-25T10:00:00+00:00`.
+ * Captures: YYYY-MM-DD, HH:mm (seconds and UTC offset ignored).
+ */
+const TSTZRANGE_TS_RE = /(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::\d{2})?(?:Z|[+-]\d{2}(?::?\d{2})?)?/g;
+
+interface RangeBounds {
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+}
+
+/**
+ * Extracts the raw wall-clock bounds of a tstzrange string.
+ * Returns null when fewer than two timestamps are found.
+ * Deliberately avoids `Date` parsing (host-timezone dependent).
+ */
+function matchRangeBounds(range: string): RangeBounds | null {
+  const matches = [...range.matchAll(TSTZRANGE_TS_RE)];
+  if (matches.length < 2) return null;
+  return {
+    startDate: matches[0][1],
+    startTime: matches[0][2],
+    endDate: matches[1][1],
+    endTime: matches[1][2],
+  };
+}
+
+/**
+ * Extracts the RAW wall-clock start of a stored tstzrange, with no
+ * session-date reconstruction. Use for comparisons against the stored
+ * range (e.g. the cancellation window). Returns null if unparseable.
+ */
+export function parseTstzrangeStart(range: string): { date: string; time: string } | null {
+  const bounds = matchRangeBounds(range);
+  if (!bounds) return null;
+  return { date: bounds.startDate, time: bounds.startTime };
+}
+
+/**
  * Parses a PostgreSQL TSTZRANGE string, e.g. '["2026-08-25 10:00:00+00","2026-08-25 11:00:00+00")'
  * into date, startTime, and endTime strings.
+ *
+ * The stored digits ARE Cairo wall-clock time despite the +00 annotation
+ * (formatTstzrange writes Cairo time with +00) — they are extracted
+ * verbatim, never round-tripped through Date/toISOString.
  *
  * For post-midnight slots (e.g. 01:00 AM on the day after the booking date),
  * reconstructs the original user-selected booking date (operating session date).
  */
 export function parseTstzrange(range: string): { date: string; startTime: string; endTime: string } {
-  try {
-    // Strip brackets, quotes, and +00 suffix — the stored time IS Cairo local
-    // time despite the +00 annotation (formatTstzrange writes Cairo time with +00).
-    const cleaned = range.replace(/[\[\)"']/g, '').replace(/\+00/g, '');
-    const [startStr, endStr] = cleaned.split(',');
-    const startDate = new Date(startStr);
-    const endDate = new Date(endStr);
-
-    let dateStr = startDate.toISOString().split('T')[0];
-    const startTime = startDate.toISOString().substring(11, 16);
-    const endTime = endDate.toISOString().substring(11, 16);
-
-    const [startH] = startTime.split(':').map(Number);
-    // If start time is after midnight (00:00 - 05:59), the booking session date was yesterday
-    if (startH < 6) {
-      dateStr = addDaysToDateStr(dateStr, -1);
-    }
-
-    return { date: dateStr, startTime, endTime };
-  } catch {
+  const bounds = matchRangeBounds(range);
+  if (!bounds) {
     return { date: '', startTime: '00:00', endTime: '00:00' };
   }
+
+  let dateStr = bounds.startDate;
+  const [startH] = bounds.startTime.split(':').map(Number);
+  // If start time is after midnight (00:00 - 05:59), the booking session date was yesterday
+  if (startH < 6) {
+    dateStr = addDaysToDateStr(dateStr, -1);
+  }
+
+  return { date: dateStr, startTime: bounds.startTime, endTime: bounds.endTime };
 }
 
 /**

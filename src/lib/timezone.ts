@@ -4,10 +4,22 @@
  * All booking date/time operations MUST go through this module
  * to guarantee correct behaviour regardless of the server's local tz.
  *
- * Cairo = UTC+2 (no DST).
+ * Cairo observes DST: UTC+3 from the last Friday of April to the last
+ * Thursday of October, UTC+2 the rest of the year (reinstated in 2023).
+ * Never hard-code a fixed offset — always use Intl with 'Africa/Cairo'.
+ *
+ * Storage convention (Model B): booking_range / blocked_range store
+ * Cairo WALL-CLOCK digits annotated '+00'. Comparisons against those
+ * ranges must use wall-clock digits too (see cairoExpiryNowRange),
+ * never a true UTC instant.
  */
 
 const CAIRO_TZ = 'Africa/Cairo';
+
+/** Cancellation window: bookings may only be cancelled strictly more than
+ * this many hours before the slot start (Cairo wall-clock).
+ * Single source of truth for client pre-checks and server enforcement. */
+export const CANCELLATION_WINDOW_HOURS = 2;
 
 // ── Formatting helpers ──────────────────────────
 
@@ -42,6 +54,68 @@ export function cairoCurrentTime(): string {
 /** Returns the current Date object (useful for "now" comparisons). */
 export function cairoNow(): Date {
   return new Date();
+}
+
+// ── Wall-clock "now" (canonical comparisons) ────
+
+export interface CairoWallClock {
+  /** YYYY-MM-DD in Africa/Cairo. */
+  date: string;
+  /** HH:mm in Africa/Cairo. */
+  time: string;
+}
+
+/** Current date and time as Cairo wall-clock strings. */
+export function cairoWallClockNow(): CairoWallClock {
+  return { date: cairoToday(), time: cairoCurrentTime() };
+}
+
+/**
+ * Adds days to a YYYY-MM-DD date string using UTC arithmetic.
+ * Host-timezone independent.
+ */
+export function addDaysToDateString(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().split('T')[0];
+}
+
+/**
+ * True when the slot start is strictly more than `windowHours` before the
+ * current Cairo wall-clock time. `slotDate`/`slotTime` must be the stored
+ * wall-clock start (the same digits written into booking_range).
+ *
+ * Shared by the client pre-check and the authoritative server action so
+ * both always agree, regardless of host timezone.
+ */
+export function isSlotCancellable(
+  slotDate: string,
+  slotTime: string,
+  windowHours: number = CANCELLATION_WINDOW_HOURS,
+  now: CairoWallClock = cairoWallClockNow()
+): boolean {
+  return toMinutes(slotDate, slotTime) - toMinutes(now.date, now.time) > windowHours * 60;
+}
+
+/**
+ * A degenerate tstzrange literal ("[now, now]") built from the current
+ * Cairo wall-clock, matching the stored booking_range convention
+ * (wall-clock digits annotated '+00'). Use for expiry comparisons only —
+ * never as a true UTC instant.
+ */
+export function cairoExpiryNowRange(): string {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: CAIRO_TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const get = (type: string) => parts.find((p) => p.type === type)!.value;
+  const bound = `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}:${get('second')}+00`;
+  return `["${bound}","${bound}"]`;
 }
 
 // ── Slot time helpers ──────────────────────────

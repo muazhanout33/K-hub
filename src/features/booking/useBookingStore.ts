@@ -4,7 +4,7 @@ import { Booking, BookingResult, CancellationResult, CancellationPolicy, Court, 
 import { getInitialBookings, parseHour, areSlotsConsecutive } from '@/services/booking.service';
 import { getToday, MAX_BOOKING_HOURS } from '@/lib/dates';
 import { validateBookingRequest } from '@/lib/availability';
-import { isBookingFullyPast, toMinutes as cairoToMinutes, cairoToday, cairoCurrentTime } from '@/lib/timezone';
+import { isBookingFullyPast, isSlotCancellable, addDaysToDateString, CANCELLATION_WINDOW_HOURS } from '@/lib/timezone';
 import { useBlockedPeriodStore } from '@/features/booking/useBlockedPeriodStore';
 import { usePaymentStore } from '@/features/payment/usePaymentStore';
 import { useAuthStore } from '@/features/auth/useAuthStore';
@@ -14,28 +14,29 @@ import { calculateBookingPrice } from '@/lib/pricing';
 // ── Cancellation Policy ──
 /** Default cancellation window: 2 hours before slot start. */
 const DEFAULT_CANCELLATION_POLICY: CancellationPolicy = {
-  cancellationWindowHours: 2,
+  cancellationWindowHours: CANCELLATION_WINDOW_HOURS,
 };
 
 /**
- * Checks if a booking can be cancelled based on the cancellation policy window.
- * A booking can only be cancelled if the slot start time is more than `cancellationWindowHours` away.
+ * The stored wall-clock start of a booking slot.
+ * Post-midnight starts (00:00-05:59) belong to the next calendar day —
+ * mirrors formatTstzrange, which writes them to date + 1.
+ */
+function slotStartWallClock(booking: Booking): { date: string; time: string } {
+  const startHour = Number(booking.startTime.split(':')[0]);
+  return startHour < 6
+    ? { date: addDaysToDateString(booking.date, 1), time: booking.startTime }
+    : { date: booking.date, time: booking.startTime };
+}
+
+/**
+ * Client pre-check: can this booking be cancelled per the policy window?
+ * Uses the same Cairo wall-clock helper as the server action
+ * (isSlotCancellable) — the server remains authoritative.
  */
 function isWithinCancellationWindow(booking: Booking, policy: CancellationPolicy = DEFAULT_CANCELLATION_POLICY): boolean {
-  const today = cairoToday();
-  const nowTime = cairoCurrentTime();
-
-  // If booking date is in the future, always within window
-  if (booking.date > today) return true;
-  // If booking date is in the past, never within window
-  if (booking.date < today) return false;
-
-  // Same day — check if slot start is far enough away
-  const nowMinutes = cairoToMinutes(today, nowTime);
-  const slotMinutes = cairoToMinutes(booking.date, booking.startTime);
-  const windowMinutes = policy.cancellationWindowHours * 60;
-
-  return slotMinutes - nowMinutes > windowMinutes;
+  const start = slotStartWallClock(booking);
+  return isSlotCancellable(start.date, start.time, policy.cancellationWindowHours);
 }
 
 // ── Booking time comparison helpers ──

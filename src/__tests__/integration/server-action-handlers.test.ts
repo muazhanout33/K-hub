@@ -11,6 +11,7 @@ function makeSupabaseChain(result: any = { data: null, error: null }) {
   chain.in = vi.fn().mockReturnValue(chain);
   chain.is = vi.fn().mockReturnValue(chain);
   chain.lt = vi.fn().mockReturnValue(chain);
+  chain.filter = vi.fn().mockReturnValue(chain);
   chain.update = vi.fn().mockReturnValue(chain);
   // Methods that return promises
   chain.insert = vi.fn().mockResolvedValue(result);
@@ -39,31 +40,35 @@ vi.mock('@/services/court.service', () => ({
   getCourtInfoMap: vi.fn(() => Promise.resolve(new Map())),
 }));
 
-vi.mock('@/lib/mappers', () => ({
-  formatTstzrange: vi.fn(() => '["2099-06-15 10:00","2099-06-15 11:00"]'),
-  mapDbBookingToBooking: vi.fn((_b: any, _c: any) => ({
-    id: _b?.id || 'booking-1',
-    bookingNumber: 'KH-123456',
-    courtId: 'court-1',
-    courtName: 'Court 1',
-    courtImage: '',
-    sportType: 'Padel',
-    date: '2099-06-15',
-    startTime: '10:00',
-    endTime: '11:00',
-    durationMinutes: 60,
-    totalPrice: 200,
-    status: 'Reserved',
-    bookingSource: 'ONLINE',
-    createdAt: '2026-01-01T00:00:00Z',
-    updatedAt: '2026-01-01T00:00:00Z',
-    userId: 'user-1',
-    userName: 'Test',
-    userEmail: 'test@test.com',
-    userPhone: '123',
-    selectedSlotIds: [],
-  })),
-}));
+vi.mock('@/lib/mappers', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/mappers')>();
+  return {
+    ...actual, // keeps parseTstzrangeStart real (actions parse live-shaped ranges)
+    formatTstzrange: vi.fn(() => '["2099-06-15 10:00","2099-06-15 11:00"]'),
+    mapDbBookingToBooking: vi.fn((_b: any, _c: any) => ({
+      id: _b?.id || 'booking-1',
+      bookingNumber: 'KH-123456',
+      courtId: 'court-1',
+      courtName: 'Court 1',
+      courtImage: '',
+      sportType: 'Padel',
+      date: '2099-06-15',
+      startTime: '10:00',
+      endTime: '11:00',
+      durationMinutes: 60,
+      totalPrice: 200,
+      status: 'Reserved',
+      bookingSource: 'ONLINE',
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+      userId: 'user-1',
+      userName: 'Test',
+      userEmail: 'test@test.com',
+      userPhone: '123',
+      selectedSlotIds: [],
+    })),
+  };
+});
 
 vi.mock('@/lib/pricing', () => ({
   calculateBookingPrice: vi.fn(() => 200),
@@ -71,6 +76,11 @@ vi.mock('@/lib/pricing', () => ({
 
 vi.mock('@/lib/timezone', () => ({
   isSlotPast: vi.fn(() => false),
+  // Window boundary logic is unit-tested in timezone.test.ts; here we verify
+  // the action wiring (true → proceed, false → CANCELLATION_TOO_LATE).
+  isSlotCancellable: vi.fn(() => true),
+  CANCELLATION_WINDOW_HOURS: 2,
+  cairoExpiryNowRange: vi.fn(() => '["2099-01-01 00:00:00+00","2099-01-01 00:00:00+00"]'),
 }));
 
 // ─────────────────────────────────────────────────────────────────
@@ -163,12 +173,11 @@ describe('cancelBookingAction', () => {
     expect(result.success).toBe(true);
   });
 
-  it('returns CANCELLATION_TOO_LATE when <2 hours remain', async () => {
+  it('returns CANCELLATION_TOO_LATE when the shared wall-clock window says no', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
-    // Use a time that's 1 hour from now
-    const soon = new Date();
-    soon.setHours(soon.getHours() + 1);
-    const range = `["${soon.toISOString()}","${soon.toISOString()}"]`;
+    const { isSlotCancellable } = await import('@/lib/timezone');
+    vi.mocked(isSlotCancellable).mockReturnValueOnce(false);
+    const range = '["2099-06-15 10:00:00+00","2099-06-15 11:00:00+00")';
     supabaseChain.maybeSingle = vi.fn(() => Promise.resolve({
       data: { id: 'booking-1', user_id: 'user-1', status: 'Confirmed', booking_range: range },
       error: null,
@@ -177,6 +186,8 @@ describe('cancelBookingAction', () => {
     const result = await cancelBookingAction('booking-1');
     expect(result.success).toBe(false);
     expect(result.error).toContain('CANCELLATION_TOO_LATE');
+    // Server parsed the stored range and consulted the shared helper
+    expect(isSlotCancellable).toHaveBeenCalledWith('2099-06-15', '10:00', 2);
   });
 });
 
@@ -386,6 +397,13 @@ describe('expireStaleBookingsAction', () => {
     const result = await expireStaleBookingsAction();
     expect(result.success).toBe(true);
     expect(result.expiredCount).toBe(2);
+    // Expiry compares in the stored wall-clock convention (Cairo digits +00)
+    // with nxr (upper <= now) — verified against live PostgREST semantics.
+    expect(updateChain.filter).toHaveBeenCalledWith(
+      'booking_range',
+      'nxr',
+      '["2099-01-01 00:00:00+00","2099-01-01 00:00:00+00"]'
+    );
   });
 
   it('returns 0 when no stale bookings exist', async () => {

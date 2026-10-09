@@ -13,20 +13,10 @@ import { Button } from '@/components/ui/button';
 import { useSupabaseBookings } from '@/hooks/useSupabaseBookings';
 import { Booking } from '@/types';
 import { FALLBACK_COURT_IMAGE } from '@/services/court.service';
+import { isBookingFullyPast } from '@/lib/timezone';
 
 // ── Tab type ──
 type TabKey = 'upcoming' | 'past';
-
-// ── Helpers (duplicated from store for page-level use) ──
-function bookingEndDateTime(b: Booking): Date {
-  const [y, m, d] = b.date.split('-').map(Number);
-  const [h, min] = b.endTime.split(':').map(Number);
-  return new Date(y, m - 1, d, h, min);
-}
-
-function isBookingPast(b: Booking): boolean {
-  return bookingEndDateTime(b) < new Date();
-}
 
 export default function MyBookingsPage() {
   const { user, isRedirecting } = useAuthGuard();
@@ -61,7 +51,7 @@ export default function MyBookingsPage() {
     const up: Booking[] = [];
     const pa: Booking[] = [];
     for (const b of allBookings) {
-      if (isBookingPast(b)) {
+      if (isBookingFullyPast(b.date, b.endTime)) {
         pa.push(b);
       } else {
         up.push(b);

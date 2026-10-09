@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdvertisingSpace } from '@/types';
+import { cairoToday } from '@/lib/timezone';
 
 interface RequestFormState {
   companyName: string;
@@ -42,9 +43,9 @@ const EMPTY_FORM: RequestFormState = {
   notes: '',
 };
 
-/** Today's date in YYYY-MM-DD, used as the minimum for start date pickers. */
+/** Today's date as YYYY-MM-DD in Africa/Cairo, used as the minimum for start date pickers. */
 function todayISO(): string {
-  return new Date().toISOString().split('T')[0];
+  return cairoToday();
 }
 
 export default function AdvertisePage() {

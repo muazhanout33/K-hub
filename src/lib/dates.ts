@@ -1,7 +1,8 @@
 /**
  * Centralized date utility for the K-HUB booking platform.
  *
- * All dates use Africa/Cairo timezone (UTC+2, no DST).
+ * All dates use Africa/Cairo timezone (UTC+2 standard time, UTC+3 during
+ * DST — last Friday of April to last Thursday of October).
  * Uses Intl.DateTimeFormat for consistent timezone handling.
  *
  * Working hours are now per-court (Court.workingHours) — not global.
@@ -95,44 +96,43 @@ export interface CalendarMonth {
  *   Dec 25, 26, ... Dec 31 | Jan 1, 2, ... Jan 31
  */
 export function generateCalendarDays(): CalendarMonth[] {
-  const today = new Date();
+  // "Today" is always the Cairo wall-clock date — never host-local getters.
   const todayStr = getToday();
+  const [todayYear, todayMonth, todayDay] = todayStr.split('-').map(Number);
 
-  // Calculate the end date: last day of the next month
-  const endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0); // day 0 = last day of month+1
+  // Loop through the current month and the next month (1-based months).
+  const nextYear = todayMonth === 12 ? todayYear + 1 : todayYear;
+  const nextMonth = todayMonth === 12 ? 1 : todayMonth + 1;
 
   const months: CalendarMonth[] = [];
-  const current = new Date(today);
+  let year = todayYear;
+  let month = todayMonth;
 
-  while (current <= endDate) {
-    const year = current.getFullYear();
-    const month = current.getMonth();
-    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
-    const monthLabel = current.toLocaleDateString('en-US', {
+  while (year < nextYear || (year === nextYear && month <= nextMonth)) {
+    // UTC arithmetic keeps month lengths and weekday labels host-TZ independent.
+    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+    const monthLabel = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString('en-US', {
       month: 'long',
       year: 'numeric',
+      timeZone: 'UTC',
     });
 
-    // Calculate last day of this month
-    const lastDay = new Date(year, month + 1, 0).getDate();
-
     // Start from today's day for the current month, or day 1 for subsequent months
-    const startDay = month === today.getMonth() && year === today.getFullYear()
-      ? today.getDate()
-      : 1;
+    const startDay = year === todayYear && month === todayMonth ? todayDay : 1;
 
     const days: CalendarDay[] = [];
 
     for (let day = startDay; day <= lastDay; day++) {
-      const d = new Date(year, month, day);
-      const dateStr = d.toLocaleDateString('en-CA');
+      const d = new Date(Date.UTC(year, month - 1, day));
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
       days.push({
         date: dateStr,
-        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayName: d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }),
         dayNumber: day,
-        monthName: d.toLocaleDateString('en-US', { month: 'short' }),
-        dayFullName: d.toLocaleDateString('en-US', { weekday: 'long' }),
+        monthName: d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }),
+        dayFullName: d.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' }),
         isToday: dateStr === todayStr,
         monthKey,
       });
@@ -140,8 +140,12 @@ export function generateCalendarDays(): CalendarMonth[] {
 
     months.push({ key: monthKey, label: monthLabel, days });
 
-    // Move to first day of next month
-    current.setMonth(current.getMonth() + 1, 1);
+    // Move to next month
+    month += 1;
+    if (month > 12) {
+      month = 1;
+      year += 1;
+    }
   }
 
   return months;

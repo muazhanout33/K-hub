@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   parseTstzrange,
+  parseTstzrangeStart,
   formatTstzrange,
   mapDbProfileToUser,
   mapUserToDbProfile,
@@ -9,6 +10,7 @@ import {
   mapDbNotificationToNotification,
   mapNotificationToDbNotification,
 } from '@/lib/mappers';
+import { addDaysToDateString, isSlotCancellable } from '@/lib/timezone';
 
 describe('parseTstzrange', () => {
   it('parses a normal tstzrange and preserves time values', () => {
@@ -20,6 +22,22 @@ describe('parseTstzrange', () => {
     expect(result.endTime).toMatch(/^\d{2}:\d{2}$/);
   });
 
+  it('extracts exact wall-clock digits from a quoted PostgREST range', () => {
+    expect(parseTstzrange('["2026-08-25 10:00:00+00","2026-08-25 11:00:00+00")')).toEqual({
+      date: '2026-08-25',
+      startTime: '10:00',
+      endTime: '11:00',
+    });
+  });
+
+  it('extracts exact wall-clock digits from the unquoted formatTstzrange output', () => {
+    expect(parseTstzrange('[2026-08-25 10:00:00+00, 2026-08-25 11:00:00+00)')).toEqual({
+      date: '2026-08-25',
+      startTime: '10:00',
+      endTime: '11:00',
+    });
+  });
+
   it('parses a post-midnight tstzrange', () => {
     const range = '["2026-08-26 01:00:00+00","2026-08-26 02:00:00+00")';
     const result = parseTstzrange(range);
@@ -29,8 +47,39 @@ describe('parseTstzrange', () => {
     expect(result.endTime).toMatch(/^\d{2}:\d{2}$/);
   });
 
+  it('reconstructs the session date for a post-midnight range', () => {
+    expect(parseTstzrange('["2026-08-26 01:00:00+00","2026-08-26 02:00:00+00")')).toEqual({
+      date: '2026-08-25',
+      startTime: '01:00',
+      endTime: '02:00',
+    });
+  });
+
+  it('parses a midnight-crossing range without shifting the session date', () => {
+    expect(parseTstzrange('["2026-09-21 22:00:00+00","2026-09-22 00:00:00+00")')).toEqual({
+      date: '2026-09-21',
+      startTime: '22:00',
+      endTime: '00:00',
+    });
+  });
+
+  it('handles extended UTC offsets (+00:00) if ever stored', () => {
+    expect(parseTstzrange('["2026-08-25 10:00:00+00:00","2026-08-25 11:00:00+00:00")')).toEqual({
+      date: '2026-08-25',
+      startTime: '10:00',
+      endTime: '11:00',
+    });
+  });
+
   it('handles invalid range gracefully', () => {
     const result = parseTstzrange('invalid');
+    expect(result.date).toBe('');
+    expect(result.startTime).toBe('00:00');
+    expect(result.endTime).toBe('00:00');
+  });
+
+  it('handles a range with only one timestamp gracefully', () => {
+    const result = parseTstzrange('["2026-08-25 10:00:00+00")');
     expect(result.date).toBe('');
     expect(result.startTime).toBe('00:00');
     expect(result.endTime).toBe('00:00');
@@ -51,6 +100,113 @@ describe('formatTstzrange', () => {
   it('formats a midnight crossover range', () => {
     const result = formatTstzrange('2026-08-25', '23:00', '01:00');
     expect(result).toBe('[2026-08-25 23:00:00+00, 2026-08-26 01:00:00+00)');
+  });
+});
+
+describe('format → parse round trips', () => {
+  it('round-trips a same-day range', () => {
+    expect(parseTstzrange(formatTstzrange('2026-08-25', '10:00', '11:00'))).toEqual({
+      date: '2026-08-25',
+      startTime: '10:00',
+      endTime: '11:00',
+    });
+  });
+
+  it('round-trips a midnight-crossing range (22:00 → 00:00)', () => {
+    expect(parseTstzrange(formatTstzrange('2026-09-21', '22:00', '00:00'))).toEqual({
+      date: '2026-09-21',
+      startTime: '22:00',
+      endTime: '00:00',
+    });
+  });
+
+  it('round-trips a midnight-crossing range (23:00 → 01:00)', () => {
+    expect(parseTstzrange(formatTstzrange('2026-08-25', '23:00', '01:00'))).toEqual({
+      date: '2026-08-25',
+      startTime: '23:00',
+      endTime: '01:00',
+    });
+  });
+
+  it('round-trips a post-midnight start (session date reconstruction)', () => {
+    expect(parseTstzrange(formatTstzrange('2026-08-25', '01:00', '02:00'))).toEqual({
+      date: '2026-08-25',
+      startTime: '01:00',
+      endTime: '02:00',
+    });
+  });
+
+  it('round-trips DST-transition dates verbatim', () => {
+    expect(parseTstzrange(formatTstzrange('2026-04-24', '00:30', '01:30'))).toEqual({
+      date: '2026-04-24',
+      startTime: '00:30',
+      endTime: '01:30',
+    });
+    expect(parseTstzrange(formatTstzrange('2026-10-29', '23:00', '00:00'))).toEqual({
+      date: '2026-10-29',
+      startTime: '23:00',
+      endTime: '00:00',
+    });
+  });
+});
+
+describe('parseTstzrangeStart', () => {
+  it('returns the raw storage start (no session-date reconstruction)', () => {
+    expect(parseTstzrangeStart('["2026-08-26 01:00:00+00","2026-08-26 02:00:00+00")')).toEqual({
+      date: '2026-08-26',
+      time: '01:00',
+    });
+  });
+
+  it('returns the raw storage start for a same-day range', () => {
+    expect(parseTstzrangeStart('[2026-08-25 10:00:00+00, 2026-08-25 11:00:00+00)')).toEqual({
+      date: '2026-08-25',
+      time: '10:00',
+    });
+  });
+
+  it('returns null for unparseable input', () => {
+    expect(parseTstzrangeStart('invalid')).toBeNull();
+  });
+});
+
+describe('client/server cancellation agreement', () => {
+  // The server parses the raw range; the client adapts the Booking's session
+  // date. Both must resolve to the same wall-clock start, and therefore the
+  // same isSlotCancellable decision.
+  const now = { date: '2026-08-25', time: '08:00' };
+
+  it('same-day slot: both sides agree (allowed 6h before)', () => {
+    const range = formatTstzrange('2026-08-25', '14:00', '15:00');
+    const serverStart = parseTstzrangeStart(range)!;
+    const session = parseTstzrange(range); // { date: '2026-08-25', startTime: '14:00' }
+    const clientStart = {
+      date: Number(session.startTime.split(':')[0]) < 6 ? addDaysToDateString(session.date, 1) : session.date,
+      time: session.startTime,
+    };
+    expect(clientStart).toEqual(serverStart);
+    expect(isSlotCancellable(serverStart.date, serverStart.time, 2, now)).toBe(
+      isSlotCancellable(clientStart.date, clientStart.time, 2, now)
+    );
+    expect(isSlotCancellable(serverStart.date, serverStart.time, 2, now)).toBe(true);
+  });
+
+  it('post-midnight slot: client session-date adapter matches server storage start', () => {
+    const range = formatTstzrange('2026-08-25', '01:00', '02:00');
+    const serverStart = parseTstzrangeStart(range)!;
+    expect(serverStart).toEqual({ date: '2026-08-26', time: '01:00' });
+    const session = parseTstzrange(range); // session date 2026-08-25
+    const clientStart = {
+      date: Number(session.startTime.split(':')[0]) < 6 ? addDaysToDateString(session.date, 1) : session.date,
+      time: session.startTime,
+    };
+    expect(clientStart).toEqual(serverStart);
+  });
+
+  it('blocks both sides at the exact 2-hour boundary', () => {
+    const boundaryNow = { date: '2026-08-25', time: '12:00' };
+    const start = parseTstzrangeStart(formatTstzrange('2026-08-25', '14:00', '15:00'))!;
+    expect(isSlotCancellable(start.date, start.time, 2, boundaryNow)).toBe(false);
   });
 });
 

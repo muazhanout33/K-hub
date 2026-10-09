@@ -2,11 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { BookingResult, CancellationResult, Booking } from '@/types';
-import { formatTstzrange, mapDbBookingToBooking } from '@/lib/mappers';
+import { formatTstzrange, parseTstzrangeStart, mapDbBookingToBooking } from '@/lib/mappers';
 import { DbBooking } from '@/types/database.types';
 import { getCourtInfoForBooking, getCourtInfoMap } from '@/services/court.service';
 import { calculateBookingPrice } from '@/lib/pricing';
-import { isSlotPast } from '@/lib/timezone';
+import { isSlotPast, isSlotCancellable, CANCELLATION_WINDOW_HOURS, cairoExpiryNowRange } from '@/lib/timezone';
 
 export interface CreateBookingPayload {
   courtId: string;
@@ -204,23 +204,16 @@ export async function cancelBookingAction(bookingId: string): Promise<Cancellati
     }
 
     // ── 2-Hour Cancellation Window (server-side enforcement) ──
-    const CANCELLATION_WINDOW_HOURS = 2;
-    const range = booking.booking_range;
-    // Strip brackets, quotes, and +00 suffix — stored time IS Cairo local
-    const cleaned = range.replace(/[\[\)"']/g, '').replace(/\+00/g, '');
-    const parts = cleaned.split(',');
-    const slotStartTime = new Date(parts[0].trim());
-
-    if (isNaN(slotStartTime.getTime())) {
+    // Wall-clock semantics: booking_range stores Cairo wall-clock digits,
+    // so the window compares Cairo wall-clock now against the stored start.
+    // isSlotCancellable is shared with the client pre-check — the server
+    // remains authoritative (this action is the enforcement point).
+    const slotStart = parseTstzrangeStart(booking.booking_range);
+    if (!slotStart) {
       return { success: false, error: 'Unable to parse booking time.' };
     }
 
-    const now = new Date();
-    const diffMs = slotStartTime.getTime() - now.getTime();
-    const diffHours = diffMs / (1000 * 60 * 60);
-
-    // Cancellation allowed ONLY if more than 2 hours remain (strict >)
-    if (diffHours <= CANCELLATION_WINDOW_HOURS) {
+    if (!isSlotCancellable(slotStart.date, slotStart.time, CANCELLATION_WINDOW_HOURS)) {
       return {
         success: false,
         error: 'CANCELLATION_TOO_LATE',
@@ -432,16 +425,21 @@ export async function expireStaleBookingsAction(): Promise<{
       return { success: false, expiredCount: 0, error: 'Admin access required.' };
     }
 
-    // Find all Reserved bookings where the range end is in the past.
-    // Uses TSTZRANGE comparison: booking_range < ["now","now"] means
-    // upper(booking_range) < now() — the entire booking is in the past.
-    const nowIso = new Date().toISOString();
-    const nowRange = `["${nowIso}","${nowIso}"]`;
+    // Find all Reserved bookings whose wall-clock end has passed.
+    // booking_range stores Cairo WALL-CLOCK digits annotated '+00' (Model B),
+    // so "now" must use the same wall-clock convention (cairoExpiryNowRange).
+    //
+    // Operator note (verified by read-only probe against live PostgREST,
+    // 2026-10-09): `.lt` on a range column is B-TREE lower-bound ordering
+    // (matches rows that have STARTED) — not "ended by now". `nxr` (&<)
+    // matches upper(range) <= bound, i.e. the range no longer extends past
+    // now — equivalent to the client-side isBookingFullyPast (end <= now).
+    const nowRange = cairoExpiryNowRange();
 
     const { data, error } = await (supabase.from('bookings') as any)
       .update({ status: 'Expired' })
       .eq('status', 'Reserved')
-      .lt('booking_range', nowRange)
+      .filter('booking_range', 'nxr', nowRange)
       .select('id');
 
     if (error) {
