@@ -24,7 +24,7 @@
  *  20. Auth service interface unchanged (no regression)
  */
 
-import { MOCK_USERS } from '../src/lib/mock-users';
+import { MOCK_USERS } from './fixtures/mock-users';
 import {
   registerUser,
   loginUser,

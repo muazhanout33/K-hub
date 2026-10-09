@@ -5,10 +5,11 @@ const AUTH_REQUIRED_PATHS = new Set([
   '/bookings',
   '/profile',
   '/notifications',
-  '/admin',
 ]);
 
-const AUTH_REQUIRED_PREFIXES = ['/api/bookings'];
+// Prefixes cover the path itself and all nested routes
+// (e.g. '/admin' also refreshes '/admin/bookings').
+const AUTH_REQUIRED_PREFIXES = ['/admin', '/api/bookings'];
 
 function needsSessionRefresh(pathname: string): boolean {
   if (AUTH_REQUIRED_PATHS.has(pathname)) return true;

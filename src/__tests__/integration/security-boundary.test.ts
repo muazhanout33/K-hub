@@ -369,9 +369,8 @@ describe('Security — Sensitive Data Isolation', () => {
   });
 
   it('mockHash is not cryptographically secure (documented)', async () => {
-    // mock-users.ts line 18 comment: "NOT cryptographically secure"
-    // This documents that mock hashes are test-only
-    const { mockHash, verifyMockPassword } = await import('@/lib/mock-users');
+    // mock creds/hashes moved out of app source to scripts/fixtures/mock-users.ts (A4)
+    const { mockHash, verifyMockPassword } = await import('../../../scripts/fixtures/mock-users');
     const hash = mockHash('test');
     expect(typeof hash).toBe('string');
     expect(verifyMockPassword('test', hash)).toBe(true);

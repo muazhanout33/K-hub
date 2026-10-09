@@ -18,7 +18,7 @@
  *  14. Auth store interface — matches expected API
  */
 
-import { MOCK_USERS, mockHash, verifyMockPassword } from '../src/lib/mock-users';
+import { MOCK_USERS, mockHash, verifyMockPassword } from './fixtures/mock-users';
 import {
   registerUser,
   loginUser,

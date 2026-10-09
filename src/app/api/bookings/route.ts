@@ -41,35 +41,25 @@ setInterval(() => {
  * Returns the authenticated user's bookings from Supabase.
  * RLS ensures users can only read their own bookings.
  *
- * Middleware attaches x-supabase-user-id when it calls getUser(),
- * so this handler skips a redundant createClient() + getUser() call.
- * Falls back to full auth when invoked outside middleware (e.g. server actions).
+ * B2: identity comes ONLY from supabase.auth.getUser() (cookie session).
+ * The x-supabase-user-id header is client-settable and must never be trusted.
  */
+// `request` is unused on purpose: B2 — headers (e.g. x-supabase-user-id)
+// are client-settable and untrusted; identity comes only from the cookie
+// session via supabase.auth.getUser(). Signature kept for Next.js conventions
+// and for tests that exercise header-spoofing.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: NextRequest) {
   try {
-    const middlewareUserId = request.headers.get('x-supabase-user-id');
-
-    let userId: string;
-    let supabase: Awaited<ReturnType<typeof createClient>>;
-
-    if (middlewareUserId) {
-      // Middleware already authenticated — reuse its result.
-      // The request object carries refreshed cookies from middleware's
-      // setAll callback, so this client has a valid session.
-      supabase = await createClient();
-      userId = middlewareUserId;
-    } else {
-      // No middleware auth (direct call, server action, etc.) — full auth.
-      supabase = await createClient();
-      const { data: authData } = await supabase.auth.getUser();
-      if (!authData.user) {
-        return NextResponse.json(
-          { success: false, error: 'Authentication required.' },
-          { status: 401 }
-        );
-      }
-      userId = authData.user.id;
+    const supabase = await createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required.' },
+        { status: 401 }
+      );
     }
+    const userId = authData.user.id;
 
     const { data, error } = await supabase
       .from('bookings')
@@ -118,29 +108,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const middlewareUserId = request.headers.get('x-supabase-user-id');
-    const middlewareUserEmail = request.headers.get('x-supabase-user-email') ?? '';
-
-    let userId: string;
-    let userEmail: string;
-    let supabase: Awaited<ReturnType<typeof createClient>>;
-
-    if (middlewareUserId) {
-      supabase = await createClient();
-      userId = middlewareUserId;
-      userEmail = middlewareUserEmail;
-    } else {
-      supabase = await createClient();
-      const { data: authData } = await supabase.auth.getUser();
-      if (!authData.user) {
-        return NextResponse.json(
-          { success: false, error: 'Please sign in to book a court.' },
-          { status: 401 }
-        );
-      }
-      userId = authData.user.id;
-      userEmail = authData.user.email ?? '';
+    // B2: identity comes ONLY from supabase.auth.getUser() (cookie session).
+    // x-supabase-user-id / x-supabase-user-email are client-settable — never trusted.
+    const supabase = await createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      return NextResponse.json(
+        { success: false, error: 'Please sign in to book a court.' },
+        { status: 401 }
+      );
     }
+    const userId = authData.user.id;
+    const userEmail = authData.user.email ?? '';
 
     const body = await request.json();
 
@@ -174,9 +153,10 @@ export async function POST(request: NextRequest) {
 
     const totalPrice = calculateBookingPrice(court.pricePerHour, durationMinutes);
 
-    // Validate bookingSource
-    const validSources = ['ONLINE', 'WALK_IN', 'ADMIN'] as const;
-    const bookingSource = validSources.includes(body.bookingSource) ? body.bookingSource : 'ONLINE';
+    // B2: bookingSource is server-derived — this public endpoint only ever
+    // creates ONLINE bookings. WALK_IN / ADMIN are reserved for future
+    // role-checked admin server actions.
+    const bookingSource = 'ONLINE';
 
     const bookingNumber = `KH-${Math.floor(100000 + Math.random() * 900000)}`;
     const bookingRange = formatTstzrange(body.date, body.startTime, endTime);

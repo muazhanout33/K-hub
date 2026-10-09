@@ -236,7 +236,8 @@ describe('GET /api/bookings', () => {
     expect(Array.isArray(json.data)).toBe(true);
   });
 
-  it('uses middleware user ID header when present', async () => {
+  it('ignores spoofed x-supabase-user-id header (identity from getUser only)', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
     supabaseMock.from.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
@@ -244,13 +245,14 @@ describe('GET /api/bookings', () => {
     } as any);
 
     const req = makeRequest('http://localhost/api/bookings');
-    req.headers.set('x-supabase-user-id', 'user-from-middleware');
+    req.headers.set('x-supabase-user-id', 'spoofed-admin-id');
     const res = await bookingsGET(req);
     const json = await res.json();
 
-    expect(json.success).toBe(true);
-    // Should not call getUser since middleware header is present
-    expect(mockGetUser).not.toHaveBeenCalled();
+    // Header must not authenticate anyone — no session cookie → 401
+    expect(res.status).toBe(401);
+    expect(json.success).toBe(false);
+    expect(mockGetUser).toHaveBeenCalled();
   });
 
   it('returns 500 on database error', async () => {
@@ -516,7 +518,7 @@ describe('POST /api/bookings', () => {
     expect(json.error).toContain('Failed to process booking');
   });
 
-  it('defaults bookingSource to ONLINE when invalid', async () => {
+  it('forces booking_source=ONLINE for invalid, ADMIN, and WALK_IN values', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1', email: 'test@test.com' } } });
     const { getCourtByIdFromSupabase } = await import('@/services/court.service');
     vi.mocked(getCourtByIdFromSupabase).mockResolvedValue({
@@ -546,13 +548,18 @@ describe('POST /api/bookings', () => {
       };
     }) as any);
 
-    const req = makeRequest('http://localhost/api/bookings', {
-      method: 'POST',
-      body: makeBookingBody({ bookingSource: 'INVALID_SOURCE' }),
-      headers: { 'Content-Type': 'application/json' },
-    });
-    await bookingsPOST(req);
-
-    expect(insertedData.booking_source).toBe('ONLINE');
+    // B2: client-supplied bookingSource is never honored on the public endpoint
+    for (const source of ['INVALID_SOURCE', 'ADMIN', 'WALK_IN']) {
+      insertedData = null;
+      const req = makeRequest('http://localhost/api/bookings', {
+        method: 'POST',
+        body: makeBookingBody({ bookingSource: source }),
+        // unique IP per iteration — avoids the route's in-memory rate limiter
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': `b2-${source}` },
+      });
+      const res = await bookingsPOST(req);
+      expect(res.status).toBe(201);
+      expect(insertedData.booking_source).toBe('ONLINE');
+    }
   });
 });

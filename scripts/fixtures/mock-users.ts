@@ -1,7 +1,7 @@
 ﻿import { User } from '@/types';
 
 /**
- * Mock user with password hash for auth simulation.
+ * TEST-ONLY mock users (fixture). Not part of app source — do not import from src/.
  * In production, Supabase Auth handles this — passwords never stored in app code.
  *
  * Test credentials:
