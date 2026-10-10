@@ -67,7 +67,8 @@ export interface DbBlockedPeriod {
 export interface DbBooking {
   id: string;
   booking_number: string;
-  user_id: string;
+  /** NULL = walk-in/manual booking (admin-created); contact snapshot in user_* columns. */
+  user_id: string | null;
   court_id: string;
   booking_range: string; // PostgreSQL TSTZRANGE
   duration_minutes: number;

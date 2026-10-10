@@ -178,7 +178,7 @@ export async function cancelBookingAction(bookingId: string): Promise<Cancellati
       return { success: false, error: 'Booking not found or access denied.' };
     }
 
-    const booking = existingBooking as { id: string; user_id: string; status: string; booking_range: string };
+    const booking = existingBooking as { id: string; user_id: string | null; status: string; booking_range: string };
 
     // Already cancelled or expired — no-op, not an error
     if (booking.status === 'Cancelled' || booking.status === 'Expired') {
@@ -336,7 +336,7 @@ export async function confirmBookingStatusAction(
       return { success: false, error: 'Booking not found.' };
     }
 
-    const booking = existing as { id: string; user_id: string; status: string };
+    const booking = existing as { id: string; user_id: string | null; status: string };
     if (booking.status !== 'Reserved') {
       return { success: false, error: `Booking is already ${booking.status.toLowerCase()}.` };
     }
@@ -465,17 +465,23 @@ export async function expireStaleBookingsAction(): Promise<{
         .in('id', bookingIds);
 
       if (bookingsData) {
-        const notifications = bookingsData.map((b: any) => ({
-          user_id: b.user_id,
-          type: 'booking_expired',
-          title: 'Booking Expired',
-          message: `Your booking ${b.booking_number} has expired and is no longer valid.`,
-          related_booking_id: b.id,
-          is_read: false,
-          dedupe_key: `booking_expired:${b.id}`,
-        }));
+        // notifications.user_id is NOT NULL — walk-in bookings (user_id NULL)
+        // have no account to notify and are skipped (manual-booking migration).
+        const notifications = bookingsData
+          .filter((b: { user_id: string | null }) => b.user_id != null)
+          .map((b: { id: string; user_id: string; booking_number: string }) => ({
+            user_id: b.user_id,
+            type: 'booking_expired',
+            title: 'Booking Expired',
+            message: `Your booking ${b.booking_number} has expired and is no longer valid.`,
+            related_booking_id: b.id,
+            is_read: false,
+            dedupe_key: `booking_expired:${b.id}`,
+          }));
 
-        await (supabase.from('notifications') as any).insert(notifications);
+        if (notifications.length > 0) {
+          await (supabase.from('notifications') as any).insert(notifications);
+        }
       }
     }
 

@@ -140,8 +140,8 @@ export interface Booking {
   bookingSource: BookingSource;
   createdAt: string;
   updatedAt: string;
-  /** Owning user ID — used for ownership filtering. Empty string for legacy bookings. */
-  userId: string;
+  /** Owning user ID — used for ownership filtering. NULL for walk-in/manual bookings (admin-created). */
+  userId: string | null;
   userName: string;
   userEmail: string;
   userPhone: string;
