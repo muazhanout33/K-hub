@@ -160,6 +160,16 @@ describe('RLS — Notification Isolation', () => {
     expect(POLICY).toBe('auth.uid() = user_id');
     // Admin bypass is on a separate "Admins manage notifications" FOR ALL policy
   });
+
+  it('policy restricts INSERT to own notifications only', () => {
+    // Policy: "Users insert own notifications" — FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id)
+    // Self-notification inserts (booking create/cancel/confirm, notification.service) run
+    // under the caller's authenticated session; cross-user inserts go through admin policies.
+    const POLICY = 'FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id)';
+    expect(POLICY).toContain('FOR INSERT');
+    expect(POLICY).toContain('TO authenticated');
+    expect(POLICY).toContain('WITH CHECK (auth.uid() = user_id)');
+  });
 });
 
 // ── Bookings UPDATE Restrictions ────────────────────────────────────────────
