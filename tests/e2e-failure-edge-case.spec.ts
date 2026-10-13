@@ -12,7 +12,7 @@ import { test, expect, Page, BrowserContext } from '@playwright/test';
 config({ path: resolve(__dirname, '../.env.local') });
 
 // ── Config ──
-const BASE = 'http://localhost:3000';
+const BASE = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 const TEST_USER_A_EMAIL = process.env.TEST_USER_A_EMAIL!;
 const TEST_USER_A_PASSWORD = process.env.TEST_USER_A_PASSWORD!;
 const TEST_USER_B_EMAIL = process.env.TEST_USER_B_EMAIL!;

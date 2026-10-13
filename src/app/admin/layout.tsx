@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { AdminShell } from './AdminShell';
 
 /**
  * Server-side admin guard for the entire /admin route group.
@@ -38,5 +39,5 @@ export default async function AdminLayout({
     redirect('/');
   }
 
-  return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
+import { PublicChrome } from '@/components/layout/PublicChrome';
 import { HydrationProvider } from '@/components/HydrationProvider';
 import { Toaster } from 'sonner';
 
@@ -33,11 +32,11 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <Navbar />
-        <HydrationProvider>
-          <main id="main-content">{children}</main>
-        </HydrationProvider>
-        <Footer />
+        <PublicChrome>
+          <HydrationProvider>
+            <main id="main-content">{children}</main>
+          </HydrationProvider>
+        </PublicChrome>
         <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
