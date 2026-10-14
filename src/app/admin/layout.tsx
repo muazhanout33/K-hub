@@ -24,7 +24,9 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/auth/login');
+    // Preserve the intended destination across the login round-trip.
+    // Sanitization is unnecessary here: `/admin` is a trusted internal constant.
+    redirect('/auth/login?next=' + encodeURIComponent('/admin'));
   }
 
   const { data: profile, error } = await supabase

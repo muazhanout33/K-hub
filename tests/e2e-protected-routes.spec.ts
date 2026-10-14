@@ -173,11 +173,13 @@ test.describe('Protected Routes — E2E', () => {
   test('unauthenticated /admin redirects to login', async ({ page }) => {
     await mockSupabaseNoAuth(page);
     await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForURL('**/auth/login', { timeout: 15000 });
+    // Match on pathname — the redirect intentionally carries ?next=%2Fadmin
+    await page.waitForURL((url) => url.pathname === '/auth/login', { timeout: 15000 });
 
     const url = page.url();
     expect(url).toContain('/auth/login');
-    expect(url).not.toContain('/admin');
+    expect(url).toContain('next=%2Fadmin');
+    expect(new URL(url).pathname).toBe('/auth/login');
   });
 
   test('authenticated user sees bookings page content', async ({ page, context }) => {

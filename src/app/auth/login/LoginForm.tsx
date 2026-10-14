@@ -3,15 +3,24 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useGuestGuard } from '@/hooks/useGuestGuard';
+import { useGuestGuard, sanitizeNextPath } from '@/hooks/useGuestGuard';
 import { useAuthStore } from '@/features/auth/useAuthStore';
 import { LogIn } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
+/** Safe internal destination from the current URL's `next` param, or null. */
+function getNextDestination(): string | null {
+  if (typeof window === 'undefined') return null;
+  return sanitizeNextPath(
+    new URLSearchParams(window.location.search).get('next')
+  );
+}
+
 export default function LoginForm() {
   const router = useRouter();
-  const { hydrated, isRedirecting } = useGuestGuard('/book');
+  const nextDestination = getNextDestination();
+  const { hydrated, isRedirecting } = useGuestGuard(nextDestination ?? '/book');
   const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,7 +49,7 @@ export default function LoginForm() {
     }
 
     toast.success(`Welcome back, ${result.user?.name}!`);
-    router.push('/book');
+    router.push(getNextDestination() ?? '/book');
   };
 
   if (!hydrated || isRedirecting) {

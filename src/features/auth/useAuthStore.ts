@@ -101,12 +101,11 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'khub-auth-storage',
       skipHydration: true,
-
-      onRehydrateStorage: () => {
-        return () => {
-          useAuthStore.setState({ _hasHydrated: true });
-        };
-      },
+      // NOTE: no onRehydrateStorage flip of _hasHydrated here on purpose.
+      // localStorage rehydration only prefills `user` optimistically; the
+      // hydration flag is set exclusively by initSession() (both success and
+      // error paths) so guards never make auth decisions from stale localStorage
+      // before server-session verification completes (auth redirect race fix).
     }
   )
 );
