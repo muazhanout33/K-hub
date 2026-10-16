@@ -153,6 +153,10 @@ export default function AdminPage() {
 
         {/* Quick links — implemented destinations only */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3" aria-label="Quick links">
+          <Link href="/admin/bookings" className={quickLinkClass}>
+            <CalendarCheck className="w-4 h-4" aria-hidden="true" />
+            Bookings
+          </Link>
           <a href="#blocked-periods" className={quickLinkClass}>
             <CalendarOff className="w-4 h-4" aria-hidden="true" />
             Blocked periods

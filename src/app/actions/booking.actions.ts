@@ -6,7 +6,7 @@ import { formatTstzrange, parseTstzrangeStart, mapDbBookingToBooking } from '@/l
 import { DbBooking } from '@/types/database.types';
 import { getCourtInfoForBooking, getCourtInfoMap } from '@/services/court.service';
 import { calculateBookingPrice } from '@/lib/pricing';
-import { isSlotPast, isSlotCancellable, CANCELLATION_WINDOW_HOURS, cairoExpiryNowRange } from '@/lib/timezone';
+import { isSlotPast, isSlotCancellable, CANCELLATION_WINDOW_HOURS, cairoExpiryNowRange, addDaysToDateString } from '@/lib/timezone';
 
 export interface CreateBookingPayload {
   courtId: string;
@@ -306,6 +306,178 @@ export async function getAdminBookingsAction(): Promise<{
     return { success: true, bookings };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to fetch admin bookings';
+    return { success: false, error: message };
+  }
+}
+
+// ── Admin Bookings page (Phase 2) ────────────────────────────────
+
+const ADMIN_BOOKINGS_PAGE_SIZE = 25;
+
+const BOOKING_STATUS_WHITELIST = ['Reserved', 'Confirmed', 'Cancelled', 'Expired'] as const;
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export interface AdminBookingsPageQuery {
+  search?: string;
+  status?: string | null;
+  courtId?: string | null;
+  dateFrom?: string | null;
+  dateTo?: string | null;
+  page?: number;
+}
+
+export interface AdminBookingsPageResult {
+  success: boolean;
+  bookings?: Booking[];
+  total?: number;
+  page?: number;
+  pageSize?: number;
+  error?: string;
+}
+
+/**
+ * Server Action: Paginated, filterable booking listing for the Admin
+ * Bookings page (`/admin/bookings`).
+ *
+ * Enforces: authentication + admin role re-check (parity with
+ * getAdminBookingsAction). Validates every filter server-side (status
+ * whitelist, ISO dates, from <= to, UUID court id, search sanitization
+ * against PostgREST `.or()` syntax injection). Fixed offset pagination
+ * (approved baseline: docs/admin-dashboard-audit-baseline.md §6.6).
+ *
+ * Date filter matches bookings whose stored day-span overlaps the
+ * [dateFrom 00:00, dateTo+1 00:00) window (`booking_range ov`), so a
+ * booking crossing midnight into the next day is still included when
+ * either endpoint date is selected. Stored ranges are Cairo wall-clock
+ * digits annotated '+00' (Model B); the day-span bound uses the same
+ * wall-clock convention.
+ *
+ * Walk-in bookings (user_id NULL) are intentionally included — they are
+ * part of the admin's operational book of record.
+ */
+export async function getAdminBookingsPageAction(
+  query: AdminBookingsPageQuery = {}
+): Promise<AdminBookingsPageResult> {
+  try {
+    const supabase = await createClient();
+
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      return { success: false, error: 'Authentication required.' };
+    }
+
+    // Admin role re-check (parity with getAdminBookingsAction)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+
+    if (!profile || (profile as { role?: string }).role !== 'Admin') {
+      return { success: false, error: 'Admin access required.' };
+    }
+
+    // ── Input validation ──
+    const page =
+      query.page === undefined ? 1 : query.page;
+    if (!Number.isInteger(page) || page < 1) {
+      return { success: false, error: 'Invalid page number.' };
+    }
+
+    if (
+      query.status != null &&
+      query.status !== '' &&
+      !BOOKING_STATUS_WHITELIST.includes(query.status as (typeof BOOKING_STATUS_WHITELIST)[number])
+    ) {
+      return { success: false, error: 'Invalid status filter.' };
+    }
+
+    if (query.courtId != null && query.courtId !== '' && !UUID_RE.test(query.courtId)) {
+      return { success: false, error: 'Invalid court filter.' };
+    }
+
+    const dateFrom = query.dateFrom || null;
+    const dateTo = query.dateTo || null;
+    if ((dateFrom && !ISO_DATE_RE.test(dateFrom)) || (dateTo && !ISO_DATE_RE.test(dateTo))) {
+      return { success: false, error: 'Invalid date filter.' };
+    }
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+      return { success: false, error: 'Start date must be on or before end date.' };
+    }
+
+    // Strip characters that would break/split PostgREST `.or()` syntax.
+    // Commas separate conditions; parens group; quotes open values.
+    const search = (query.search || '')
+      .replace(/[,()"'\\]/g, ' ')
+      .trim()
+      .slice(0, 100);
+
+    // ── Query composition ──
+    let request = supabase
+      .from('bookings')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(
+        (page - 1) * ADMIN_BOOKINGS_PAGE_SIZE,
+        page * ADMIN_BOOKINGS_PAGE_SIZE - 1
+      );
+
+    if (query.status) {
+      request = request.eq('status', query.status);
+    }
+    if (query.courtId) {
+      request = request.eq('court_id', query.courtId);
+    }
+    if (dateFrom && dateTo) {
+      // Day-span overlap: [from 00:00, to+1 00:00)
+      const dateToPlus1 = addDaysToDateString(dateTo, 1);
+      request = request.filter(
+        'booking_range',
+        'ov',
+        `[${dateFrom} 00:00:00+00, ${dateToPlus1} 00:00:00+00)`
+      );
+    } else if (dateFrom) {
+      request = request.filter(
+        'booking_range',
+        'ov',
+        `[${dateFrom} 00:00:00+00, ${addDaysToDateString(dateFrom, 1)} 00:00:00+00)`
+      );
+    } else if (dateTo) {
+      request = request.filter(
+        'booking_range',
+        'ov',
+        `[${dateTo} 00:00:00+00, ${addDaysToDateString(dateTo, 1)} 00:00:00+00)`
+      );
+    }
+    if (search) {
+      request = request.or(
+        `booking_number.ilike.%${search}%,user_name.ilike.%${search}%,user_email.ilike.%${search}%,user_phone.ilike.%${search}%`
+      );
+    }
+
+    const { data, error, count } = await request;
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    const dbBookings = (data as DbBooking[]) || [];
+    const courtMap = await getCourtInfoMap(dbBookings.map((b) => b.court_id));
+    const bookings = dbBookings.map((b) =>
+      mapDbBookingToBooking(b, courtMap.get(b.court_id))
+    );
+
+    return {
+      success: true,
+      bookings,
+      total: count ?? dbBookings.length,
+      page,
+      pageSize: ADMIN_BOOKINGS_PAGE_SIZE,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to fetch bookings';
     return { success: false, error: message };
   }
 }

@@ -36,7 +36,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: 'Operations',
     items: [
-      { label: 'Bookings', icon: CalendarCheck },
+      { label: 'Bookings', href: '/admin/bookings', icon: CalendarCheck },
       { label: 'New Booking', icon: CalendarPlus },
       { label: 'Courts', icon: Building2 },
       { label: 'Blocked Periods', icon: CalendarOff },
@@ -198,7 +198,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <Menu className="w-5 h-5" />
               </button>
               <h2 className="text-sm font-bold text-[var(--text-main)] truncate">
-                {pathname === '/admin' ? 'Overview' : 'Admin'}
+                {pathname === '/admin'
+                  ? 'Overview'
+                  : pathname.startsWith('/admin/bookings')
+                    ? 'Bookings'
+                    : 'Admin'}
               </h2>
             </div>
 
