@@ -12,7 +12,7 @@ describe('AdminShell', () => {
     vi.mocked(usePathname).mockReturnValue('/admin');
   });
 
-  it('renders Overview and Bookings as live navigation links', () => {
+  it('renders Overview, Bookings and Courts as live navigation links', () => {
     render(<AdminShell><div>page content</div></AdminShell>);
 
     const overview = screen.getByRole('link', { name: /Overview/ });
@@ -23,13 +23,17 @@ describe('AdminShell', () => {
     expect(bookings).toHaveAttribute('href', '/admin/bookings');
     expect(bookings).not.toHaveAttribute('aria-current');
 
+    const courts = screen.getByRole('link', { name: /Courts/ });
+    expect(courts).toHaveAttribute('href', '/admin/courts');
+    expect(courts).not.toHaveAttribute('aria-current');
+
     expect(screen.getByText('page content')).toBeInTheDocument();
   });
 
   it('renders future sections as non-interactive planned items (no links)', () => {
     render(<AdminShell><div /></AdminShell>);
 
-    const planned = ['New Booking', 'Courts', 'Blocked Periods', 'Customers', 'Notifications', 'Settings'];
+    const planned = ['New Booking', 'Blocked Periods', 'Customers', 'Notifications', 'Settings'];
     for (const label of planned) {
       const item = screen.getByText(label);
       expect(item.closest('a'), `${label} must not be a link`).toBeNull();
@@ -45,6 +49,19 @@ describe('AdminShell', () => {
     const bookings = screen.getByRole('link', { name: /Bookings/ });
     expect(bookings).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('heading', { name: 'Bookings' })).toBeInTheDocument();
+  });
+
+  it('marks Courts active on /admin/courts and shows the Courts header title', () => {
+    vi.mocked(usePathname).mockReturnValue('/admin/courts');
+    render(<AdminShell><div /></AdminShell>);
+
+    const courts = screen.getByRole('link', { name: /Courts/ });
+    expect(courts).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('heading', { name: 'Courts' })).toBeInTheDocument();
+
+    // Bookings and Overview must not claim the active state on this route.
+    expect(screen.getByRole('link', { name: /Bookings/ })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: /Overview/ })).not.toHaveAttribute('aria-current');
   });
 
   it('does not mark Overview active on other paths', () => {
