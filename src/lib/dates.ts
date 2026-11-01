@@ -12,6 +12,8 @@
  */
 
 import { cairoToday, cairoCurrentHour, cairoCurrentTime } from '@/lib/timezone';
+import { intlLocale } from '@/i18n/format';
+import type { Locale } from '@/i18n/config';
 
 // ──────────────────────────────────────────────
 // CONSTANTS (kept for backward compatibility)
@@ -94,9 +96,10 @@ export interface CalendarMonth {
  * Example (today = Dec 25):
  *   Dec 25, 26, ... Dec 31 | Jan 1, 2, ... Jan 31
  */
-export function generateCalendarDays(): CalendarMonth[] {
+export function generateCalendarDays(locale: Locale = 'en'): CalendarMonth[] {
   const today = new Date();
   const todayStr = getToday();
+  const tag = intlLocale(locale);
 
   // Calculate the end date: last day of the next month
   const endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0); // day 0 = last day of month+1
@@ -108,7 +111,7 @@ export function generateCalendarDays(): CalendarMonth[] {
     const year = current.getFullYear();
     const month = current.getMonth();
     const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
-    const monthLabel = current.toLocaleDateString('en-US', {
+    const monthLabel = current.toLocaleDateString(tag, {
       month: 'long',
       year: 'numeric',
     });
@@ -129,10 +132,10 @@ export function generateCalendarDays(): CalendarMonth[] {
 
       days.push({
         date: dateStr,
-        dayName: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayName: d.toLocaleDateString(tag, { weekday: 'short' }),
         dayNumber: day,
-        monthName: d.toLocaleDateString('en-US', { month: 'short' }),
-        dayFullName: d.toLocaleDateString('en-US', { weekday: 'long' }),
+        monthName: d.toLocaleDateString(tag, { month: 'short' }),
+        dayFullName: d.toLocaleDateString(tag, { weekday: 'long' }),
         isToday: dateStr === todayStr,
         monthKey,
       });
@@ -173,23 +176,23 @@ export function isBookableDate(date: string): boolean {
 // FORMATTING
 // ──────────────────────────────────────────────
 
-/** Format for section headers: "Fri, Aug 7" */
-export function formatDisplayDate(date: string): string {
+/** Format for section headers: "Fri, Aug 7" (locale-aware, default English) */
+export function formatDisplayDate(date: string, locale: Locale = 'en'): string {
   const [year, month, day] = date.split('-').map(Number);
   const d = new Date(year, month - 1, day);
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return d.toLocaleDateString(intlLocale(locale), { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-/** Format for date selector button: "Aug 7" */
-export function formatShortDate(date: string): string {
+/** Format for date selector button: "Aug 7" (locale-aware, default English) */
+export function formatShortDate(date: string, locale: Locale = 'en'): string {
   const [year, month, day] = date.split('-').map(Number);
   const d = new Date(year, month - 1, day);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return d.toLocaleDateString(intlLocale(locale), { month: 'short', day: 'numeric' });
 }
 
-/** Format for month header: "August 2026" */
-export function formatMonthYear(date: string): string {
+/** Format for month header: "August 2026" (locale-aware, default English) */
+export function formatMonthYear(date: string, locale: Locale = 'en'): string {
   const [year, month] = date.split('-').map(Number);
   const d = new Date(year, month - 1, 1);
-  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return d.toLocaleDateString(intlLocale(locale), { month: 'long', year: 'numeric' });
 }

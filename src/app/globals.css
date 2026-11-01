@@ -1,15 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
+
+/* Dark mode is driven by the `.dark` class on <html> (set pre-paint by the
+   boot script, then maintained by ThemeController). */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ─────────────────────────────────────────────
    K-HUB Reference Design Tokens (Phase 01 Extended)
 ───────────────────────────────────────────── */
 :root {
+  color-scheme: light;
+
   /* Brand & Color System extracted from Reference */
   --background: #F8FAFC;
   --card: #FFFFFF;
   --card-foreground: #0F172A;
+
+  /* Secondary surfaces (gray-50 / gray-100 equivalents, theme-aware) */
+  --surface-2: #F8FAFC;
+  --surface-3: #F1F5F9;
 
   --primary: #16A34A;
   --primary-hover: #15803D;
@@ -87,6 +97,50 @@
 }
 
 /* ─────────────────────────────────────────────
+   Dark Theme — intentional dark-navy palette.
+   Same token names as :root so every surface that
+   consumes var(--*) flips automatically.
+───────────────────────────────────────────── */
+.dark {
+  color-scheme: dark;
+
+  --background: #0A0F1C;
+  --card: #101827;
+  --card-foreground: #F1F5F9;
+
+  --surface-2: #0F1626;
+  --surface-3: #182234;
+
+  /* Brand green brightens slightly to hold contrast on dark surfaces. */
+  --primary: #22C55E;
+  --primary-hover: #4ADE80;
+  --primary-light: #123321;
+  --primary-foreground: #052E16;
+
+  --text-main: #F1F5F9;
+  --text-muted: #9CA3AF;
+  --text-subtle: #6B7280;
+  --placeholder: #9CA3AF;
+
+  --border: #1F2A3D;
+  --border-light: #172033;
+  --input: #1F2A3D;
+  --ring: #22C55E;
+
+  --status-available-bg: #0F2E1E;
+  --status-available-text: #4ADE80;
+  --status-soon-bg: #33260B;
+  --status-soon-text: #FBBF24;
+  --status-booked-bg: #35161A;
+  --status-booked-text: #F87171;
+
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.6);
+  --shadow-btn-green: 0 4px 14px rgba(34, 197, 94, 0.25);
+  --shadow-floating: 0 16px 40px -8px rgba(0, 0, 0, 0.65);
+}
+
+/* ─────────────────────────────────────────────
    Base Reset & Typography
 ───────────────────────────────────────────── */
 @layer base {
@@ -108,6 +162,20 @@
     background-color: var(--background);
     color: var(--text-main);
     line-height: 1.5;
+  }
+
+  /* Arabic typography — IBM Plex Sans Arabic pairs with Inter's neutral
+     proportions; Latin-only content keeps Inter via the font fallback. */
+  html[lang='ar'] body,
+  html[lang='ar'] button,
+  html[lang='ar'] input,
+  html[lang='ar'] select,
+  html[lang='ar'] textarea {
+    font-family: 'IBM Plex Sans Arabic', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  html[lang='ar'] {
+    letter-spacing: 0 !important;
   }
 }
 
@@ -133,7 +201,7 @@
 
 /* Reference Card Standard */
 .ref-card {
-  background: #FFFFFF;
+  background: var(--card);
   border-radius: var(--radius-card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
@@ -256,7 +324,7 @@
   padding: 0 16px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background-color: #FFFFFF;
+  background-color: var(--card);
   color: var(--text-main);
   font-size: 14px;
   font-weight: 500;
@@ -351,8 +419,8 @@ textarea.khub-input {
   align-items: center;
   gap: 4px;
   padding: 4px;
-  background-color: rgba(243, 244, 246, 0.9);
-  border: 1px solid rgba(229, 231, 235, 0.8);
+  background-color: var(--surface-3);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -379,11 +447,11 @@ textarea.khub-input {
 }
 .filter-chip:hover {
   color: var(--text-main);
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: var(--surface-2);
 }
 .filter-chip-active {
-  background-color: #FFFFFF;
-  color: #15803D;
+  background-color: var(--card);
+  color: var(--primary-hover);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 .filter-chip-active-dark {
@@ -394,8 +462,8 @@ textarea.khub-input {
 
 /* ── Page hero header (below nav) ── */
 .page-hero {
-  background-color: #FFFFFF;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+  background-color: var(--card);
+  border-bottom: 1px solid var(--border);
   padding-top: var(--section-py-mobile);
   padding-bottom: var(--section-py-mobile);
 }
@@ -448,7 +516,7 @@ textarea.khub-input {
 
 /* ── Pricing section tint ── */
 .pricing-section {
-  background-color: #F1F5F9;
+  background-color: var(--surface-3);
   padding-top: var(--section-py-mobile);
   padding-bottom: var(--section-py-mobile);
 }
@@ -478,7 +546,7 @@ textarea.khub-input {
 .stats-bar-item {
   padding: 24px 16px;
   text-align: center;
-  border-right: 1px solid var(--border-light);
+  border-inline-end: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
 }
 @media (min-width: 1024px) {
@@ -486,12 +554,12 @@ textarea.khub-input {
     border-bottom: none;
   }
   .stats-bar-item:last-child {
-    border-right: none;
+    border-inline-end: none;
   }
 }
 @media (max-width: 1023px) {
   .stats-bar-item:nth-child(2n) {
-    border-right: none;
+    border-inline-end: none;
   }
   .stats-bar-item:nth-last-child(-n+2) {
     border-bottom: none;
@@ -539,7 +607,7 @@ textarea.khub-input {
   width: 56px;
   height: 56px;
   border-radius: var(--radius-md);
-  background-color: #F8FAFC;
+  background-color: var(--surface-2);
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -548,9 +616,9 @@ textarea.khub-input {
   flex-shrink: 0;
 }
 .offer-badge {
-  background-color: #DCFCE7;
-  border: 1px solid #86EFAC;
-  color: #14532D;
+  background-color: var(--status-available-bg);
+  border: 1px solid var(--status-available-text);
+  color: var(--status-available-text);
   font-weight: 800;
 }
 

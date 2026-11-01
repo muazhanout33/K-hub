@@ -1,44 +1,55 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { HydrationProvider } from '@/components/HydrationProvider';
-import { Toaster } from 'sonner';
+import { SkipLink } from '@/components/layout/SkipLink';
+import { AppToaster } from '@/components/layout/AppToaster';
+import { LocaleProvider } from '@/components/i18n/LocaleProvider';
+import { ThemeController } from '@/features/ui/ThemeController';
+import { THEME_BOOT_SCRIPT } from '@/features/ui/theme-boot-script';
+import { dictionaries } from '@/i18n/dictionaries';
+import { getDir, type Locale } from '@/i18n/config';
+import { readLocaleCookie } from '@/i18n/locale-cookie';
 
-export const metadata: Metadata = {
-  title: 'K-HUB Sports Club | Premium Court Booking Platform',
-  description:
-    'Book world-class Padel, Football, and Tennis courts online in seconds. Live real-time availability, instant confirmation, and 100% duplicate booking prevention.',
-  keywords: [
-    'sports club',
-    'padel booking',
-    'football court',
-    'tennis court',
-    'sports reservation',
-    'K-HUB',
-  ],
-};
+async function getRequestLocale(): Promise<Locale> {
+  const store = await cookies();
+  return readLocaleCookie((name) => store.get(name)?.value);
+}
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const meta = dictionaries[locale].home.meta;
+  return {
+    title: meta.title,
+    description: meta.description,
+    keywords: meta.keywords.split(',').map((keyword) => keyword.trim()),
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getRequestLocale();
+  const dir = getDir(locale);
+
   return (
-    <html lang="en">
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className="min-h-screen bg-[var(--background)] text-[var(--text-main)] antialiased selection:bg-green-100 selection:text-green-800">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:bg-[var(--primary)] focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
-        >
-          Skip to main content
-        </a>
-        <Navbar />
-        <HydrationProvider>
-          <main id="main-content">{children}</main>
-        </HydrationProvider>
-        <Footer />
-        <Toaster position="top-right" richColors closeButton />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+        <LocaleProvider initialLocale={locale}>
+          <SkipLink />
+          <ThemeController />
+          <Navbar />
+          <HydrationProvider>
+            <main id="main-content">{children}</main>
+          </HydrationProvider>
+          <Footer />
+          <AppToaster />
+        </LocaleProvider>
       </body>
     </html>
   );

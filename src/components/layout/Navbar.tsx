@@ -11,19 +11,29 @@ import { SiteContainer } from './SiteContainer';
 import { getCourtsFromSupabase } from '@/services/court.service';
 import { useBookingStore } from '@/features/booking/useBookingStore';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { useT } from '@/components/i18n/LocaleProvider';
+import { LocaleSwitcher } from '@/components/i18n/LocaleSwitcher';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import type { TranslationKey } from '@/i18n/dictionaries';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Home' },
-  { href: '/courts', label: 'Courts' },
-  { href: '/bookings', label: 'My Bookings', authOnly: true },
-  { href: '/sponsors', label: 'Sponsors' },
-  { href: '/advertise', label: 'Advertise' },
-  { href: '/about', label: 'About Us' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/admin', label: 'Admin', adminOnly: true },
-];
+  { href: '/', labelKey: 'nav.items.home' },
+  { href: '/courts', labelKey: 'nav.items.courts' },
+  { href: '/bookings', labelKey: 'nav.items.myBookings', authOnly: true },
+  { href: '/sponsors', labelKey: 'nav.items.sponsors' },
+  { href: '/advertise', labelKey: 'nav.items.advertise' },
+  { href: '/about', labelKey: 'nav.items.aboutUs' },
+  { href: '/contact', labelKey: 'nav.items.contact' },
+  { href: '/admin', labelKey: 'nav.items.admin', adminOnly: true },
+] as const satisfies readonly {
+  href: string;
+  labelKey: TranslationKey;
+  authOnly?: boolean;
+  adminOnly?: boolean;
+}[];
 
 export function Navbar() {
+  const t = useT();
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -103,7 +113,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      <header className="sticky top-0 z-50 bg-[var(--card)]/85 backdrop-blur-xl border-b border-[var(--border)] shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
         <SiteContainer className="h-[76px] lg:h-[80px] flex items-center justify-between">
 
           {/* Logo */}
@@ -111,7 +121,7 @@ export function Navbar() {
             <div className="relative w-12 h-12 sm:w-13 sm:h-13 lg:w-14 lg:h-14 shrink-0 transition-transform duration-200 ease-out group-hover:scale-[1.03]">
               <Image
                 src="/khub logo.png"
-                alt="K-HUB Sports Club Logo"
+                alt={t('nav.brandLogoAlt')}
                 width={56}
                 height={56}
                 className="w-full h-full object-contain drop-shadow-sm"
@@ -119,11 +129,11 @@ export function Navbar() {
               />
             </div>
             <div className="flex flex-col justify-center">
-              <span className="font-black text-[22px] sm:text-[24px] lg:text-[26px] text-slate-900 tracking-[-0.03em] leading-none group-hover:text-black transition-colors">
+              <span className="font-black text-[22px] sm:text-[24px] lg:text-[26px] text-[var(--text-main)] tracking-[-0.03em] leading-none transition-colors">
                 K-HUB
               </span>
               <span className="text-[10px] sm:text-[11px] lg:text-[11.5px] font-bold text-[#16A34A] tracking-[0.22em] uppercase leading-none mt-[3.5px]">
-                Sports Club
+                {t('nav.brandTagline')}
               </span>
             </div>
           </Link>
@@ -131,8 +141,8 @@ export function Navbar() {
           {/* Desktop Nav */}
           <nav className="hidden xl:flex flex-1 items-center justify-center gap-1">
             {NAV_ITEMS.filter((item) => {
-              if (item.authOnly && !isAuthenticated) return false;
-              if (item.adminOnly && user?.role !== 'Admin') return false;
+              if ('authOnly' in item && item.authOnly && !isAuthenticated) return false;
+              if ('adminOnly' in item && item.adminOnly && user?.role !== 'Admin') return false;
               return true;
             }).map((item) => {
               const isActive =
@@ -144,23 +154,27 @@ export function Navbar() {
                   href={item.href}
                   className={`px-3 xl:px-4.5 py-2 rounded-xl text-sm xl:text-[15px] font-medium transition-all duration-150 ${
                     isActive
-                      ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50/80'
+                      ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold dark:text-[#4ADE80]'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--surface-2)]'
                   }`}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               );
             })}
           </nav>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Language + Theme */}
+            <LocaleSwitcher className="hidden sm:inline-flex" />
+            <ThemeToggle className="hidden md:flex" />
+
             {/* Notification Bell */}
             <NotificationBell />
 
             {/* Divider */}
-            <div className="w-px h-6 bg-gray-200 hidden md:block" />
+            <div className="w-px h-6 bg-[var(--border)] hidden md:block" />
 
             {/* Book Now CTA */}
             <Button
@@ -169,7 +183,7 @@ export function Navbar() {
               size="sm"
               className="hidden md:inline-flex rounded-full px-6 h-11 text-[14px] font-semibold tracking-wide shadow-sm"
             >
-              Book Now
+              {t('common.bookNow')}
             </Button>
 
             {/* User Avatar / Auth Links */}
@@ -177,8 +191,8 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => router.push('/profile')}
-                  className="w-11 h-11 rounded-full overflow-hidden ring-[1.5px] ring-gray-200 hover:ring-[#16A34A] transition-all duration-200 shrink-0 flex items-center justify-center cursor-pointer"
-                  aria-label="My profile"
+                  className="w-11 h-11 rounded-full overflow-hidden ring-[1.5px] ring-[var(--border)] hover:ring-[#16A34A] transition-all duration-200 shrink-0 flex items-center justify-center cursor-pointer"
+                  aria-label={t('nav.myProfile')}
                 >
                   {user.avatar ? (
                     <div className="relative w-full h-full">
@@ -197,8 +211,8 @@ export function Navbar() {
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="p-2 text-gray-400 hover:text-red-600 transition-colors hidden md:block"
-                  aria-label="Sign out"
+                  className="p-2 text-[var(--text-subtle)] hover:text-red-600 transition-colors hidden md:block"
+                  aria-label={t('nav.signOut')}
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -210,14 +224,14 @@ export function Navbar() {
                   className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold text-[#16A34A] border border-[#16A34A]/30 hover:bg-[#16A34A]/5 transition-colors"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
-                  Register
+                  {t('nav.register')}
                 </Link>
                 <Link
                   href="/auth/login"
-                  className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200/80 transition-colors shrink-0"
-                  aria-label="Sign in"
+                  className="w-11 h-11 rounded-full bg-[var(--surface-3)] flex items-center justify-center hover:bg-[var(--border)] transition-colors shrink-0"
+                  aria-label={t('nav.signIn')}
                 >
-                  <User className="w-4 h-4 text-gray-500" />
+                  <User className="w-4 h-4 text-[var(--text-muted)]" />
                 </Link>
               </div>
             )}
@@ -231,7 +245,7 @@ export function Navbar() {
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav-drawer"
-              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-label={mobileOpen ? t('common.closeMenu') : t('common.openMenu')}
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
            </Button>
@@ -252,26 +266,26 @@ export function Navbar() {
             ref={drawerRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Navigation menu"
-            className="relative ml-auto w-[300px] bg-white h-full shadow-2xl flex flex-col"
+            aria-label={t('nav.navigationMenu')}
+            className="relative ms-auto w-[300px] bg-[var(--card)] h-full shadow-2xl flex flex-col"
           >
-            <div className="px-5 h-[68px] border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div className="px-5 h-[68px] border-b border-[var(--border-light)] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 shrink-0">
                   <Image
                     src="/khub logo.png"
-                    alt="K-HUB Sports Club Logo"
+                    alt={t('nav.brandLogoAlt')}
                     width={40}
                     height={40}
                     className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="flex flex-col justify-center">
-                  <span className="font-black text-[19px] text-slate-900 tracking-[-0.03em] leading-none">
+                  <span className="font-black text-[19px] text-[var(--text-main)] tracking-[-0.03em] leading-none">
                     K-HUB
                   </span>
                   <span className="text-[10px] font-bold text-[#16A34A] tracking-[0.20em] uppercase leading-none mt-[2.5px]">
-                    Sports Club
+                    {t('nav.brandTagline')}
                   </span>
                 </div>
               </div>
@@ -279,15 +293,15 @@ export function Navbar() {
                 variant="ghost"
                 size="icon-sm"
                 onClick={closeMenu}
-                aria-label="Close navigation menu"
+                aria-label={t('common.closeMenu')}
               >
                 <X className="w-5 h-5" />
               </Button>
             </div>
             <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
               {NAV_ITEMS.filter((item) => {
-                if (item.authOnly && !isAuthenticated) return false;
-                if (item.adminOnly && user?.role !== 'Admin') return false;
+                if ('authOnly' in item && item.authOnly && !isAuthenticated) return false;
+                if ('adminOnly' in item && item.adminOnly && user?.role !== 'Admin') return false;
                 return true;
               }).map((item) => {
                 const isActive =
@@ -300,11 +314,11 @@ export function Navbar() {
                     onClick={closeMenu}
                     className={`flex items-center px-4 py-3 rounded-xl text-[14px] font-medium transition-colors ${
                       isActive
-                        ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold dark:text-[#4ADE80]'
+                        : 'text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 );
               })}
@@ -316,17 +330,17 @@ export function Navbar() {
                     onClick={closeMenu}
                     className={`flex items-center px-4 py-3 rounded-xl text-[14px] font-medium transition-colors ${
                       pathname === '/profile'
-                        ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold dark:text-[#4ADE80]'
+                        : 'text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    Profile
+                    {t('nav.items.profile')}
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center w-full px-4 py-3 rounded-xl text-[14px] font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex items-center w-full px-4 py-3 rounded-xl text-[14px] font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                   >
-                    Sign Out
+                    {t('nav.signOut')}
                   </button>
                 </>
               )}
@@ -338,18 +352,23 @@ export function Navbar() {
                   className="flex items-center gap-2 px-4 py-3 rounded-xl text-[14px] font-semibold text-[#16A34A] hover:bg-[#16A34A]/5 transition-colors"
                 >
                   <UserPlus className="w-4 h-4" />
-                  Register
+                  {t('nav.register')}
                 </Link>
               )}
+              {/* Prefs — language + theme, full width on mobile */}
+              <div className="pt-2 mt-1 border-t border-[var(--border-light)] space-y-0.5">
+                <LocaleSwitcher variant="drawer" onNavigate={closeMenu} />
+                <ThemeToggle variant="drawer" onNavigate={closeMenu} />
+              </div>
             </nav>
-            <div className="p-4 border-t border-gray-100/60">
+            <div className="p-4 border-t border-[var(--border-light)]">
               <Button
                 onClick={() => { handleBookNow(); closeMenu(); }}
                 variant="primary"
                 size="lg"
                 className="w-full rounded-full font-bold"
               >
-                Book Now
+                {t('common.bookNow')}
               </Button>
             </div>
           </div>
