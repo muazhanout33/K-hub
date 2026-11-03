@@ -1,0 +1,728 @@
+[
+  {
+    "viewport": "375x667",
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "innerWidth": 375,
+    "hasHorizontalOverflow": false,
+    "imagesCount": 15,
+    "images": [
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=640&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 375,
+        "height": 270,
+        "displayedWidth": 375,
+        "displayedHeight": 460
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=640&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 375,
+        "height": 270,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=640&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 375,
+        "height": 270,
+        "displayedWidth": 325,
+        "displayedHeight": 203
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=64&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 64,
+        "height": 48,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 64,
+        "height": 43,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=64&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 64,
+        "height": 36,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=384&q=75",
+        "alt": "K-HUB Open Padel Championship 2026",
+        "width": 374,
+        "height": 248,
+        "displayedWidth": 325,
+        "displayedHeight": 183
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Summer 5v5 Football Night League",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Tennis Masters Singles Knockout",
+        "width": 55,
+        "height": 37,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Phase 22.17 Test Event",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=384&q=75",
+        "alt": "Modern sports clubhouse and player lounge at WEGO Sports Club",
+        "width": 374,
+        "height": 249,
+        "displayedWidth": 325,
+        "displayedHeight": 202
+      }
+    ],
+    "heroImgs": [
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=3840&q=75"
+    ]
+  },
+  {
+    "viewport": "390x844",
+    "scrollWidth": 390,
+    "clientWidth": 390,
+    "innerWidth": 390,
+    "hasHorizontalOverflow": false,
+    "imagesCount": 15,
+    "images": [
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=640&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 390,
+        "height": 281,
+        "displayedWidth": 390,
+        "displayedHeight": 460
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=640&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 390,
+        "height": 281,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=640&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 390,
+        "height": 281,
+        "displayedWidth": 340,
+        "displayedHeight": 213
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=64&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 64,
+        "height": 48,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 64,
+        "height": 43,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=64&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 64,
+        "height": 36,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=640&q=75",
+        "alt": "K-HUB Open Padel Championship 2026",
+        "width": 390,
+        "height": 258,
+        "displayedWidth": 340,
+        "displayedHeight": 191
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Summer 5v5 Football Night League",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Tennis Masters Singles Knockout",
+        "width": 55,
+        "height": 37,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Phase 22.17 Test Event",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=640&q=75",
+        "alt": "Modern sports clubhouse and player lounge at WEGO Sports Club",
+        "width": 390,
+        "height": 260,
+        "displayedWidth": 340,
+        "displayedHeight": 212
+      }
+    ],
+    "heroImgs": [
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=3840&q=75"
+    ]
+  },
+  {
+    "viewport": "412x915",
+    "scrollWidth": 412,
+    "clientWidth": 412,
+    "innerWidth": 412,
+    "hasHorizontalOverflow": false,
+    "imagesCount": 15,
+    "images": [
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=640&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 412,
+        "height": 297,
+        "displayedWidth": 412,
+        "displayedHeight": 460
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=640&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 412,
+        "height": 297,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=640&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 412,
+        "height": 297,
+        "displayedWidth": 362,
+        "displayedHeight": 226
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=64&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 64,
+        "height": 48,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 64,
+        "height": 43,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=64&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 64,
+        "height": 36,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=640&q=75",
+        "alt": "K-HUB Open Padel Championship 2026",
+        "width": 412,
+        "height": 272,
+        "displayedWidth": 362,
+        "displayedHeight": 204
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Summer 5v5 Football Night League",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Tennis Masters Singles Knockout",
+        "width": 55,
+        "height": 37,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Phase 22.17 Test Event",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=640&q=75",
+        "alt": "Modern sports clubhouse and player lounge at WEGO Sports Club",
+        "width": 412,
+        "height": 274,
+        "displayedWidth": 362,
+        "displayedHeight": 226
+      }
+    ],
+    "heroImgs": [
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=3840&q=75"
+    ]
+  },
+  {
+    "viewport": "768x1024",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "innerWidth": 768,
+    "hasHorizontalOverflow": false,
+    "imagesCount": 15,
+    "images": [
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=828&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 768,
+        "height": 554,
+        "displayedWidth": 768,
+        "displayedHeight": 460
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=828&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 768,
+        "height": 554,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=828&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 768,
+        "height": 554,
+        "displayedWidth": 718,
+        "displayedHeight": 449
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=64&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 64,
+        "height": 48,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 64,
+        "height": 43,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=64&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 64,
+        "height": 36,
+        "displayedWidth": 62,
+        "displayedHeight": 62
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=828&q=75",
+        "alt": "K-HUB Open Padel Championship 2026",
+        "width": 768,
+        "height": 508,
+        "displayedWidth": 359,
+        "displayedHeight": 317
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Summer 5v5 Football Night League",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Tennis Masters Singles Knockout",
+        "width": 55,
+        "height": 37,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Phase 22.17 Test Event",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=828&q=75",
+        "alt": "Modern sports clubhouse and player lounge at WEGO Sports Club",
+        "width": 768,
+        "height": 512,
+        "displayedWidth": 346,
+        "displayedHeight": 365
+      }
+    ],
+    "heroImgs": [
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=3840&q=75"
+    ]
+  },
+  {
+    "viewport": "1280x800",
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "innerWidth": 1280,
+    "hasHorizontalOverflow": false,
+    "imagesCount": 14,
+    "images": [
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=1920&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 959,
+        "height": 692,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=1920&q=75",
+        "alt": "WEGO Sports Arena",
+        "width": 383,
+        "height": 277,
+        "displayedWidth": 441,
+        "displayedHeight": 331
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 64,
+        "height": 43,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 0,
+        "height": 0,
+        "displayedWidth": 0,
+        "displayedHeight": 0
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=384&q=75",
+        "alt": "Pro Padel Center Arena 1",
+        "width": 320,
+        "height": 230,
+        "displayedWidth": 223,
+        "displayedHeight": 149
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=384&q=75",
+        "alt": "Emirates Pitch 5v5",
+        "width": 320,
+        "height": 240,
+        "displayedWidth": 223,
+        "displayedHeight": 149
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=384&q=75",
+        "alt": "Grandstand Hard Court 1",
+        "width": 320,
+        "height": 213,
+        "displayedWidth": 223,
+        "displayedHeight": 149
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=384&q=75",
+        "alt": "Sunset Outdoor Padel Court 2",
+        "width": 320,
+        "height": 180,
+        "displayedWidth": 223,
+        "displayedHeight": 149
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=640&q=75",
+        "alt": "WEGO Open Padel Championship 2026",
+        "width": 640,
+        "height": 424,
+        "displayedWidth": 559,
+        "displayedHeight": 290
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=64&q=75",
+        "alt": "Summer 5v5 Football Night League",
+        "width": 55,
+        "height": 32,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=64&q=75",
+        "alt": "Tennis Masters Singles Knockout",
+        "width": 55,
+        "height": 37,
+        "displayedWidth": 54,
+        "displayedHeight": 54
+      },
+      {
+        "src": "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=640&q=75",
+        "alt": "Modern sports clubhouse and player lounge at WEGO Sports Club",
+        "width": 640,
+        "height": 427,
+        "displayedWidth": 538,
+        "displayedHeight": 298
+      }
+    ],
+    "heroImgs": [
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fhero-sports.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-panoramic.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-5v5.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-outdoor.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Fpadel-action.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ffootball-match.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Fcourts%2Ftennis-hard.jpg&w=3840&q=75",
+      "http://localhost:3002/_next/image?url=%2Fimages%2Ffacility%2Ffacility-clubhouse.jpg&w=3840&q=75"
+    ]
+  }
+]

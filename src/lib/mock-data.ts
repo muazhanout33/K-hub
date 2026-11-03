@@ -13,12 +13,11 @@ export const MOCK_COURTS: Court[] = [
     pricePerHour: 400,
     rating: 4.9,
     reviewCount: 128,
-    // Content-verified: real padel imagery (racket on blue padel turf).
-    image: '/images/courts/padel.jpg',
+    image: '/images/courts/padel-panoramic.jpg',
     gallery: [
-      '/images/courts/padel.jpg',
-      '/images/courts/gallery-padel-3.jpg',
-      '/images/courts/gallery-padel-2.jpg',
+      '/images/courts/padel-panoramic.jpg',
+      '/images/courts/padel-outdoor.jpg',
+      '/images/courts/padel-action.jpg',
     ],
     description: 'State-of-the-art panoramic indoor Padel court featuring official WPT turf, LED lighting system, and climate control for year-round optimal performance.',
     features: ['Panoramic Glass Walls', 'Official WPT Turf', 'Climate Controlled', 'Pro Audio System', 'Locker Room Access'],
@@ -41,7 +40,7 @@ export const MOCK_COURTS: Court[] = [
     gallery: [
       '/images/courts/football-5v5.jpg',
       '/images/courts/football-7v7.jpg',
-      '/images/courts/gallery-football-2.jpg',
+      '/images/courts/football-match.jpg',
     ],
     description: 'Premium outdoor 5-a-side football field equipped with shock-pad underlay synthetic turf, floodlights, and electronic scoreboard.',
     features: ['Floodlights', 'Electronic Scoreboard', 'Shock-Pad Turf', 'Team Dugouts', 'Chilled Water Station'],
@@ -60,11 +59,10 @@ export const MOCK_COURTS: Court[] = [
     pricePerHour: 350,
     rating: 4.95,
     reviewCount: 86,
-    image: '/images/courts/tennis-hard-1.jpg',
+    image: '/images/courts/tennis-hard.jpg',
     gallery: [
-      '/images/courts/tennis-hard-1.jpg',
+      '/images/courts/tennis-hard.jpg',
       '/images/courts/tennis-clay.jpg',
-      '/images/courts/gallery-tennis-2.jpg',
     ],
     description: 'Tournament-grade indoor hard court used for regional championships. Features Hawk-Eye camera playback and spectator seating.',
     features: ['Hawk-Eye Camera Playback', 'Tournament Lighting', 'Spectator Seating (50 seats)', 'Ball Machine Rental Available'],
@@ -83,12 +81,10 @@ export const MOCK_COURTS: Court[] = [
     pricePerHour: 250,
     rating: 4.75,
     reviewCount: 65,
-    // Only real padel imagery available — duplicates Court 1's primary.
-    // Documented limitation: no outdoor padel court photography exists in the
-    // repo and illustrative generation was unavailable.
-    image: '/images/courts/padel.jpg',
+    image: '/images/courts/padel-outdoor.jpg',
     gallery: [
-      '/images/courts/padel.jpg',
+      '/images/courts/padel-outdoor.jpg',
+      '/images/courts/padel-panoramic.jpg',
     ],
     description: 'Scenic outdoor court perfect for evening matches with high-lux LED illumination and breeze shade net cover.',
     features: ['LED Night Lighting', 'Shade Canopy', 'Lounge Area Nearby', 'Fresh Towel Service'],
@@ -110,6 +106,7 @@ export const MOCK_COURTS: Court[] = [
     image: '/images/courts/football-7v7.jpg',
     gallery: [
       '/images/courts/football-7v7.jpg',
+      '/images/courts/football-match.jpg',
     ],
     description: 'Full-size 7-a-side professional hybrid pitch with grandstand seating, broadcast lighting, and dedicated referee lounge.',
     features: ['Grandstand 200 Capacity', 'HD Recording Camera', 'Player Tunnel', 'Sound System'],
@@ -128,12 +125,10 @@ export const MOCK_COURTS: Court[] = [
     pricePerHour: 60,
     rating: 4.88,
     reviewCount: 79,
-    // Content-verified: 'tennis-clay.jpg' actually depicts a blue hard court,
-    // so the authentic clay surface image (clay terracotta aerial) is used here.
-    image: '/images/courts/padel-1.jpg',
+    image: '/images/courts/tennis-clay.jpg',
     gallery: [
-      '/images/courts/padel-1.jpg',
       '/images/courts/tennis-clay.jpg',
+      '/images/courts/tennis-hard.jpg',
     ],
     description: 'Authentic European red clay court maintained daily. Drag-mat provided before and after every match.',
     features: ['Daily Clay Grooming', 'Shaded Player Benches', 'Clay Court Shoes Recommended'],
@@ -192,7 +187,7 @@ export const MOCK_EVENTS: EventItem[] = [
     id: 'event-1',
     title: 'WEGO Open Padel Championship 2026',
     description: 'Join the biggest Padel tournament of the summer! Cash prizes up to $5,000 for top 3 teams, live DJ, BBQ, and sponsor giveaways.',
-    image: '/images/courts/padel.jpg',
+    image: '/images/courts/padel-action.jpg',
     date: '2026-08-15',
     time: '09:00 AM - 08:00 PM',
     location: 'Pro Padel Center Arenas 1-4',
@@ -207,10 +202,7 @@ export const MOCK_EVENTS: EventItem[] = [
     id: 'event-2',
     title: 'Summer 5v5 Football Night League',
     description: 'Under-the-lights 5-a-side football league running every Friday evening. Trophy, medals, and free kit customization for winning team.',
-    // Content-verified: 'gallery-padel-2.jpg' actually depicts football
-    // PLAYERS ON TURF despite its filename (mislabeled asset), so it fits this
-    // 5v5 football event. No football-specific asset exists in the repo.
-    image: '/images/courts/gallery-padel-2.jpg',
+    image: '/images/courts/football-match.jpg',
     date: '2026-08-21',
     time: '07:00 PM - 11:00 PM',
     location: 'Emirates Pitch 5v5',
@@ -225,7 +217,7 @@ export const MOCK_EVENTS: EventItem[] = [
     id: 'event-3',
     title: 'Tennis Masters Singles Knockout',
     description: 'UTR-rated tennis tournament open to intermediate and advanced players. Certified umpire matches with video recording.',
-    image: '/images/courts/tennis-hard-1.jpg',
+    image: '/images/courts/tennis-hard.jpg',
     date: '2026-09-02',
     time: '10:00 AM - 06:00 PM',
     location: 'Grandstand Hard Court 1',

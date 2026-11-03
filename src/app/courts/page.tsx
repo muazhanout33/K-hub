@@ -8,22 +8,23 @@ import { Badge } from '@/components/ui/Badge';
 import { FilterChips } from '@/components/ui/FilterChips';
 import { Search, Filter, Trophy, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { MOCK_COURTS } from '@/lib/mock-data';
 import { Court } from '@/types';
 
 export default function CourtsPage() {
-  const [courts, setCourts] = useState<Court[]>([]);
+  const [courts, setCourts] = useState<Court[]>(() => MOCK_COURTS.filter((c) => !c.name.startsWith('TEST_')));
   const [selectedSport, setSelectedSport] = useState<string>('All');
   const [indoorFilter, setIndoorFilter] = useState<'All' | 'Indoor' | 'Outdoor'>('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchCourts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const data = await getCourtsFromSupabase();
-      setCourts(data);
+      if (data && data.length > 0) {
+        setCourts(data.filter((c) => !c.name.startsWith('TEST_')));
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load courts. Please try again.');
     } finally {

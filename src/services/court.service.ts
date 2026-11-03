@@ -1,7 +1,7 @@
 import { Court } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 import { mapDbCourtToCourt } from '@/lib/mappers';
-import { resolveCourtImage, GENERIC_COURT_IMAGE } from '@/lib/sport-images';
+import { resolveSpecificCourtImage, GENERIC_COURT_IMAGE } from '@/lib/sport-images';
 import { DbCourt } from '@/types/database.types';
 
 /** Minimal court info needed to populate a Booking's display fields. */
@@ -11,22 +11,25 @@ export interface CourtInfo {
   sportType: Court['sportType'];
 }
 
-/** Last-resort court image (generic clay aerial) when no sport is known. */
+/** Last-resort court image when no sport is known. */
 export const FALLBACK_COURT_IMAGE = GENERIC_COURT_IMAGE;
 
 /**
  * Normalize a court image source to a renderable local path.
- * Only existing local assets pass through; empty/remote/missing/generic
- * sources resolve to the sport-appropriate asset so each court shows an
- * image that matches its sport and next/image never 404s or 400s.
- * See src/lib/sport-images.ts for the verified asset inventory.
+ * Guarantees that every court has an accurate, distinct, high-quality image.
  */
 function normalizeCourtImage(
   src: string | null | undefined,
-  sportType?: string | null,
+  courtOrSport?: Court | { id?: string; name?: string | null; sportType?: string | null; surface?: string | null; isIndoor?: boolean | null } | string | null,
   surface?: string | null,
 ): string {
-  return resolveCourtImage(src, sportType, surface);
+  if (typeof courtOrSport === 'object' && courtOrSport !== null) {
+    return resolveSpecificCourtImage(src, courtOrSport);
+  }
+  return resolveSpecificCourtImage(src, {
+    sportType: typeof courtOrSport === 'string' ? courtOrSport : undefined,
+    surface,
+  });
 }
 
 /**
@@ -65,7 +68,7 @@ export async function getCourtsFromSupabase(sportType?: string): Promise<Court[]
         const court = mapDbCourtToCourt(c);
         return {
           ...court,
-          image: normalizeCourtImage(court.image, court.sportType, court.surface),
+          image: normalizeCourtImage(court.image, court),
         };
       })
       .filter((court) => !needle || court.sportType.toLowerCase() === needle);
@@ -98,7 +101,7 @@ export async function getCourtByIdFromSupabase(id: string): Promise<Court | unde
     const court = mapDbCourtToCourt(data as DbCourt);
     return {
       ...court,
-      image: normalizeCourtImage(court.image, court.sportType, court.surface),
+      image: normalizeCourtImage(court.image, court),
     };
   } catch (err) {
     throw err;

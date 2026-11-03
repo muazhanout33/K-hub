@@ -423,7 +423,7 @@ export function mapDbEventToEvent(db: DbEvent): EventItem {
     // Never empty: events without a usable image_url (e.g. null in the DB)
     // previously produced <Image src=""> runtime errors. Resolves to an
     // allowed remote image or a sport-appropriate local asset.
-    image: resolveEventImage(db.image_url, db.sport_type),
+    image: resolveEventImage(db.image_url, db.sport_type, db.title),
     date: db.event_date,
     time: db.start_time && db.end_time
       ? `${db.start_time} - ${db.end_time}`

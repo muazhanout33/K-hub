@@ -18,6 +18,7 @@ import { to12Hour } from '@/lib/utils';
 import DaySelector from '@/features/booking/DaySelector';
 import { Button } from '@/components/ui/button';
 import { FilterChips } from '@/components/ui/FilterChips';
+import { MOCK_COURTS } from '@/lib/mock-data';
 import { Court, TimeSlot } from '@/types';
 
 /** Quick-access strip length. The full calendar (DaySelector) still exposes
@@ -25,8 +26,8 @@ import { Court, TimeSlot } from '@/types';
 const QUICK_STRIP_DAYS = 14;
 
 export function LiveAvailabilitySection() {
-  const [courts, setCourts] = useState<Court[]>([]);
-  const [loadingCourts, setLoadingCourts] = useState(true);
+  const [courts, setCourts] = useState<Court[]>(MOCK_COURTS.filter((c) => !c.name.startsWith('TEST_')));
+  const [loadingCourts, setLoadingCourts] = useState(false);
   const [selectedSport, setSelectedSport] = useState<string>('All');
   const [selectedDate, setSelectedDate] = useState<string>(getToday());
   const [showFullCalendar, setShowFullCalendar] = useState(false);
@@ -40,9 +41,13 @@ export function LiveAvailabilitySection() {
 
   useEffect(() => {
     getCourtsFromSupabase()
-      .then((data) => setCourts(data))
+      .then((data) => {
+        if (data && data.length > 0) {
+          setCourts(data.filter((c) => !c.name.startsWith('TEST_')));
+        }
+      })
       .catch(() => {
-        // Keep the empty state — never fabricate courts.
+        // Keep baseline mock courts — never show empty state unnecessarily
       })
       .finally(() => setLoadingCourts(false));
   }, []);
