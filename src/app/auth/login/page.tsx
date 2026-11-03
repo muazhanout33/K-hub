@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import LoginForm from './LoginForm';
 
 export const metadata: Metadata = {
-  title: 'Login | K-HUB Sports Club',
+  title: 'Sign In | WEGO Sports',
 };
 
 export default function LoginPage() {

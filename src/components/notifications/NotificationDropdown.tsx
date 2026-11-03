@@ -34,20 +34,20 @@ const TYPE_CONFIG: Record<
   NotificationType,
   { icon: React.ElementType; color: string; bg: string }
 > = {
-  booking_confirmed: { icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
-  booking_cancelled: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
-  booking_reminder: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50' },
-  booking_time_changed: { icon: AlertTriangle, color: 'text-orange-500', bg: 'bg-orange-50' },
-  payment_successful: { icon: CreditCard, color: 'text-green-600', bg: 'bg-green-50' },
-  payment_refunded: { icon: RotateCcw, color: 'text-blue-600', bg: 'bg-blue-50' },
-  subscription_expiring: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50' },
-  promo_offer: { icon: Gift, color: 'text-purple-500', bg: 'bg-purple-50' },
-  court_full: { icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
-  checkout_stuck: { icon: AlertTriangle, color: 'text-orange-500', bg: 'bg-orange-50' },
-  new_subscription: { icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
-  new_booking: { icon: CheckCircle2, color: 'text-blue-500', bg: 'bg-blue-50' },
-  info: { icon: Info, color: 'text-gray-500', bg: 'bg-gray-50' },
-  booking_expired: { icon: Clock, color: 'text-red-400', bg: 'bg-red-50' },
+  booking_confirmed: { icon: CheckCircle2, color: 'text-green-600 dark:text-[#4ADE80]', bg: 'bg-green-50 dark:bg-green-950/50' },
+  booking_cancelled: { icon: XCircle, color: 'text-red-500 dark:text-[#FCA5A5]', bg: 'bg-red-50 dark:bg-red-950/50' },
+  booking_reminder: { icon: Clock, color: 'text-amber-500 dark:text-[#FBBF24]', bg: 'bg-amber-50 dark:bg-amber-950/50' },
+  booking_time_changed: { icon: AlertTriangle, color: 'text-orange-500 dark:text-[#FB923C]', bg: 'bg-orange-50 dark:bg-orange-950/50' },
+  payment_successful: { icon: CreditCard, color: 'text-green-600 dark:text-[#4ADE80]', bg: 'bg-green-50 dark:bg-green-950/50' },
+  payment_refunded: { icon: RotateCcw, color: 'text-blue-600 dark:text-[#60A5FA]', bg: 'bg-blue-50 dark:bg-blue-950/50' },
+  subscription_expiring: { icon: AlertTriangle, color: 'text-amber-500 dark:text-[#FBBF24]', bg: 'bg-amber-50 dark:bg-amber-950/50' },
+  promo_offer: { icon: Gift, color: 'text-purple-500 dark:text-[#C084FC]', bg: 'bg-purple-50 dark:bg-purple-950/50' },
+  court_full: { icon: XCircle, color: 'text-red-500 dark:text-[#FCA5A5]', bg: 'bg-red-50 dark:bg-red-950/50' },
+  checkout_stuck: { icon: AlertTriangle, color: 'text-orange-500 dark:text-[#FB923C]', bg: 'bg-orange-50 dark:bg-orange-950/50' },
+  new_subscription: { icon: CheckCircle2, color: 'text-green-600 dark:text-[#4ADE80]', bg: 'bg-green-50 dark:bg-green-950/50' },
+  new_booking: { icon: CheckCircle2, color: 'text-blue-500 dark:text-[#60A5FA]', bg: 'bg-blue-50 dark:bg-blue-950/50' },
+  info: { icon: Info, color: 'text-gray-500 dark:text-[#8A9A8E]', bg: 'bg-gray-50 dark:bg-[#1D2821]' },
+  booking_expired: { icon: Clock, color: 'text-red-400 dark:text-[#FCA5A5]', bg: 'bg-red-50 dark:bg-red-950/50' },
 };
 
 function timeAgo(dateStr: string): string {
@@ -146,17 +146,17 @@ export function NotificationDropdown({ onClose, triggerRef }: Props) {
     : {};
 
   const containerClass = isMobile
-    ? 'max-h-[520px] bg-white rounded-[var(--radius-xl)] border border-gray-200 shadow-2xl z-50 flex flex-col overflow-hidden'
-    : 'absolute right-0 top-full mt-2 w-[380px] max-h-[520px] bg-white rounded-[var(--radius-xl)] border border-gray-200 shadow-2xl z-50 flex flex-col overflow-hidden';
+    ? 'max-h-[520px] bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] border border-gray-200 dark:border-[#344239] shadow-2xl z-50 flex flex-col overflow-hidden'
+    : 'absolute right-0 top-full mt-2 w-[380px] max-h-[520px] bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] border border-gray-200 dark:border-[#344239] shadow-2xl z-50 flex flex-col overflow-hidden';
 
   const dropdownContent = (
     <div ref={dropdownRef} className={containerClass} style={positionedStyle}>
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-[#344239] flex items-center justify-between">
         <div>
-          <h3 className="font-extrabold text-sm text-gray-900">Notifications</h3>
+          <h3 className="font-extrabold text-sm text-gray-900 dark:text-[#F5F7F5]">Notifications</h3>
           {unreadCount > 0 && (
-            <p className="text-[11px] text-gray-400 font-medium mt-0.5">
+            <p className="text-[11px] text-gray-400 dark:text-[#8A9A8E] font-medium mt-0.5">
               {unreadCount} unread
             </p>
           )}
@@ -164,7 +164,7 @@ export function NotificationDropdown({ onClose, triggerRef }: Props) {
         {unreadCount > 0 && (
           <button
             onClick={() => markAllAsRead(user.id)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-[#16A34A] hover:text-[#15803D] transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-semibold text-[#16A34A] hover:text-[#15803D] dark:text-[#4ADE80] dark:hover:text-[#86EFAC] transition-colors cursor-pointer"
           >
             <CheckCheck className="w-3.5 h-3.5" />
             Mark all read
@@ -176,11 +176,11 @@ export function NotificationDropdown({ onClose, triggerRef }: Props) {
       <div className="flex-1 overflow-y-auto">
         {recent.length === 0 ? (
           <div className="py-12 text-center">
-            <Info className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-400 font-medium">No notifications yet</p>
+            <Info className="w-8 h-8 text-gray-300 dark:text-[#344239] mx-auto mb-2" />
+            <p className="text-sm text-gray-400 dark:text-[#8A9A8E] font-medium">No notifications yet</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50 dark:divide-[#344239]/60">
             {recent.map((n) => {
               const config = TYPE_CONFIG[n.type] || TYPE_CONFIG.info;
               const Icon = config.icon;
@@ -188,8 +188,8 @@ export function NotificationDropdown({ onClose, triggerRef }: Props) {
               return (
                 <div
                   key={n.id}
-                  className={`px-5 py-3.5 flex items-start gap-3 hover:bg-gray-50/60 transition-colors ${
-                    !n.isRead ? 'bg-green-50/30' : ''
+                  className={`px-5 py-3.5 flex items-start gap-3 hover:bg-gray-50/60 dark:hover:bg-[#26332A] transition-colors ${
+                    !n.isRead ? 'bg-green-50/30 dark:bg-[#16A34A]/10' : ''
                   }`}
                 >
                   {/* Icon */}
@@ -205,17 +205,17 @@ export function NotificationDropdown({ onClose, triggerRef }: Props) {
                       <p
                         className={`text-[13px] leading-snug ${
                           !n.isRead
-                            ? 'font-bold text-gray-900'
-                            : 'font-semibold text-gray-700'
+                            ? 'font-bold text-gray-900 dark:text-[#F5F7F5]'
+                            : 'font-semibold text-gray-700 dark:text-[#A1ADA4]'
                         }`}
                       >
                         {n.title}
                       </p>
-                      <span className="text-[10px] text-gray-400 whitespace-nowrap mt-0.5">
+                      <span className="text-[10px] text-gray-400 dark:text-[#8A9A8E] whitespace-nowrap mt-0.5">
                         {timeAgo(n.createdAt)}
                       </span>
                     </div>
-                    <p className="text-[12px] text-gray-500 leading-relaxed mt-0.5 line-clamp-2">
+                    <p className="text-[12px] text-gray-500 dark:text-[#8A9A8E] leading-relaxed mt-0.5 line-clamp-2">
                       {n.message}
                     </p>
 
@@ -227,7 +227,7 @@ export function NotificationDropdown({ onClose, triggerRef }: Props) {
                             e.stopPropagation();
                             markAsRead(n.id);
                           }}
-                          className="text-[10px] font-semibold text-[#16A34A] hover:text-[#15803D] cursor-pointer"
+                          className="text-[10px] font-semibold text-[#16A34A] hover:text-[#15803D] dark:text-[#4ADE80] cursor-pointer"
                         >
                           Mark read
                         </button>
@@ -237,7 +237,7 @@ export function NotificationDropdown({ onClose, triggerRef }: Props) {
                           e.stopPropagation();
                           deleteNotification(n.id);
                         }}
-                        className="text-[10px] font-semibold text-gray-400 hover:text-red-500 cursor-pointer flex items-center gap-0.5"
+                        className="text-[10px] font-semibold text-gray-400 dark:text-[#8A9A8E] hover:text-red-500 dark:hover:text-red-400 cursor-pointer flex items-center gap-0.5"
                       >
                         <Trash2 className="w-3 h-3" />
                         Delete
@@ -258,11 +258,11 @@ export function NotificationDropdown({ onClose, triggerRef }: Props) {
 
       {/* Footer — View All link */}
       {userNotifications.length > 0 && (
-        <div className="border-t border-gray-100 px-5 py-3">
+        <div className="border-t border-gray-100 dark:border-[#344239] px-5 py-3">
           <Link
             href="/notifications"
             onClick={onClose}
-            className="flex items-center justify-center gap-1.5 text-[12px] font-bold text-[#16A34A] hover:text-[#15803D] transition-colors"
+            className="flex items-center justify-center gap-1.5 text-[12px] font-bold text-[#16A34A] hover:text-[#15803D] dark:text-[#4ADE80] transition-colors"
           >
             View all notifications
             <ChevronRight className="w-3.5 h-3.5" />

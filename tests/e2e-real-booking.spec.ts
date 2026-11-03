@@ -44,8 +44,28 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000';
 const TEST_COURT_1 = '00000000-0000-4000-8000-000000000001';
 const TEST_COURT_2 = '00000000-0000-4000-8000-000000000002';
 
-// Future date — safe to book without conflict
-const TARGET_DATE = '2026-09-15';
+// Deterministic valid future date: the 20th of the month following the current
+// Africa/Cairo month (mirrors the app's getToday() clock). Always strictly in
+// the future, always inside the DaySelector calendar window (today → end of
+// next month), and always a two-digit day so the locator below matches exactly
+// one day button per month.
+const TARGET_DATE = (() => {
+  const cairoToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date());
+  const [year, month] = cairoToday.split('-').map(Number);
+  const nextYear = month === 12 ? year + 1 : year;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  return `${nextYear}-${String(nextMonth).padStart(2, '0')}-20`;
+})();
+const TARGET_DAY = String(Number(TARGET_DATE.slice(8, 10)));
+const TARGET_MONTH_RE = new RegExp(
+  new Date(`${TARGET_DATE}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }),
+  'i',
+);
+
+/** Locator for the DaySelector button of TARGET_DATE (day number + month label). */
+function targetDayButton(page: Page) {
+  return page.locator('button').filter({ hasText: TARGET_DAY }).filter({ hasText: TARGET_MONTH_RE });
+}
 
 // Default slot (used by UI flow tests that create then verify)
 const TARGET_SLOT_START = '14:00';
@@ -63,7 +83,7 @@ const SLOTS = {
   '12.3.1': { start: '14:00', end: '15:00', range: '[2026-09-15 14:00:00+03,2026-09-15 15:00:00+03)' },
   '12.3.2': { start: '15:00', end: '16:00', range: '[2026-09-15 15:00:00+03,2026-09-15 16:00:00+03)' },
   '12.3.3': { start: '16:00', end: '17:00', range: '[2026-09-15 16:00:00+03,2026-09-15 17:00:00+03)' },
-  '12.4.1': { start: '17:00', end: '18:00', range: '[2026-09-15 17:00:00+03,2026-09-15 18:00:00+03)', utcRange: '[2026-09-15 17:00:00+00,2026-09-15 18:00:00+00)' },
+  '12.4.1': { start: '17:00', end: '18:00', range: '[2026-09-15 17:00:00+03,2026-09-15 18:00:00+03)', utcRange: `[${TARGET_DATE} 17:00:00+00,${TARGET_DATE} 18:00:00+00)` },
   '12.4.2': { start: '18:00', end: '19:00', range: '[2026-09-15 18:00:00+03,2026-09-15 19:00:00+03)' },
   '12.4.3': { start: '09:00', end: '10:00', range: '[2026-09-15 09:00:00+03,2026-09-15 10:00:00+03)', secondRange: '[2026-09-15 10:00:00+03,2026-09-15 11:00:00+03)' },
   '12.4.4': { start: '19:00', end: '20:00', range: '[2026-09-15 19:00:00+03,2026-09-15 20:00:00+03)' },
@@ -143,8 +163,14 @@ async function loginAs(
   await page.locator('input[placeholder="Enter your password"]').fill(password);
   await page.getByRole('button', { name: 'Sign In' }).click();
 
-  // Wait for real Supabase Auth to complete and redirect to /book
-  await page.waitForURL('**/book', { timeout: 30000 });
+  // Wait for real Supabase Auth to complete and leave the login page.
+  // The post-login landing URL varies by role (/book for users, /admin for
+  // admins), so do not assume a specific destination.
+  await page.waitForFunction(
+    () => !window.location.pathname.startsWith('/auth/login'),
+    undefined,
+    { timeout: 30000 }
+  );
 
   return { context, page };
 }
@@ -265,8 +291,8 @@ test.describe('12.1 Real Booking — Full Flow', () => {
       await expect(page.getByText('TEST_COURT_1')).toBeVisible();
       await expect(page.getByText('EGP 100/hr')).toBeVisible();
 
-      // Select September 15 in the day selector
-      const dayBtn = page.locator('button').filter({ hasText: '15' }).filter({ hasText: /Sep/i });
+      // Select TARGET_DATE in the day selector
+      const dayBtn = targetDayButton(page);
       await dayBtn.click();
       await page.waitForTimeout(1000);
 
@@ -349,7 +375,7 @@ test.describe('12.2 Ownership Validation', () => {
     );
     await seedCourtSelection(pageA, TEST_COURT_1, 'TEST_COURT_1', 100);
     await pageA.goto(`${BASE_URL}/book`, { waitUntil: 'domcontentloaded' });
-    const dayBtn = pageA.locator('button').filter({ hasText: '15' }).filter({ hasText: /Sep/i });
+    const dayBtn = targetDayButton(pageA);
     await dayBtn.click();
     await pageA.waitForTimeout(500);
     await pageA.locator('button.slot-available', { hasText: TARGET_SLOT_12H }).click();
@@ -378,7 +404,7 @@ test.describe('12.2 Ownership Validation', () => {
     );
     await seedCourtSelection(pageA, TEST_COURT_2, 'TEST_COURT_2', 150);
     await pageA.goto(`${BASE_URL}/book`, { waitUntil: 'domcontentloaded' });
-    const dayBtn = pageA.locator('button').filter({ hasText: '15' }).filter({ hasText: /Sep/i });
+    const dayBtn = targetDayButton(pageA);
     await dayBtn.click();
     await pageA.waitForTimeout(500);
     // 15:00-16:00 = "3:00 PM – 4:00 PM" — free slot on TEST_COURT_2
@@ -617,7 +643,7 @@ test.describe('12.4 Overlap Rejection', () => {
     );
     await seedCourtSelection(pageA, TEST_COURT_1, 'TEST_COURT_1', 100);
     await pageA.goto(`${BASE_URL}/book`, { waitUntil: 'domcontentloaded' });
-    const dayBtn = pageA.locator('button').filter({ hasText: '15' }).filter({ hasText: /Sep/i });
+    const dayBtn = targetDayButton(pageA);
     await dayBtn.click();
     await pageA.waitForTimeout(500);
     // 17:00-18:00 = "5:00 PM – 6:00 PM" — free slot on TEST_COURT_1
@@ -892,9 +918,9 @@ test.describe('12.5 Concurrency — Race Condition Test', () => {
       await pageA.goto(`${BASE_URL}/book`, { waitUntil: 'domcontentloaded' });
       await pageB.goto(`${BASE_URL}/book`, { waitUntil: 'domcontentloaded' });
 
-      // Both select September 15
-      await pageA.locator('button').filter({ hasText: '15' }).filter({ hasText: /Sep/i }).click();
-      await pageB.locator('button').filter({ hasText: '15' }).filter({ hasText: /Sep/i }).click();
+      // Both select TARGET_DATE
+      await targetDayButton(pageA).click();
+      await targetDayButton(pageB).click();
       await pageA.waitForTimeout(500);
       await pageB.waitForTimeout(500);
 
@@ -976,7 +1002,7 @@ test.describe('12.6 Admin Booking Authorization', () => {
       // Admin books TEST_COURT_1
       await seedCourtSelection(page, TEST_COURT_1, 'TEST_COURT_1', 100);
       await page.goto(`${BASE_URL}/book`, { waitUntil: 'domcontentloaded' });
-      const dayBtn = page.locator('button').filter({ hasText: '15' }).filter({ hasText: /Sep/i });
+      const dayBtn = targetDayButton(page);
       await dayBtn.click();
       await page.waitForTimeout(500);
       await page.locator('button.slot-available', { hasText: TARGET_SLOT_12H }).click();
@@ -1031,7 +1057,7 @@ test.describe('12.7 Payment Boundary', () => {
     try {
       await seedCourtSelection(page, TEST_COURT_1, 'TEST_COURT_1', 100);
       await page.goto(`${BASE_URL}/book`, { waitUntil: 'domcontentloaded' });
-      const dayBtn = page.locator('button').filter({ hasText: '15' }).filter({ hasText: /Sep/i });
+      const dayBtn = targetDayButton(page);
       await dayBtn.click();
       await page.waitForTimeout(500);
       await page.locator('button.slot-available', { hasText: TARGET_SLOT_12H }).click();

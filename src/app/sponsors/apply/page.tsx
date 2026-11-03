@@ -133,25 +133,25 @@ export default function BecomeASponsorPage() {
       <div className="min-h-[80vh] flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-lg text-center space-y-6">
           <div className="flex justify-center">
-            <div className="w-20 h-20 rounded-3xl bg-green-50 border border-green-200 flex items-center justify-center shadow-sm">
-              <CheckCircle2 className="w-10 h-10 text-green-600" />
+            <div className="w-20 h-20 rounded-3xl bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800/40 flex items-center justify-center shadow-sm">
+              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-[#4ADE80]" />
             </div>
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-black text-gray-900">Request Submitted!</h1>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-[#F5F7F5]">Request Submitted!</h1>
             <p className="text-muted leading-relaxed max-w-md mx-auto">
               Thank you, <strong>{contactName}</strong>. Your sponsorship request from{' '}
               <strong>{companyName}</strong> has been received and is now{' '}
-              <span className="text-amber-600 font-bold">Pending review</span>. Our team will
+              <span className="text-amber-600 dark:text-amber-400 font-bold">Pending review</span>. Our team will
               reach out to you at <strong>{email}</strong>.
             </p>
           </div>
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-5 text-left space-y-2 text-sm">
+          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/40 rounded-2xl p-5 text-left space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Target</span>
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-gray-900 dark:text-[#F5F7F5]">
                 {targetType === 'Club'
-                  ? 'K-HUB Club (Club-wide)'
+                  ? 'WEGO Club (Club-wide)'
                   : targetType === 'Court'
                    ? courts.find((c) => c.id === targetId)?.name ?? targetId
                   : targetId}
@@ -159,7 +159,7 @@ export default function BecomeASponsorPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Proposed Amount</span>
-              <span className="font-semibold text-gray-900">
+              <span className="font-semibold text-gray-900 dark:text-[#F5F7F5]">
                 {Number(proposedAmount).toLocaleString()} EGP{' '}
                 <span className="text-muted font-normal">
                   / {PRICING_TYPE_LABELS[pricingType]}
@@ -168,7 +168,7 @@ export default function BecomeASponsorPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted">Status</span>
-              <span className="font-bold text-amber-600">Pending</span>
+              <span className="font-bold text-amber-600 dark:text-amber-400">Pending</span>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -203,7 +203,7 @@ export default function BecomeASponsorPage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-white border-b border-gray-200/80 py-8 sm:py-12">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-8 sm:py-12">
         <SiteContainer>
           <div className="page-hero-inner page-hero-inner--center">
             <div className="flex justify-center">
@@ -211,14 +211,14 @@ export default function BecomeASponsorPage() {
                 Partnership Enquiry
               </Badge>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight leading-[1.05]">
-              Become a K-HUB Sponsor
+            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight leading-[1.05]">
+              Become a WEGO Sponsor
             </h1>
             <p className="text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
               Fill in the form below to submit a sponsorship enquiry. Our team will review your
               proposal and get back to you within 3–5 business days.
             </p>
-            <Link href="/sponsors" className="inline-flex items-center gap-1.5 text-sm text-green-700 font-semibold hover:underline mt-2">
+            <Link href="/sponsors" className="inline-flex items-center gap-1.5 text-sm text-green-700 dark:text-[#4ADE80] font-semibold hover:underline mt-2">
               <ArrowLeft className="icon-inline" />
               Back to Sponsors
             </Link>
@@ -232,19 +232,19 @@ export default function BecomeASponsorPage() {
           <form
             id="sponsor-apply-form"
             onSubmit={handleSubmit}
-            className="bg-white border border-gray-200 rounded-3xl shadow-sm p-5 sm:p-8 space-y-6 sm:space-y-8"
+            className="bg-white dark:bg-[#1D2821] border border-gray-200 dark:border-[#344239] rounded-3xl shadow-sm p-5 sm:p-8 space-y-6 sm:space-y-8"
             noValidate
           >
             {/* ── Contact Details ── */}
             <fieldset className="space-y-5">
-              <legend className="text-base font-black text-gray-900 flex items-center gap-2 pb-1 border-b border-gray-100 w-full">
-                <Building2 className="icon-feature text-green-600" />
+              <legend className="text-base font-black text-gray-900 dark:text-[#F5F7F5] flex items-center gap-2 pb-1 border-b border-gray-100 dark:border-[#344239] w-full">
+                <Building2 className="icon-feature text-green-600 dark:text-[#4ADE80]" />
                 Company &amp; Contact Details
               </legend>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="sponsor-company-name" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  <label htmlFor="sponsor-company-name" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">
                     Company Name *
                   </label>
                   <input
@@ -258,7 +258,7 @@ export default function BecomeASponsorPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="sponsor-contact-name" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  <label htmlFor="sponsor-contact-name" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">
                     Contact Name *
                   </label>
                   <input
@@ -275,7 +275,7 @@ export default function BecomeASponsorPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="sponsor-email" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  <label htmlFor="sponsor-email" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">
                     Email Address *
                   </label>
                   <input
@@ -289,7 +289,7 @@ export default function BecomeASponsorPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="sponsor-phone" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  <label htmlFor="sponsor-phone" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">
                     Phone Number *
                   </label>
                   <input
@@ -307,14 +307,14 @@ export default function BecomeASponsorPage() {
 
             {/* ── Sponsorship Target ── */}
             <fieldset className="space-y-5">
-              <legend className="text-base font-black text-gray-900 flex items-center gap-2 pb-1 border-b border-gray-100 w-full">
-                <Target className="icon-feature text-green-600" />
+              <legend className="text-base font-black text-gray-900 dark:text-[#F5F7F5] flex items-center gap-2 pb-1 border-b border-gray-100 dark:border-[#344239] w-full">
+                <Target className="icon-feature text-green-600 dark:text-[#4ADE80]" />
                 Sponsorship Target
               </legend>
 
               {/* Target type selector */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-2">
+                <label className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-2">
                   What would you like to sponsor? *
                 </label>
                 <div className="filter-chip-group flex-wrap gap-1" role="radiogroup" aria-label="Sponsorship target type">
@@ -337,7 +337,7 @@ export default function BecomeASponsorPage() {
               {/* Dependent picker */}
               {targetType === 'Court' && (
                 <div>
-                  <label htmlFor="sponsor-court-id" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  <label htmlFor="sponsor-court-id" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">
                     Select Court *
                   </label>
                   <select
@@ -357,7 +357,7 @@ export default function BecomeASponsorPage() {
 
               {targetType === 'FacilityArea' && (
                 <div>
-                  <label htmlFor="sponsor-area-id" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  <label htmlFor="sponsor-area-id" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">
                     Select Facility Area *
                   </label>
                   <select
@@ -376,8 +376,8 @@ export default function BecomeASponsorPage() {
               )}
 
               {targetType === 'Club' && (
-                <div className="bg-green-50 border border-green-100 rounded-xl px-4 py-3 text-sm text-green-800 font-medium">
-                  Club-wide sponsorship covers the entire K-HUB brand, all courts, and all
+                <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-800/40 rounded-xl px-4 py-3 text-sm text-green-800 dark:text-green-300 font-medium">
+                  Club-wide sponsorship covers the entire WEGO brand, all courts, and all
                   facilities.
                 </div>
               )}
@@ -385,7 +385,7 @@ export default function BecomeASponsorPage() {
 
             {/* ── Budget & Pricing ── */}
             <fieldset className="space-y-5">
-              <legend className="text-base font-black text-gray-900 pb-1 border-b border-gray-100 w-full">
+              <legend className="text-base font-black text-gray-900 dark:text-[#F5F7F5] pb-1 border-b border-gray-100 dark:border-[#344239] w-full">
                 Proposed Budget
               </legend>
 
@@ -407,7 +407,7 @@ export default function BecomeASponsorPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="sponsor-pricing-type" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+                  <label htmlFor="sponsor-pricing-type" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">
                     Pricing Type *
                   </label>
                   <select
@@ -425,7 +425,7 @@ export default function BecomeASponsorPage() {
               {proposedAmount && !isNaN(parseFloat(proposedAmount)) && parseFloat(proposedAmount) > 0 && (
                 <p className="text-xs text-muted">
                   Your proposal:{' '}
-                  <strong className="text-gray-900">
+                  <strong className="text-gray-900 dark:text-[#F5F7F5]">
                     {Number(proposedAmount).toLocaleString()} EGP
                   </strong>{' '}
                   {PRICING_TYPE_LABELS[pricingType]?.toLowerCase()}
@@ -435,7 +435,7 @@ export default function BecomeASponsorPage() {
 
             {/* ── Requested Benefits ── */}
             <fieldset className="space-y-4">
-              <legend className="text-base font-black text-gray-900 pb-1 border-b border-gray-100 w-full">
+              <legend className="text-base font-black text-gray-900 dark:text-[#F5F7F5] pb-1 border-b border-gray-100 dark:border-[#344239] w-full">
                 Requested Benefits{' '}
                 <span className="text-xs font-normal text-muted">(optional)</span>
               </legend>
@@ -471,14 +471,14 @@ export default function BecomeASponsorPage() {
                   {requestedBenefits.map((b) => (
                     <span
                       key={b}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-xs font-semibold text-green-800"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800/40 text-xs font-semibold text-green-800 dark:text-green-300"
                     >
                       {b}
                       <button
                         type="button"
                         onClick={() => removeBenefit(b)}
                         aria-label={`Remove benefit: ${b}`}
-                        className="hover:text-red-600 transition-colors"
+                        className="hover:text-red-600 dark:hover:text-red-400 transition-colors"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -490,7 +490,7 @@ export default function BecomeASponsorPage() {
 
             {/* ── Requested Placement ── */}
             <fieldset className="space-y-4">
-              <legend className="text-base font-black text-gray-900 pb-1 border-b border-gray-100 w-full">
+              <legend className="text-base font-black text-gray-900 dark:text-[#F5F7F5] pb-1 border-b border-gray-100 dark:border-[#344239] w-full">
                 Placement Preferences{' '}
                 <span className="text-xs font-normal text-muted">(optional)</span>
               </legend>
@@ -508,8 +508,8 @@ export default function BecomeASponsorPage() {
                     onClick={() => togglePlacement(opt)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                       selectedPlacements.includes(opt)
-                        ? 'bg-green-600 text-white border-green-600'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-green-400 hover:text-green-700'
+                        ? 'bg-green-600 text-white border-green-600 dark:bg-[#16A34A] dark:text-[#101512] dark:border-[#16A34A]'
+                        : 'bg-white dark:bg-[#171F1A] text-gray-700 dark:text-[#F5F7F5] border-gray-200 dark:border-[#344239] hover:border-green-400 dark:hover:border-[#4ADE80] hover:text-green-700 dark:hover:text-[#4ADE80]'
                     }`}
                   >
                     {opt}
@@ -520,7 +520,7 @@ export default function BecomeASponsorPage() {
 
             {/* ── Optional message ── */}
             <div>
-              <label htmlFor="sponsor-message" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">
+              <label htmlFor="sponsor-message" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">
                 Additional Message{' '}
                 <span className="text-xs font-normal normal-case text-muted">(optional)</span>
               </label>

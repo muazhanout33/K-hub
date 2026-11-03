@@ -14,10 +14,10 @@ interface BookingDetailsDrawerProps {
 }
 
 function statusPillClass(status: Booking['status']) {
-  if (status === 'Confirmed') return 'bg-green-100 text-green-700';
-  if (status === 'Cancelled') return 'bg-red-100 text-red-700';
-  if (status === 'Expired') return 'bg-gray-100 text-gray-500';
-  return 'bg-yellow-100 text-yellow-700';
+  if (status === 'Confirmed') return 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-[#4ADE80]';
+  if (status === 'Cancelled') return 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400';
+  if (status === 'Expired') return 'bg-gray-100 text-gray-500 dark:bg-[#171F1A] dark:text-[#8A9A8E]';
+  return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/60 dark:text-yellow-400';
 }
 
 function formatCreatedAt(iso: string) {
@@ -97,7 +97,7 @@ export function BookingDetailsDrawer({
   return (
     <div className="fixed inset-0 z-50" role="presentation">
       <div
-        className="absolute inset-0 bg-slate-900/40"
+        className="absolute inset-0 bg-slate-900/40 dark:bg-black/70"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -106,7 +106,7 @@ export function BookingDetailsDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={`Booking details ${booking.bookingNumber}`}
-        className="absolute inset-y-0 right-0 w-full sm:w-[420px] max-w-full bg-white border-l border-[var(--border)] shadow-[var(--shadow-floating)] flex flex-col"
+        className="absolute inset-y-0 right-0 w-full sm:w-[420px] max-w-full bg-white dark:bg-[#1D2821] border-l border-[var(--border)] shadow-[var(--shadow-floating)] flex flex-col"
       >
         {/* Header */}
         <div className="flex items-center justify-between gap-3 px-5 h-[64px] border-b border-[var(--border)] shrink-0">
@@ -231,7 +231,7 @@ export function BookingDetailsDrawer({
               type="button"
               onClick={() => onCancel(booking)}
               disabled={busy}
-              className="rounded-[var(--radius-md)] px-3 py-2 text-xs font-bold text-red-600 border border-red-200 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-[var(--radius-md)] px-3 py-2 text-xs font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel booking
             </button>

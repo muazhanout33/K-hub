@@ -88,8 +88,13 @@ export function BlockedPeriodsManager() {
       toast.error('Please fill in date and reason.');
       return;
     }
-    if (startTime === endTime) {
-      toast.error('Start and end times cannot be the same.');
+    // Same rule as /admin/blocked-periods and the server action
+    // (createBlockedPeriodAction): end must be strictly after start — an
+    // equal/end-before-start pair would otherwise roll into a next-day
+    // (24h) block at the range helper or fail the insert and leave a
+    // garbage local-only entry behind.
+    if (endTime <= startTime) {
+      toast.error('End time must be after start time.');
       return;
     }
 
@@ -155,19 +160,19 @@ export function BlockedPeriodsManager() {
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-        <ShieldOff className="w-4 h-4 text-gray-500" />
-        <h2 className="text-sm font-bold text-gray-700 uppercase">Blocked Periods</h2>
+    <div className="bg-white dark:bg-[#1D2821] rounded-2xl border border-gray-200 dark:border-[#344239] overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-100 dark:border-[#344239] flex items-center gap-2">
+        <ShieldOff className="w-4 h-4 text-gray-500 dark:text-[#8A9A8E]" />
+        <h2 className="text-sm font-bold text-gray-700 dark:text-[#F5F7F5] uppercase">Blocked Periods</h2>
       </div>
 
       {/* Add form */}
-      <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="px-6 py-4 border-b border-gray-100 dark:border-[#344239] bg-gray-50/50 dark:bg-[#171F1A]">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <select
             value={courtId}
             onChange={(e) => setCourtId(e.target.value)}
-            className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 bg-white"
+            className="rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-xs font-medium text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#1D2821]"
           >
             {courts.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -177,32 +182,32 @@ export function BlockedPeriodsManager() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700"
+            className="rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-xs font-medium text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#1D2821]"
             placeholder="Date"
           />
           <input
             type="time"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
-            className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700"
+            className="rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-xs font-medium text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#1D2821]"
           />
           <input
             type="time"
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
-            className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700"
+            className="rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-xs font-medium text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#1D2821]"
           />
           <div className="flex gap-2">
             <input
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700"
+              className="flex-1 rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-xs font-medium text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#1D2821]"
               placeholder="Reason"
             />
             <button
               onClick={handleAdd}
-              className="px-4 py-2 rounded-xl bg-gray-900 text-white text-xs font-bold hover:bg-gray-800 transition-colors flex items-center gap-1 shrink-0"
+              className="px-4 py-2 rounded-xl bg-gray-900 dark:bg-[#16A34A] text-white dark:text-[#101512] text-xs font-bold hover:bg-gray-800 dark:hover:bg-[#22C55E] transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
             >
               <Plus className="w-3 h-3" /> Add
             </button>
@@ -212,15 +217,15 @@ export function BlockedPeriodsManager() {
 
       {/* List */}
       {sorted.length === 0 ? (
-        <div className="px-6 py-10 text-center text-sm text-gray-500 flex flex-col items-center gap-2">
-          <CalendarOff className="w-6 h-6 text-gray-400" />
+        <div className="px-6 py-10 text-center text-sm text-gray-500 dark:text-[#8A9A8E] flex flex-col items-center gap-2">
+          <CalendarOff className="w-6 h-6 text-gray-400 dark:text-[#8A9A8E]" />
           <p>No blocked periods defined.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-xs font-bold text-gray-500 uppercase border-b border-gray-100">
+              <tr className="text-xs font-bold text-gray-500 dark:text-[#8A9A8E] uppercase border-b border-gray-100 dark:border-[#344239]">
                 <th className="px-6 py-3 text-left">Court</th>
                 <th className="px-6 py-3 text-left">Date</th>
                 <th className="px-6 py-3 text-left">Time</th>
@@ -228,15 +233,15 @@ export function BlockedPeriodsManager() {
                 <th className="px-6 py-3 text-left">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-50 dark:divide-[#344239]">
               {sorted.map((bp) => {
                 const court = courts.find((c) => c.id === bp.courtId);
                 return (
-                  <tr key={bp.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-3 text-gray-700 font-medium">{court?.name || bp.courtId}</td>
-                    <td className="px-6 py-3 text-gray-700">{bp.date}</td>
-                    <td className="px-6 py-3 text-gray-700">{bp.startTime}–{bp.endTime}</td>
-                    <td className="px-6 py-3 text-gray-700">{bp.reason}</td>
+                  <tr key={bp.id} className="hover:bg-gray-50 dark:hover:bg-[#171F1A] transition-colors">
+                    <td className="px-6 py-3 text-gray-700 dark:text-[#F5F7F5] font-medium">{court?.name || bp.courtId}</td>
+                    <td className="px-6 py-3 text-gray-700 dark:text-[#F5F7F5]">{bp.date}</td>
+                    <td className="px-6 py-3 text-gray-700 dark:text-[#F5F7F5]">{bp.startTime}–{bp.endTime}</td>
+                    <td className="px-6 py-3 text-gray-700 dark:text-[#F5F7F5]">{bp.reason}</td>
                     <td className="px-6 py-3">
                       <button
                         onClick={() => handleRemove(bp.id)}

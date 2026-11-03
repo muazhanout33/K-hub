@@ -41,7 +41,7 @@ export default function DaySelector({
           <div key={month.key} className="flex items-start shrink-0">
             {/* Month label */}
             <div className="flex items-center shrink-0">
-              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest whitespace-nowrap bg-white/80 backdrop-blur-sm px-1 py-1 rounded">
+              <span className="text-[10px] font-semibold text-gray-400 dark:text-[#8A9A8E] uppercase tracking-widest whitespace-nowrap bg-white/80 dark:bg-[#1D2821]/80 backdrop-blur-sm px-1 py-1 rounded">
                 {month.label}
               </span>
             </div>
@@ -88,22 +88,22 @@ function DayButton({
         transition-all duration-200 cursor-pointer shrink-0
         ${
           isSelected
-            ? 'border-[var(--primary)] bg-[var(--primary)] text-white shadow-md'
-            : 'border-gray-200 bg-white hover:border-[var(--primary)] hover:bg-green-50 text-gray-700'
+            ? 'border-[var(--primary)] bg-[var(--primary)] text-white dark:text-[#101512] shadow-md'
+            : 'border-gray-200 dark:border-[#344239] bg-white dark:bg-[#171F1A] hover:border-[var(--primary)] hover:bg-green-50 dark:hover:bg-[#26332A] text-gray-700 dark:text-[#F5F7F5]'
         }
-        ${item.isToday && !isSelected ? 'ring-2 ring-[var(--primary)] ring-offset-1' : ''}
+        ${item.isToday && !isSelected ? 'ring-2 ring-[var(--primary)] ring-offset-1 dark:ring-offset-[#1D2821]' : ''}
       `}
     >
       <span
         className={`text-xs font-medium uppercase tracking-wide ${
-          isSelected ? 'text-white/80' : 'text-gray-500'
+          isSelected ? 'text-white/80 dark:text-[#101512]/80' : 'text-gray-500 dark:text-[#8A9A8E]'
         }`}
       >
         {item.dayName}
       </span>
       <span className={`text-lg font-bold`}>{item.dayNumber}</span>
       <span
-        className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-gray-400'}`}
+        className={`text-[10px] ${isSelected ? 'text-white/80 dark:text-[#101512]/80' : 'text-gray-400 dark:text-[#8A9A8E]'}`}
       >
         {item.monthName}
       </span>

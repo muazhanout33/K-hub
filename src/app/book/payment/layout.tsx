@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Payment | K-HUB Sports Club',
+  title: 'Payment | WEGO Sports',
 };
 
 export default function BookPaymentLayout({ children }: { children: React.ReactNode }) {

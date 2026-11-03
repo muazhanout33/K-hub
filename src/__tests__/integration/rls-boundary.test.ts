@@ -9,6 +9,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 
 // ── Mock factories ──────────────────────────────────────────────────────────
 
@@ -391,17 +393,39 @@ describe('RLS — Contact Submissions', () => {
 // ── System Settings ─────────────────────────────────────────────────────────
 
 describe('RLS — System Settings', () => {
-  it('SELECT is public (non-sensitive settings only)', () => {
-    // Policy: "Public read non-sensitive settings" — FOR SELECT USING (true)
-    const POLICY = 'FOR SELECT USING (true)';
-    expect(POLICY).toBe('FOR SELECT USING (true)');
+  // Read the actual migration file (not a literal echoed back at itself):
+  // the public SELECT policy must be removed so anon/ordinary users cannot
+  // read admin settings. See supabase/migrations/20261101000000_*.
+  const migrationPath = path.resolve(
+    process.cwd(),
+    'supabase/migrations/20261101000000_restrict_system_settings_read.sql'
+  );
+  const migrationSql = fs.readFileSync(migrationPath, 'utf8');
+  // Executable SQL only — header/rollback comments may legitimately quote
+  // policy names; only real statements count as behavior.
+  const sql = migrationSql
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('--'))
+    .join('\n');
+
+  it('drops the public read policy (file prepared, applied separately)', () => {
+    expect(sql).toContain(
+      'DROP POLICY IF EXISTS "Public read non-sensitive settings" ON public.system_settings;'
+    );
+    // It only DROPS — the executable SQL must never (re-)create any policy
+    // or re-open a USING (true) read.
+    expect(sql).not.toMatch(/CREATE POLICY/);
+    expect(sql).not.toMatch(/USING \(true\)/);
   });
 
-  it('all mutations require admin role', () => {
+  it('admin full-access policy remains the surviving access path', () => {
     // Policy: "Admins manage system settings" — FOR ALL USING (public.is_admin())
+    // (defined in 20260822000000_initial_schema.sql; untouched by the new migration)
     const POLICY = 'FOR ALL USING (public.is_admin())';
     expect(POLICY).toContain('FOR ALL');
     expect(POLICY).toContain('public.is_admin()');
+    // The new migration's SQL must not drop or alter the admin policy.
+    expect(sql).not.toContain('Admins manage system settings');
   });
 });
 

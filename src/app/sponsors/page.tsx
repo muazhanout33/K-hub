@@ -16,7 +16,7 @@ export default function SponsorsPage() {
   return (
     <div>
       {/* Page hero */}
-      <section className="bg-white border-b border-gray-200/80 py-8 sm:py-12 text-center">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-8 sm:py-12 text-center">
         <SiteContainer>
           <div className="page-hero-inner page-hero-inner--center">
             <div className="flex justify-center">
@@ -24,11 +24,11 @@ export default function SponsorsPage() {
                 Club Partners & Sponsors
               </Badge>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight leading-[1.05]">
+            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight leading-[1.05]">
               Our Sponsors
             </h1>
             <p className="text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
-              K-HUB partners with companies that share our passion for sport, excellence, and
+              WEGO partners with companies that share our passion for sport, excellence, and
               community. Sponsorships support our facilities, events, and member experience.
             </p>
           </div>
@@ -48,7 +48,7 @@ export default function SponsorsPage() {
                     </div>
                     <Badge variant="subtle" size="xs">{sponsor.targetType}</Badge>
                   </div>
-                  <h3 className="font-black text-lg text-gray-900">{sponsor.companyName}</h3>
+                  <h3 className="font-black text-lg text-gray-900 dark:text-[#F5F7F5]">{sponsor.companyName}</h3>
                   <p className="text-xs text-muted mt-1 leading-relaxed">
                     Contact: {sponsor.contactName}
                   </p>
@@ -88,13 +88,13 @@ export default function SponsorsPage() {
           <div className="max-w-2xl mx-auto text-center space-y-8">
             {/* Icon cluster */}
             <div className="flex items-center justify-center gap-4">
-              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-green-50 border border-green-100 flex items-center justify-center shadow-sm">
-                <HandshakeIcon className="w-7 h-7 sm:w-10 sm:h-10 text-green-600" />
+              <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-green-50 dark:bg-green-950/40 border border-green-100 dark:border-green-800/40 flex items-center justify-center shadow-sm">
+                <HandshakeIcon className="w-7 h-7 sm:w-10 sm:h-10 text-green-600 dark:text-[#4ADE80]" />
               </div>
             </div>
 
             <div className="space-y-3">
-              <h2 className="text-xl sm:text-2xl font-black text-gray-900">
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-[#F5F7F5]">
                 No Active Sponsors Yet
               </h2>
               <p className="text-muted leading-relaxed max-w-lg mx-auto">
@@ -107,17 +107,17 @@ export default function SponsorsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
               {[
                 {
-                  icon: <Target className="w-5 h-5 text-green-600" />,
+                  icon: <Target className="w-5 h-5 text-green-600 dark:text-[#4ADE80]" />,
                   title: 'High Visibility',
-                  desc: 'Reach active sports enthusiasts who visit K-HUB regularly.',
+                  desc: 'Reach active sports enthusiasts who visit WEGO regularly.',
                 },
                 {
-                  icon: <Building2 className="w-5 h-5 text-green-600" />,
+                  icon: <Building2 className="w-5 h-5 text-green-600 dark:text-[#4ADE80]" />,
                   title: 'Flexible Targets',
                   desc: 'Sponsor the whole club, a specific court, or a facility area.',
                 },
                 {
-                  icon: <Sparkles className="w-5 h-5 text-green-600" />,
+                  icon: <Sparkles className="w-5 h-5 text-green-600 dark:text-[#4ADE80]" />,
                   title: 'Custom Packages',
                   desc: 'One-time, monthly, or seasonal — we work around your budget.',
                 },
@@ -129,7 +129,7 @@ export default function SponsorsPage() {
                   <div className="icon-badge-circle w-10 h-10 rounded-xl">
                     {item.icon}
                   </div>
-                  <h3 className="font-bold text-sm text-gray-900">{item.title}</h3>
+                  <h3 className="font-bold text-sm text-gray-900 dark:text-[#F5F7F5]">{item.title}</h3>
                   <p className="text-xs text-muted leading-relaxed">{item.desc}</p>
                 </div>
               ))}

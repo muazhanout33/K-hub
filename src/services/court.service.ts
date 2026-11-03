@@ -1,6 +1,7 @@
 import { Court } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 import { mapDbCourtToCourt } from '@/lib/mappers';
+import { resolveCourtImage, GENERIC_COURT_IMAGE } from '@/lib/sport-images';
 import { DbCourt } from '@/types/database.types';
 
 /** Minimal court info needed to populate a Booking's display fields. */
@@ -10,16 +11,22 @@ export interface CourtInfo {
   sportType: Court['sportType'];
 }
 
-/** Fallback court image used when a court has no image_url in the database. */
-export const FALLBACK_COURT_IMAGE = '/images/courts/court-fallback.jpg';
+/** Last-resort court image (generic clay aerial) when no sport is known. */
+export const FALLBACK_COURT_IMAGE = GENERIC_COURT_IMAGE;
 
 /**
- * Normalize a court image source to a stable local path.
- * Local /images/ paths pass through; missing or remote (e.g. external)
- * sources fall back to the local fallback asset so next/image never 400s.
+ * Normalize a court image source to a renderable local path.
+ * Only existing local assets pass through; empty/remote/missing/generic
+ * sources resolve to the sport-appropriate asset so each court shows an
+ * image that matches its sport and next/image never 404s or 400s.
+ * See src/lib/sport-images.ts for the verified asset inventory.
  */
-function normalizeCourtImage(src: string | null | undefined): string {
-  return src && src.startsWith('/images/') ? src : FALLBACK_COURT_IMAGE;
+function normalizeCourtImage(
+  src: string | null | undefined,
+  sportType?: string | null,
+  surface?: string | null,
+): string {
+  return resolveCourtImage(src, sportType, surface);
 }
 
 /**
@@ -29,15 +36,17 @@ function normalizeCourtImage(src: string | null | undefined): string {
 export async function getCourtsFromSupabase(sportType?: string): Promise<Court[]> {
   try {
     const supabase = createClient();
-    let query = supabase
+    // sport_type is a Postgres enum, and enums have no ILIKE operator
+    // (`operator does not exist: sport_type_enum ~~* unknown`), so filtering in
+    // the query made /api/courts?sport=X return 500. Fetch every non-deleted
+    // court and filter in JS instead, keeping the previous bare-value ILIKE
+    // semantics: whole-value, case-insensitive match (invalid input therefore
+    // matches nothing and returns an empty list rather than erroring).
+    const query = supabase
       .from('courts')
       .select('*')
       .is('deleted_at', null)
       .order('created_at', { ascending: true });
-
-    if (sportType) {
-      query = query.ilike('sport_type', sportType);
-    }
 
     const { data, error } = await query;
 
@@ -49,10 +58,17 @@ export async function getCourtsFromSupabase(sportType?: string): Promise<Court[]
       return [];
     }
 
-    return (data as DbCourt[]).map((c) => {
-      const court = mapDbCourtToCourt(c);
-      return { ...court, image: normalizeCourtImage(court.image) };
-    });
+    const needle = sportType ? sportType.toLowerCase() : null;
+
+    return (data as DbCourt[])
+      .map((c) => {
+        const court = mapDbCourtToCourt(c);
+        return {
+          ...court,
+          image: normalizeCourtImage(court.image, court.sportType, court.surface),
+        };
+      })
+      .filter((court) => !needle || court.sportType.toLowerCase() === needle);
   } catch (err) {
     throw err;
   }
@@ -80,7 +96,10 @@ export async function getCourtByIdFromSupabase(id: string): Promise<Court | unde
     }
 
     const court = mapDbCourtToCourt(data as DbCourt);
-    return { ...court, image: normalizeCourtImage(court.image) };
+    return {
+      ...court,
+      image: normalizeCourtImage(court.image, court.sportType, court.surface),
+    };
   } catch (err) {
     throw err;
   }
@@ -97,7 +116,7 @@ export async function getCourtInfoForBooking(courtId: string): Promise<CourtInfo
   }
   return {
     name: court.name,
-    image: normalizeCourtImage(court.image),
+    image: normalizeCourtImage(court.image, court.sportType, court.surface),
     sportType: court.sportType,
   };
 }
@@ -117,15 +136,21 @@ export async function getCourtInfoMap(courtIds: string[]): Promise<Map<string, C
     const supabase = createClient();
     const { data, error } = await supabase
       .from('courts')
-      .select('id, name, image_url, sport_type')
+      .select('id, name, image_url, sport_type, surface')
       .in('id', uniqueIds)
       .is('deleted_at', null);
 
     if (!error && data) {
-      for (const row of data as { id: string; name: string; image_url: string; sport_type: string }[]) {
+      for (const row of data as {
+        id: string;
+        name: string;
+        image_url: string;
+        sport_type: string;
+        surface: string;
+      }[]) {
         map.set(row.id, {
           name: row.name,
-          image: normalizeCourtImage(row.image_url),
+          image: normalizeCourtImage(row.image_url, row.sport_type, row.surface),
           sportType: (row.sport_type as Court['sportType']) ?? 'Padel',
         });
       }

@@ -1,0 +1,47 @@
+-- =============================================================================
+-- Migration: 20261101000000_restrict_system_settings_read
+--
+-- Purpose: Remove the overly-broad public SELECT policy on
+--   public.system_settings — "Public read non-sensitive settings"
+--   (FOR SELECT USING (true)) — which allowed anon and ordinary
+--   authenticated users to read every row of the admin settings table.
+--
+-- Context (Phase 5 — Settings System): system_settings now backs
+--   /admin/settings. Rows must never be readable by non-admins.
+--   Admins keep full access through the EXISTING
+--   "Admins manage system settings" policy:
+--       FOR ALL USING (public.is_admin())
+--   Its USING clause also governs SELECT, so no replacement SELECT policy
+--   is required. This is the smallest possible change: a single DROP.
+--
+-- Safety:
+--   - Idempotent: DROP POLICY IF EXISTS.
+--   - No data changes. No grants, roles, functions, or other policies
+--     touched. Only removes a public read — it CANNOT weaken any existing
+--     protection.
+--   - Application behavior is unchanged: all reads/writes already pass
+--     through requireAdmin() server actions (fail-closed role re-check)
+--     plus RLS writes. Without this migration the app still works; the
+--     table simply remains readable by logged-out clients (the gap this
+--     file closes).
+--   - No secrets, API keys, or credentials are stored in system_settings;
+--     this migration is defense-in-depth for operational preferences.
+--
+-- ⚠️ STATUS: Prepared as a file only. NOT applied to any remote/production
+--   database during Phase 5. Apply later through the normal migration
+--   review/deploy flow (e.g. `supabase db push` / migration runner).
+--
+-- Rollback:
+--   CREATE POLICY "Public read non-sensitive settings"
+--     ON public.system_settings FOR SELECT USING (true);
+--   (Do NOT do this — it re-opens the public read.)
+--
+-- Verification (run manually AFTER applying):
+--   SELECT policyname, cmd, qual FROM pg_policies
+--    WHERE schemaname = 'public' AND tablename = 'system_settings';
+--   -- Expected: only "Admins manage system settings" (cmd = ALL).
+--   -- As anon/authenticated: SELECT returns 0 rows (RLS denies).
+--   -- As Admin: SELECT returns all rows.
+-- =============================================================================
+
+DROP POLICY IF EXISTS "Public read non-sensitive settings" ON public.system_settings;

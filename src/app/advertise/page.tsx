@@ -131,15 +131,15 @@ export default function AdvertisePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-white border-b border-gray-200/80 py-8 sm:py-12 text-center">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-8 sm:py-12 text-center">
         <SiteContainer>
           <div className="page-hero-inner page-hero-inner--center">
             <div className="flex justify-center">
               <Badge icon={<Megaphone className="icon-inline text-green-600" />} size="sm">
-                Advertising at K-HUB
+                Advertising at WEGO
               </Badge>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight leading-[1.05]">
+            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight leading-[1.05]">
               Available Ad Spaces
             </h1>
             <p className="text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
@@ -154,10 +154,10 @@ export default function AdvertisePage() {
         {availableSpaces.length === 0 ? (
           /* ── Empty state ── */
           <div className="max-w-lg mx-auto text-center py-16 space-y-5">
-            <div className="w-16 h-16 rounded-3xl bg-gray-100 flex items-center justify-center mx-auto">
-              <Megaphone className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 rounded-3xl bg-gray-100 dark:bg-[#1D2821] flex items-center justify-center mx-auto">
+              <Megaphone className="w-8 h-8 text-gray-400 dark:text-[#8A9A8E]" />
             </div>
-            <h2 className="text-xl font-black text-gray-900">No Spaces Currently Available</h2>
+            <h2 className="text-xl font-black text-gray-900 dark:text-[#F5F7F5]">No Spaces Currently Available</h2>
             <p className="text-muted text-sm leading-relaxed">
               All advertising spaces are currently reserved or unavailable. Please check back
               soon, or{' '}
@@ -185,10 +185,10 @@ export default function AdvertisePage() {
                     {/* Space info */}
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="font-black text-base text-gray-900 leading-snug">
+                        <h3 className="font-black text-base text-gray-900 dark:text-[#F5F7F5] leading-snug">
                           {space.name}
                         </h3>
-                        <span className="shrink-0 text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full whitespace-nowrap">
+                        <span className="shrink-0 text-xs font-bold text-green-700 dark:text-[#4ADE80] bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800/40 px-2.5 py-1 rounded-full whitespace-nowrap">
                           Available
                         </span>
                       </div>
@@ -209,7 +209,7 @@ export default function AdvertisePage() {
                         <div className="flex items-center gap-2">
                           <BadgeDollarSign className="icon-inline text-gray-400 shrink-0" />
                           <span>
-                            <strong className="text-gray-900 text-sm">
+                            <strong className="text-gray-900 dark:text-[#F5F7F5] text-sm">
                               {space.basePrice.toLocaleString()} EGP
                             </strong>{' '}
                             / {space.billingPeriod}
@@ -220,7 +220,7 @@ export default function AdvertisePage() {
 
                     {/* Success state for this card */}
                     {isSuccess && (
-                      <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2 text-xs text-green-800 font-semibold">
+                      <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800/40 rounded-xl p-3 flex items-center gap-2 text-xs text-green-800 dark:text-green-300 font-semibold">
                         <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
                         Request submitted — our team will contact you.
                       </div>
@@ -259,21 +259,21 @@ export default function AdvertisePage() {
                 id="ad-request-form-section"
                 className="max-w-2xl mx-auto scroll-mt-24"
               >
-                <div className="bg-white border-2 border-green-200 rounded-3xl shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-[#1D2821] border-2 border-green-200 dark:border-green-800/60 rounded-3xl shadow-sm overflow-hidden">
                   {/* Form header */}
-                  <div className="bg-green-50 border-b border-green-100 px-5 sm:px-8 py-4 sm:py-5 flex items-start justify-between gap-4">
+                  <div className="bg-green-50 dark:bg-green-950/40 border-b border-green-100 dark:border-green-800/40 px-5 sm:px-8 py-4 sm:py-5 flex items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-bold text-green-700 uppercase tracking-wide mb-0.5">
                         Requesting Ad Space
                       </p>
-                      <h2 className="text-lg font-black text-gray-900">{activeSpace.name}</h2>
+                      <h2 className="text-lg font-black text-gray-900 dark:text-[#F5F7F5]">{activeSpace.name}</h2>
                       <p className="text-xs text-muted mt-0.5">{activeSpace.location} · {activeSpace.dimensions}</p>
                     </div>
                     <button
                       type="button"
                       onClick={closeForm}
                       aria-label="Close request form"
-                      className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-white transition-colors shrink-0"
+                      className="p-2 rounded-xl text-gray-400 dark:text-[#8A9A8E] hover:text-gray-700 dark:hover:text-[#F5F7F5] hover:bg-white dark:hover:bg-[#171F1A] transition-colors shrink-0"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -351,7 +351,7 @@ export default function AdvertisePage() {
                         <label className="text-xs font-bold text-gray-700 uppercase">
                           Campaign Dates *
                         </label>
-                        <div className="flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                        <div className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 px-2 py-0.5 rounded-full">
                           <AlertCircle className="w-3 h-3" />
                           No overlap with existing requests
                         </div>

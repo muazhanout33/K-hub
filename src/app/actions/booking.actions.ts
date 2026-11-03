@@ -409,8 +409,13 @@ export async function getAdminBookingsPageAction(
 
     // Strip characters that would break/split PostgREST `.or()` syntax.
     // Commas separate conditions; parens group; quotes open values.
+    // Also escape ILIKE wildcards so '%' and '_' are treated literally
+    // (single backslash: postgres ILIKE default escape is '\'), and collapse
+    // runs of whitespace for parity with the customers search.
     const search = (query.search || '')
       .replace(/[,()"'\\]/g, ' ')
+      .replace(/[%_]/g, (c) => '\\' + c)
+      .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 100);
 

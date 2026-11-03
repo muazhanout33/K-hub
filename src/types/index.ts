@@ -95,6 +95,8 @@ export interface Court {
   workingHours: WorkingHours;
   /** Slot duration in minutes. Defaults to 60. */
   slotDurationMinutes: number;
+  /** Non-null only for archived (soft-deleted, admin-visible) courts. */
+  deletedAt?: string | null;
 }
 
 /**
@@ -242,6 +244,29 @@ export interface User {
   avatar?: string;
   role: 'Guest' | 'User' | 'Admin';
   createdAt: string;
+}
+
+// ── Customers (Admin read layer) ──
+
+export interface Customer {
+  id: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string | null;
+  avatarUrl: string | null;
+  role: 'Guest' | 'User' | 'Admin';
+  status: 'Active' | 'Inactive' | 'Suspended';
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Detail-only extension: sensitive profile fields returned solely by the
+// admin customer detail action, never by the list action.
+export interface CustomerDetails extends Customer {
+  dateOfBirth: string | null;
+  gender: string | null;
+  address: string | null;
+  emergencyContact: string | null;
 }
 
 // ── Notifications ──

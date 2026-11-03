@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import RegisterForm from './RegisterForm';
 
 export const metadata: Metadata = {
-  title: 'Register | K-HUB Sports Club',
+  title: 'Register | WEGO Sports',
 };
 
 export default function RegisterPage() {

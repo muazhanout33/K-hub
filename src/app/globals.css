@@ -2,14 +2,18 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@variant dark (&:where(.dark, .dark *));
+
 /* ─────────────────────────────────────────────
    K-HUB Reference Design Tokens (Phase 01 Extended)
 ───────────────────────────────────────────── */
 :root {
   /* Brand & Color System extracted from Reference */
   --background: #F8FAFC;
+  --surface: #FFFFFF;
   --card: #FFFFFF;
   --card-foreground: #0F172A;
+  --elevated: #FFFFFF;
 
   --primary: #16A34A;
   --primary-hover: #15803D;
@@ -25,6 +29,7 @@
   --border: #E2E8F0;
   --border-light: #F1F5F9;
   --input: #E2E8F0;
+  --input-bg: #FFFFFF;
   --ring: #16A34A;
 
   /* Status Colors */
@@ -87,6 +92,51 @@
 }
 
 /* ─────────────────────────────────────────────
+   K-HUB Dark Sport Design Tokens
+───────────────────────────────────────────── */
+.dark {
+  /* Surfaces & Backgrounds */
+  --background: #101512;
+  --surface: #171F1A;
+  --card: #1D2821;
+  --card-foreground: #F5F7F5;
+  --elevated: #26332A;
+
+  /* Brand Accents — Preserved K-HUB Green with energetic dark-mode hover */
+  --primary: #16A34A;
+  --primary-hover: #22C55E;
+  --primary-light: rgba(22, 163, 74, 0.18);
+  --primary-foreground: #101512;
+
+  /* Typography — WCAG AA verified on dark surfaces */
+  --text-main: #F5F7F5;
+  --text-muted: #A1ADA4;
+  --text-subtle: #8A9A8E;
+  --placeholder: #8A9A8E;
+
+  /* Borders & Inputs */
+  --border: #344239;
+  --border-light: #232F26;
+  --input: #344239;
+  --input-bg: #1D2821;
+  --ring: #22C55E;
+
+  /* Status Colors — calibrated for dark background visibility & WCAG AA */
+  --status-available-bg: rgba(22, 163, 74, 0.20);
+  --status-available-text: #4ADE80;
+  --status-soon-bg: rgba(217, 119, 6, 0.20);
+  --status-soon-text: #FBBF24;
+  --status-booked-bg: rgba(220, 38, 38, 0.20);
+  --status-booked-text: #FCA5A5;
+
+  /* Dark Shadows — deep atmospheric depth */
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.50);
+  --shadow-btn-green: 0 4px 14px rgba(22, 163, 74, 0.4);
+  --shadow-floating: 0 16px 40px -8px rgba(0, 0, 0, 0.65);
+}
+
+/* ─────────────────────────────────────────────
    Base Reset & Typography
 ───────────────────────────────────────────── */
 @layer base {
@@ -133,7 +183,7 @@
 
 /* Reference Card Standard */
 .ref-card {
-  background: #FFFFFF;
+  background: var(--card);
   border-radius: var(--radius-card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
@@ -229,6 +279,9 @@
   border: 2px solid var(--primary);
   box-shadow: var(--shadow-btn-green);
 }
+:is(.dark) .slot-selected {
+  color: var(--primary-foreground);
+}
 
 .slot-booked {
   background-color: var(--status-booked-bg);
@@ -250,27 +303,31 @@
 /* ─────────────────────────────────────────────
    Form Inputs & Contact Button
 ───────────────────────────────────────────── */
+.wego-input,
 .khub-input {
   width: 100%;
   height: 44px;
   padding: 0 16px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background-color: #FFFFFF;
+  background-color: var(--input-bg);
   color: var(--text-main);
   font-size: 14px;
   font-weight: 500;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
+.wego-input:focus,
 .khub-input:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
 }
+.wego-input::placeholder,
 .khub-input::placeholder {
   color: var(--placeholder);
 }
 
+textarea.wego-input,
 textarea.khub-input {
   height: auto;
   min-height: 120px;
@@ -392,10 +449,29 @@ textarea.khub-input {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+.dark .filter-chip-group {
+  background-color: rgba(23, 31, 26, 0.9);
+  border-color: rgba(52, 66, 57, 0.8);
+}
+.dark .filter-chip:hover {
+  color: var(--text-main);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+.dark .filter-chip-active {
+  background-color: var(--card);
+  color: #4ADE80;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--border);
+}
+.dark .filter-chip-active-dark {
+  background-color: #101512;
+  color: var(--text-main);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border);
+}
+
 /* ── Page hero header (below nav) ── */
 .page-hero {
-  background-color: #FFFFFF;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
   padding-top: var(--section-py-mobile);
   padding-bottom: var(--section-py-mobile);
 }
@@ -451,6 +527,9 @@ textarea.khub-input {
   background-color: #F1F5F9;
   padding-top: var(--section-py-mobile);
   padding-bottom: var(--section-py-mobile);
+}
+.dark .pricing-section {
+  background-color: #141C16;
 }
 @media (min-width: 1024px) {
   .pricing-section {
@@ -547,11 +626,19 @@ textarea.khub-input {
   font-size: 1.75rem;
   flex-shrink: 0;
 }
+.dark .sponsor-logo-badge {
+  background-color: var(--surface);
+}
 .offer-badge {
   background-color: #DCFCE7;
   border: 1px solid #86EFAC;
   color: #14532D;
   font-weight: 800;
+}
+.dark .offer-badge {
+  background-color: rgba(22, 163, 74, 0.18);
+  border-color: rgba(74, 222, 128, 0.3);
+  color: #4ADE80;
 }
 
 /* ── Price display ── */

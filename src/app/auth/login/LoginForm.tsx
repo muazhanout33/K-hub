@@ -8,6 +8,7 @@ import { useAuthStore } from '@/features/auth/useAuthStore';
 import { LogIn } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { WegoLogo } from '@/components/ui/Logo';
 
 /** Safe internal destination from the current URL's `next` param, or null. */
 function getNextDestination(): string | null {
@@ -20,7 +21,9 @@ function getNextDestination(): string | null {
 export default function LoginForm() {
   const router = useRouter();
   const nextDestination = getNextDestination();
-  const { hydrated, isRedirecting } = useGuestGuard(nextDestination ?? '/book');
+  const user = useAuthStore((state) => state.user);
+  const fallbackDestination = user?.role === 'Admin' ? '/admin' : '/book';
+  const { hydrated, isRedirecting } = useGuestGuard(nextDestination ?? fallbackDestination);
   const login = useAuthStore((state) => state.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,7 +52,8 @@ export default function LoginForm() {
     }
 
     toast.success(`Welcome back, ${result.user?.name}!`);
-    router.push(getNextDestination() ?? '/book');
+    const defaultTarget = result.user?.role === 'Admin' ? '/admin' : '/book';
+    router.push(getNextDestination() ?? defaultTarget);
   };
 
   if (!hydrated || isRedirecting) {
@@ -62,18 +66,18 @@ export default function LoginForm() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md bg-white p-5 sm:p-8 rounded-3xl border border-gray-200 shadow-xl space-y-5 sm:space-y-6">
+      <div className="w-full max-w-md bg-white dark:bg-[#1D2821] p-5 sm:p-8 rounded-3xl border border-gray-200 dark:border-[#344239] shadow-xl space-y-5 sm:space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-green-600 text-white font-black text-2xl flex items-center justify-center mx-auto shadow-md">
-            K
+          <div className="flex justify-center mb-1">
+            <WegoLogo size="xl" showTagline />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">Sign In to K-HUB</h1>
-          <p className="text-xs text-gray-500">Access your bookings and court reservations</p>
+          <h1 className="text-2xl font-black text-gray-900 dark:text-[#F5F7F5]">Sign In to WEGO</h1>
+          <p className="text-xs text-gray-500 dark:text-[#8A9A8E]">Access your bookings and court reservations</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="login-email" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Email Address *</label>
+            <label htmlFor="login-email" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Email Address *</label>
             <input
               id="login-email"
               type="email"
@@ -88,7 +92,7 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <label htmlFor="login-password" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Password *</label>
+            <label htmlFor="login-password" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Password *</label>
             <input
               id="login-password"
               type="password"
@@ -103,7 +107,7 @@ export default function LoginForm() {
           </div>
 
           {fieldError && (
-            <p id="login-error" className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg" role="alert">
+            <p id="login-error" className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-transparent dark:border-red-900/40 px-3 py-2 rounded-lg" role="alert">
               {fieldError}
             </p>
           )}
@@ -121,9 +125,9 @@ export default function LoginForm() {
           </Button>
         </form>
 
-        <p className="text-center text-xs text-gray-500">
+        <p className="text-center text-xs text-gray-500 dark:text-[#8A9A8E]">
           Don&apos;t have an account?{' '}
-          <Link href="/auth/register" className="font-extrabold text-green-600 hover:underline inline-block py-3.5">
+          <Link href="/auth/register" className="font-extrabold text-green-600 dark:text-[#4ADE80] hover:underline inline-block py-3.5">
             Register Here
           </Link>
         </p>

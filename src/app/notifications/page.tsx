@@ -70,14 +70,14 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6 sm:space-y-10">
       {/* Header */}
-      <section className="bg-white border-b border-gray-200/80 py-6 sm:py-10">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-6 sm:py-10">
         <SiteContainer>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
             <div className="section-head mb-0">
               <Badge icon={<Bell className="icon-inline text-green-600" />} size="sm">
                 Notifications
               </Badge>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight">
                 Notifications
               </h1>
               <p className="text-sm sm:text-base text-muted leading-relaxed max-w-2xl">
@@ -124,15 +124,15 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={n.id}
-                  className={`bg-white rounded-[var(--radius-xl)] p-5 border shadow-sm hover:shadow-md transition-all flex items-start gap-4 ${
+                  className={`bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] p-5 border shadow-sm hover:shadow-md transition-all flex items-start gap-4 ${
                     !n.isRead
-                      ? 'border-green-200/80 bg-green-50/20'
-                      : 'border-gray-200/80'
+                      ? 'border-green-200/80 dark:border-green-800/40 bg-green-50/20 dark:bg-green-950/20'
+                      : 'border-gray-200/80 dark:border-[#344239]'
                   }`}
                 >
                   {/* Icon */}
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${config.bg}`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${config.bg} dark:bg-[#171F1A]`}
                   >
                     <Icon className={`w-5 h-5 ${config.color}`} />
                   </div>
@@ -151,15 +151,15 @@ export default function NotificationsPage() {
                     </div>
                     <h3
                       className={`text-[15px] mt-1 ${
-                        !n.isRead ? 'font-extrabold text-gray-900' : 'font-bold text-gray-700'
+                        !n.isRead ? 'font-extrabold text-gray-900 dark:text-[#F5F7F5]' : 'font-bold text-gray-700 dark:text-[#A1ADA4]'
                       }`}
                     >
                       {n.title}
                     </h3>
-                    <p className="text-[13px] text-gray-500 leading-relaxed mt-1">
+                    <p className="text-[13px] text-gray-500 dark:text-[#A1ADA4] leading-relaxed mt-1">
                       {n.message}
                     </p>
-                    <p className="text-[11px] text-gray-400 font-medium mt-2">
+                    <p className="text-[11px] text-gray-400 dark:text-[#8A9A8E] font-medium mt-2">
                       {formatDateTime(n.createdAt)}
                     </p>
                   </div>
@@ -169,7 +169,7 @@ export default function NotificationsPage() {
                     {!n.isRead && (
                       <button
                         onClick={() => markAsRead(n.id)}
-                        className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center hover:bg-green-100 transition-colors cursor-pointer"
+                        className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-950/50 flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors cursor-pointer"
                         title="Mark as read"
                       >
                         <CheckCheck className="w-4 h-4 text-[#16A34A]" />
@@ -177,7 +177,7 @@ export default function NotificationsPage() {
                     )}
                     <button
                       onClick={() => deleteNotification(n.id)}
-                      className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center hover:bg-red-50 transition-colors cursor-pointer"
+                      className="w-8 h-8 rounded-full bg-gray-50 dark:bg-[#171F1A] flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
@@ -188,9 +188,9 @@ export default function NotificationsPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-[var(--radius-xl)] p-6 sm:p-12 text-center border border-gray-200 max-w-md mx-auto my-8 sm:my-12">
-            <Inbox className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="font-extrabold text-gray-900 text-lg">All Caught Up!</h3>
+          <div className="bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] p-6 sm:p-12 text-center border border-gray-200 dark:border-[#344239] max-w-md mx-auto my-8 sm:my-12">
+            <Inbox className="w-12 h-12 text-gray-300 dark:text-[#8A9A8E] mx-auto mb-3" />
+            <h3 className="font-extrabold text-gray-900 dark:text-[#F5F7F5] text-lg">All Caught Up!</h3>
             <p className="text-xs text-muted mt-1">
               No notifications to show. We&apos;ll let you know when something happens.
             </p>

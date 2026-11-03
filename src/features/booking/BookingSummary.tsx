@@ -28,8 +28,8 @@ export function BookingSummary() {
     <div className="space-y-4">
       <BookingCountdown />
 
-      <div className="bg-white rounded-[24px] border border-[#E2E8F0] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-5 space-y-4">
-        <h3 className="font-extrabold text-sm text-[#0F172A] uppercase tracking-wider">Booking Summary</h3>
+      <div className="bg-white dark:bg-[#1D2821] rounded-[24px] border border-[#E2E8F0] dark:border-[#344239] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-5 space-y-4">
+        <h3 className="font-extrabold text-sm text-[#0F172A] dark:text-[#F5F7F5] uppercase tracking-wider">Booking Summary</h3>
 
         <div className="flex items-center gap-3">
           <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0">
@@ -41,14 +41,14 @@ export function BookingSummary() {
             />
           </div>
           <div className="min-w-0">
-            <h4 className="font-bold text-sm text-[#0F172A] truncate">{selectedCourt.name}</h4>
-            <div className="flex items-center gap-2 mt-1 text-[11px] text-gray-600 font-medium flex-wrap">
+            <h4 className="font-bold text-sm text-[#0F172A] dark:text-[#F5F7F5] truncate">{selectedCourt.name}</h4>
+            <div className="flex items-center gap-2 mt-1 text-[11px] text-gray-600 dark:text-[#A1ADA4] font-medium flex-wrap">
               <span className="flex items-center gap-1">
                 <Sun className="w-3 h-3 text-amber-500" />
                 {selectedCourt.isIndoor ? 'Indoor' : 'Outdoor'}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="w-3 h-3 text-gray-500" />
+                <Users className="w-3 h-3 text-gray-500 dark:text-[#8A9A8E]" />
                 {selectedCourt.capacity} Players
               </span>
             </div>
@@ -57,33 +57,33 @@ export function BookingSummary() {
 
         <div className="space-y-2.5 text-sm">
           <div className="flex items-center justify-between">
-            <span className="text-gray-500 flex items-center gap-1.5">
+            <span className="text-gray-500 dark:text-[#8A9A8E] flex items-center gap-1.5">
               <CalendarDays className="w-3.5 h-3.5" />
               Date
             </span>
-            <span className="font-bold text-[#0F172A]">{selectedDate}</span>
+            <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{selectedDate}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-500 flex items-center gap-1.5">
+            <span className="text-gray-500 dark:text-[#8A9A8E] flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
               Time
             </span>
-            <span className="font-bold text-[#0F172A]">
+            <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">
               {to12Hour(sortedSlots[0].startTime)} – {to12Hour(sortedSlots[sortedSlots.length - 1].endTime)}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-500">Duration</span>
-            <span className="font-bold text-[#0F172A]">{durationMinutes} mins</span>
+            <span className="text-gray-500 dark:text-[#8A9A8E]">Duration</span>
+            <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{durationMinutes} mins</span>
           </div>
         </div>
 
-        <div className="border-t border-gray-100 pt-3">
+        <div className="border-t border-gray-100 dark:border-[#344239] pt-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total</span>
-            <span className="text-2xl font-black text-[#0F172A]">EGP {formatPrice(totalPrice)}</span>
+            <span className="text-xs font-bold text-gray-400 dark:text-[#8A9A8E] uppercase tracking-wider">Total</span>
+            <span className="text-2xl font-black text-[#0F172A] dark:text-[#F5F7F5]">EGP {formatPrice(totalPrice)}</span>
           </div>
-          <p className="text-[10px] text-gray-400 mt-0.5 text-right">
+          <p className="text-[10px] text-gray-400 dark:text-[#8A9A8E] mt-0.5 text-right">
             EGP {selectedCourt.pricePerHour}/hr × {sortedSlots.length}h
           </p>
         </div>

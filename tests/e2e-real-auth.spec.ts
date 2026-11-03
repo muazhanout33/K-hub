@@ -62,8 +62,14 @@ async function realLogin(page: Page, email: string, password: string) {
 
   await page.getByRole('button', { name: 'Sign In' }).click();
 
-  // Wait for real Supabase Auth to complete and redirect to /book
-  await page.waitForURL('**/book', { timeout: 30000 });
+  // Wait for real Supabase Auth to complete and leave the login page.
+  // The post-login landing URL varies by role (/book for users, /admin for
+  // admins) and by ?next=, so do not assume a specific destination.
+  await page.waitForFunction(
+    () => !window.location.pathname.startsWith('/auth/login'),
+    undefined,
+    { timeout: 30000 }
+  );
 }
 
 /**
@@ -185,6 +191,15 @@ async function expectAuthenticatedIndicator(page: Page) {
  * Mobile: opens hamburger menu, then clicks "Sign Out" in the drawer.
  */
 async function responsiveLogout(page: Page) {
+  // The "Welcome back" sonner toast can linger up to ~4s after login and its
+  // overlay intercepts the Sign out click. Wait for toasts to clear first.
+  await page
+    .waitForFunction(
+      () => !document.querySelector('[data-sonner-toast]'),
+      undefined,
+      { timeout: 8000 }
+    )
+    .catch(() => {});
   const mobile = await isMobileViewport(page);
   if (mobile) {
     await clickMobileSignOut(page);
@@ -284,7 +299,8 @@ test.describe('Phase 22.15 — Real Authentication E2E', () => {
     }) => {
       await realLogin(page, ADMIN_EMAIL, ADMIN_PASSWORD);
 
-      expect(page.url()).toContain('/book');
+      // Role-based landing: Admin goes to /admin (users go to /book)
+      expect(page.url()).toContain('/admin');
       await waitForAuthHydration(page);
 
       const authState = await getAuthState(page);
@@ -295,8 +311,9 @@ test.describe('Phase 22.15 — Real Authentication E2E', () => {
       const hasCookie = await hasSessionCookie(context);
       expect(hasCookie).toBe(true);
 
-      // Verify Admin nav link is visible (responsive-aware)
-      await expectAdminLinkVisible(page);
+      // Admin shell renders for the admin-role landing page
+      const heading = page.locator('h1:has-text("Admin Dashboard")');
+      await expect(heading).toBeVisible({ timeout: 15000 });
     });
   });
 
@@ -388,6 +405,10 @@ test.describe('Phase 22.15 — Real Authentication E2E', () => {
       // Navigate to profile
       await page.goto(`${BASE}/profile`, { waitUntil: 'domcontentloaded' });
       await waitForAuthHydration(page);
+      // Let the document's in-flight session-verification fetches settle before
+      // the next navigation: navigating away mid-fetch aborts them, and that
+      // transient failure can falsify the persisted auth state (flake cause).
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
       expect(page.url()).toContain('/profile');
 
       const authState = await getAuthState(page);
@@ -397,6 +418,7 @@ test.describe('Phase 22.15 — Real Authentication E2E', () => {
       // Navigate to bookings
       await page.goto(`${BASE}/bookings`, { waitUntil: 'domcontentloaded' });
       await waitForAuthHydration(page);
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
       expect(page.url()).toContain('/bookings');
 
       // Navigate to notifications
@@ -634,8 +656,11 @@ test.describe('Phase 22.15 — Real Authentication E2E', () => {
       const authState = await getAuthState(page);
       expect(authState?.user?.role).toBe('Admin');
 
-      // Admin nav link should be visible (responsive-aware)
-      await expectAdminLinkVisible(page);
+      // Admin shell nav is visible (role-based landing lands on /admin,
+      // which renders the admin sidebar instead of the public Navbar)
+      await expect(
+        page.locator('nav[aria-label="Admin navigation"]')
+      ).toBeVisible({ timeout: 10000 });
 
       // Navigate to admin page
       await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' });

@@ -55,36 +55,36 @@ export function TimeSlotsGrid({ slots, dateLabel }: TimeSlotsGridProps) {
   return (
     <div className="space-y-6">
       {sortedSlots.length > 0 && (
-        <div className="bg-green-50 rounded-2xl p-4 border border-green-200/80">
-          <p className="text-xs font-bold text-green-800 uppercase tracking-wider">Selected Booking</p>
-          <p className="text-lg font-black text-green-900 mt-1">{bookingHours} Hour{bookingHours > 1 ? 's' : ''}</p>
-          <p className="text-sm font-semibold text-green-700">
+        <div className="bg-green-50 dark:bg-green-950/30 rounded-2xl p-4 border border-green-200/80 dark:border-green-800/40">
+          <p className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wider">Selected Booking</p>
+          <p className="text-lg font-black text-green-900 dark:text-[#F5F7F5] mt-1">{bookingHours} Hour{bookingHours > 1 ? 's' : ''}</p>
+          <p className="text-sm font-semibold text-green-700 dark:text-[#4ADE80]">
             {to12Hour(sortedSlots[0].startTime)} → {to12Hour(sortedSlots[sortedSlots.length - 1].endTime)}
           </p>
-          <div className="border-t border-green-200/60 mt-3 pt-3">
-            <p className="text-[10px] font-bold text-green-600 uppercase tracking-wider">Total</p>
-            <p className="text-xl font-black text-green-900">EGP {bookingTotal}</p>
+          <div className="border-t border-green-200/60 dark:border-green-800/40 mt-3 pt-3">
+            <p className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider">Total</p>
+            <p className="text-xl font-black text-green-900 dark:text-[#F5F7F5]">EGP {bookingTotal}</p>
           </div>
         </div>
       )}
 
-      <h3 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider">{headerText}</h3>
+      <h3 className="text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider">{headerText}</h3>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-gray-600">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-gray-600 dark:text-[#A1ADA4]">
         <span className="flex items-center gap-2 leading-none">
-          <span className="w-3 h-3 rounded-full bg-green-100 border-2 border-green-600 inline-block" /> Available
+          <span className="w-3 h-3 rounded-full bg-green-100 dark:bg-green-950 border-2 border-green-600 dark:border-[#4ADE80] inline-block" /> Available
        </span>
         <span className="flex items-center gap-2 leading-none">
-          <span className="w-3 h-3 rounded-full bg-green-700 inline-block" /> Selected
+          <span className="w-3 h-3 rounded-full bg-green-700 dark:bg-[#16A34A] inline-block" /> Selected
        </span>
         <span className="flex items-center gap-2 leading-none">
-          <span className="w-3 h-3 rounded-full bg-amber-100 border border-amber-300 inline-block" /> Reserved (Locked)
+          <span className="w-3 h-3 rounded-full bg-amber-100 dark:bg-amber-950 border border-amber-300 dark:border-amber-600 inline-block" /> Reserved (Locked)
        </span>
         <span className="flex items-center gap-2 leading-none">
-          <span className="w-3 h-3 rounded-full bg-red-100 border border-red-300 inline-block" /> Booked
+          <span className="w-3 h-3 rounded-full bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-600 inline-block" /> Booked
        </span>
         <span className="flex items-center gap-2 leading-none">
-          <span className="w-3 h-3 rounded-full bg-gray-100 border border-gray-300 inline-block" /> Past / Blocked
+          <span className="w-3 h-3 rounded-full bg-gray-100 dark:bg-[#171F1A] border border-gray-300 dark:border-[#344239] inline-block" /> Past / Blocked
        </span>
       </div>
 

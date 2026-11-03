@@ -1,0 +1,998 @@
+{
+  "routes": {
+    "theme-persistence": [
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 401 ()"
+      },
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 401 ()"
+      }
+    ],
+    "theme-persistence-light-os": [
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 401 ()"
+      }
+    ],
+    "home-light-desktop": [
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 401 ()"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "home-light-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "home-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "home-dark-mobile": [
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 401 ()"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "about-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "about-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "about-dark-desktop": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "about-dark-mobile": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "membership-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "membership-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "membership-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "membership-dark-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "events-light-desktop": [
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "An empty string (\"\") was passed to the %s attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to %s instead of an empty string. src src"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-error",
+        "text": "Image is missing required \"src\" property: JSHandle@node"
+      },
+      {
+        "kind": "console-warning",
+        "text": "Image with src \"https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1200&q=80\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "events-light-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "events-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "events-dark-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "sponsors-apply-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "sponsors-apply-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "sponsors-apply-dark-desktop": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "sponsors-apply-dark-mobile": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "advertise-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "advertise-light-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "advertise-dark-desktop": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "advertise-dark-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "contact-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "contact-light-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "contact-dark-desktop": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "contact-dark-mobile": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "login-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "login-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "login-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "login-dark-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "register-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "register-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "register-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "register-dark-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "courts-light-desktop": [
+      {
+        "kind": "console-warning",
+        "text": "Image with src \"/images/courts/court-fallback.jpg\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "courts-light-mobile": [
+      {
+        "kind": "console-warning",
+        "text": "Image with src \"/images/courts/court-fallback.jpg\" was detected as the Largest Contentful Paint (LCP). Please add the `loading=\"eager\"` property if this image is above the fold.\nRead more: https://nextjs.org/docs/app/api-reference/components/image#loading"
+      },
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "courts-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "courts-dark-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "court-detail-light-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3002null\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      }
+    ],
+    "court-detail-light-mobile": [
+      {
+        "kind": "driver-error",
+        "text": "Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3002null\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      }
+    ],
+    "court-detail-dark-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3002null\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      }
+    ],
+    "court-detail-dark-mobile": [
+      {
+        "kind": "driver-error",
+        "text": "Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3002null\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      }
+    ],
+    "sponsors-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "sponsors-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "sponsors-dark-desktop": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "sponsors-dark-mobile": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "profile-light-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "profile-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "profile-dark-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "profile-dark-mobile": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "bookings-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "bookings-light-mobile": [
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "bookings-dark-desktop": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "bookings-dark-mobile": [
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "notifications-light-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "notifications-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "notifications-dark-desktop": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "notifications-dark-mobile": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "book-wizard-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "book-wizard-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "book-wizard-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "book-wizard-dark-mobile": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "admin-overview-light-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForFunction: Timeout 60000ms exceeded."
+      }
+    ],
+    "admin-overview-light-mobile": [
+      {
+        "kind": "interaction-skipped",
+        "text": "bell: TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has(font-awesome), button[title*=\"notification\" i]').first("
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-overview-dark-desktop": [
+      {
+        "kind": "console-error",
+        "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      },
+      {
+        "kind": "interaction-skipped",
+        "text": "bell: TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has(font-awesome), button[title*=\"notification\" i]').first("
+      },
+      {
+        "kind": "driver-error",
+        "text": "Error: page.evaluate: Execution context was destroyed, most likely because of a navigation"
+      },
+      {
+        "kind": "requestfailed",
+        "text": "GET /admin -> net::ERR_ABORTED"
+      }
+    ],
+    "admin-overview-dark-mobile": [
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "interaction-skipped",
+        "text": "bell: TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has(font-awesome), button[title*=\"notification\" i]').first("
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "admin-bookings-light-desktop": [
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "interaction-skipped",
+        "text": "booking row: TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.cursor-pointer').first()\u001b[22m\n\u001b[2m    - locator resolved to <butt"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-bookings-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-bookings-dark-desktop": [
+      {
+        "kind": "interaction-skipped",
+        "text": "booking row: TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.cursor-pointer').first()\u001b[22m\n\u001b[2m    - locator resolved to <butt"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "admin-bookings-dark-mobile": [
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "admin-courts-light-desktop": [
+      {
+        "kind": "interaction-skipped",
+        "text": "court row: TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Edit\"), .cursor-pointer').first()\u001b[22m\n\u001b[2m    - "
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-courts-light-mobile": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-courts-dark-desktop": [
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "console-warning",
+        "text": "The resource http://localhost:3002/_next/static/css/app/layout.css?v=1793706785769 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+      },
+      {
+        "kind": "interaction-skipped",
+        "text": "court row: TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Edit\"), .cursor-pointer').first()\u001b[22m\n\u001b[2m    - "
+      },
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "admin-courts-dark-mobile": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "admin-customers-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-customers-light-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "console-error",
+        "text": "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+      },
+      {
+        "kind": "console-warning",
+        "text": "The resource http://localhost:3002/_next/static/css/app/layout.css?v=1793706859413 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+      },
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "admin-customers-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "admin-customers-dark-mobile": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "customer-detail-light-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3002null\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      }
+    ],
+    "customer-detail-light-mobile": [
+      {
+        "kind": "driver-error",
+        "text": "Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3002null\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      }
+    ],
+    "customer-detail-dark-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3002null\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      }
+    ],
+    "customer-detail-dark-mobile": [
+      {
+        "kind": "driver-error",
+        "text": "Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3002null\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      }
+    ],
+    "admin-notifications-light-desktop": [
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-notifications-light-mobile": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "admin-notifications-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "admin-notifications-dark-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "console-error",
+        "text": "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+      },
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "admin-blocked-periods-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-blocked-periods-light-mobile": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "admin-blocked-periods-dark-desktop": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ],
+    "admin-blocked-periods-dark-mobile": [
+      {
+        "kind": "pageerror",
+        "text": "SyntaxError: Invalid or unexpected token"
+      },
+      {
+        "kind": "console-error",
+        "text": "Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously tries to update the component. Move this work to useEffect instead."
+      },
+      {
+        "kind": "console-warning",
+        "text": "The resource http://localhost:3002/_next/static/css/app/layout.css?v=1793707721149 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+      },
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "admin-settings-light-desktop": [
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-settings-light-mobile": [
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "requestfailed",
+        "text": "GET /notification.wav -> net::ERR_ABORTED"
+      },
+      {
+        "kind": "theme-class",
+        "value": ""
+      }
+    ],
+    "admin-settings-dark-desktop": [
+      {
+        "kind": "driver-error",
+        "text": "TimeoutError: page.waitForSelector: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[type=\"password\"]') to be visible\u001b[22m\n"
+      }
+    ],
+    "admin-settings-dark-mobile": [
+      {
+        "kind": "theme-class",
+        "value": "dark"
+      }
+    ]
+  },
+  "theme": {
+    "reload-with-dark": {
+      "cls": true,
+      "stored": "dark",
+      "bg": "rgb(16, 21, 18)"
+    },
+    "Light Mode-click": {
+      "failed": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Light Mode' }).first()\u001b[22m\n"
+    },
+    "switch-light": {
+      "cls": true,
+      "stored": "dark",
+      "bg": "rgb(16, 21, 18)"
+    },
+    "System Mode-click": {
+      "failed": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'System Mode' }).first()\u001b[22m\n"
+    },
+    "switch-system-dark-os": {
+      "cls": true,
+      "stored": "dark"
+    },
+    "system-after-reload": {
+      "cls": true,
+      "stored": "dark"
+    },
+    "Dark Mode-click": {
+      "failed": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Dark Mode' }).first()\u001b[22m\n"
+    },
+    "system-light-os": {
+      "cls": false,
+      "stored": "system"
+    }
+  },
+  "servers": [
+    {
+      "note": "server up at http://localhost:3002"
+    }
+  ]
+}

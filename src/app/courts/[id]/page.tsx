@@ -15,7 +15,6 @@ import { Court } from '@/types';
 import { SiteContainer } from '@/components/layout/SiteContainer';
 import { Button } from '@/components/ui/button';
 import {
-  Star,
   CalendarCheck,
   ChevronLeft,
   CheckCircle2,
@@ -90,7 +89,7 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
       <SiteContainer className="pt-6">
         <Link
           href="/courts"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-green-600 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-[#A1ADA4] hover:text-green-600 dark:hover:text-[#4ADE80] transition-colors"
         >
           <ChevronLeft className="w-[16px] h-[16px]" />
           <span>Back to All Courts</span>
@@ -104,7 +103,7 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
           <div className="lg:col-span-2 space-y-8">
             {/* Gallery */}
             <div className="space-y-4">
-              <div className="relative aspect-[3/2] w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-200 shadow-lg bg-gray-100">
+              <div className="relative aspect-[3/2] w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-200 dark:border-[#344239] shadow-lg bg-gray-100 dark:bg-[#171F1A]">
                 <Image
                   src={
                     typeof activeImage === 'string' && activeImage.trim().length > 0
@@ -116,7 +115,7 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
                   sizes="(max-width: 1024px) 100vw, 66vw"
                   className="object-cover"
                 />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-xs font-extrabold text-gray-900 shadow-xs">
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 dark:bg-[#1D2821]/90 backdrop-blur-md text-xs font-extrabold text-gray-900 dark:text-[#F5F7F5] shadow-xs">
                   {court.sportType} · {court.isIndoor ? 'Indoor Arena' : 'Outdoor Pitch'}
                 </span>
               </div>
@@ -151,27 +150,28 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
 
             {/* Info header */}
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 text-amber-800 text-xs font-bold">
-                  <Star className="w-[14px] h-[14px] fill-amber-400 text-amber-400" />
-                  <span>{court.rating}</span>
-                  <span className="text-gray-500">({court.reviewCount} reviews)</span>
-                </div>
-                <span className="text-xs font-semibold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg border border-green-200">
-                  WPT Certified Turf
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <span className="text-xs font-bold text-gray-800 dark:text-[#F5F7F5] bg-gray-100 dark:bg-[#1D2821] px-2.5 py-1 rounded-lg border border-gray-200 dark:border-[#344239]">
+                  Surface: {court.surface}
+                </span>
+                <span className="text-xs font-bold text-gray-800 dark:text-[#F5F7F5] bg-gray-100 dark:bg-[#1D2821] px-2.5 py-1 rounded-lg border border-gray-200 dark:border-[#344239]">
+                  Capacity: {court.capacity} Players
+                </span>
+                <span className="text-xs font-semibold text-green-700 dark:text-[#4ADE80] bg-green-50 dark:bg-green-950/30 px-2.5 py-1 rounded-lg border border-green-200 dark:border-green-800/40">
+                  Regulation Specification
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight leading-tight">{court.name}</h1>
-              <p className="text-sm text-gray-600 mt-3 leading-relaxed max-w-2xl">{court.description}</p>
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight leading-tight">{court.name}</h1>
+              <p className="text-sm text-gray-600 dark:text-[#A1ADA4] mt-3 leading-relaxed max-w-2xl">{court.description}</p>
             </div>
 
             {/* Features */}
-            <div className="bg-white rounded-3xl p-4 sm:p-6 border border-gray-200/80 shadow-xs">
-              <h3 className="font-extrabold text-base text-gray-900 mb-3 sm:mb-4">Court Features & Amenities</h3>
+            <div className="bg-white dark:bg-[#1D2821] rounded-3xl p-4 sm:p-6 border border-gray-200/80 dark:border-[#344239] shadow-xs">
+              <h3 className="font-extrabold text-base text-gray-900 dark:text-[#F5F7F5] mb-3 sm:mb-4">Court Features & Amenities</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {court.features.map((feat, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs font-semibold text-gray-700 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                    <CheckCircle2 className="w-[16px] h-[16px] text-green-600 shrink-0" />
+                  <div key={i} className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-[#F5F7F5] p-2.5 rounded-xl bg-gray-50 dark:bg-[#171F1A] border border-gray-100 dark:border-[#344239]">
+                    <CheckCircle2 className="w-[16px] h-[16px] text-green-600 dark:text-[#4ADE80] shrink-0" />
                     <span>{feat}</span>
                   </div>
                 ))}
@@ -179,9 +179,9 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* Rules */}
-            <div className="bg-white rounded-3xl p-4 sm:p-6 border border-gray-200/80 shadow-xs">
-              <h3 className="font-extrabold text-base text-gray-900 mb-2 sm:mb-3">Court Policies & Guidelines</h3>
-              <ul className="space-y-2 text-xs text-gray-600 font-medium">
+            <div className="bg-white dark:bg-[#1D2821] rounded-3xl p-4 sm:p-6 border border-gray-200/80 dark:border-[#344239] shadow-xs">
+              <h3 className="font-extrabold text-base text-gray-900 dark:text-[#F5F7F5] mb-2 sm:mb-3">Court Policies & Guidelines</h3>
+              <ul className="space-y-2 text-xs text-gray-600 dark:text-[#A1ADA4] font-medium">
                 {court.rules.map((rule, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <AlertCircle className="w-[14px] h-[14px] text-amber-500 shrink-0" />
@@ -194,24 +194,24 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
 
           {/* Col 3: Live Booking Box */}
           <div className="space-y-6">
-            <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xl sticky top-24 overflow-hidden">
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+            <div className="bg-white dark:bg-[#1D2821] rounded-3xl p-6 border border-gray-200/80 dark:border-[#344239] shadow-xl sticky top-24 overflow-hidden">
+              <div className="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-[#344239]">
                 <div>
-                  <span className="text-xs font-bold text-gray-500 block uppercase tracking-wider">Rate</span>
+                  <span className="text-xs font-bold text-gray-500 dark:text-[#8A9A8E] block uppercase tracking-wider">Rate</span>
                   <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-3xl font-black text-gray-900">EGP {court.pricePerHour}</span>
-                    <span className="text-xs text-gray-600 font-semibold">/ hour</span>
+                    <span className="text-3xl font-black text-gray-900 dark:text-[#F5F7F5]">EGP {court.pricePerHour}</span>
+                    <span className="text-xs text-gray-600 dark:text-[#A1ADA4] font-semibold">/ hour</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-bold text-gray-500 block uppercase tracking-wider">Capacity</span>
-                  <span className="text-sm font-extrabold text-gray-900 mt-1 block">{court.capacity} Players</span>
+                  <span className="text-xs font-bold text-gray-500 dark:text-[#8A9A8E] block uppercase tracking-wider">Capacity</span>
+                  <span className="text-sm font-extrabold text-gray-900 dark:text-[#F5F7F5] mt-1 block">{court.capacity} Players</span>
                 </div>
               </div>
 
               {/* Day Selector */}
-              <div className="py-4 border-b border-gray-100 space-y-2">
-                <label className="block text-xs font-extrabold text-gray-700 uppercase tracking-wider">
+              <div className="py-4 border-b border-gray-100 dark:border-[#344239] space-y-2">
+                <label className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider">
                   Select Date
                 </label>
                 <DaySelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
@@ -229,7 +229,7 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
                   <CalendarCheck className="w-[20px] h-[20px]" />
                   <span>Start Booking This Court</span>
                 </Button>
-                <p className="text-[11px] text-gray-500 text-center mt-2">
+                <p className="text-[11px] text-gray-500 dark:text-[#8A9A8E] text-center mt-2">
                   🔒 10-minute temporary lock active upon slot selection
                 </p>
               </div>
@@ -238,9 +238,9 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
         </div>
 
         {/* Time slots picker section */}
-        <div className="mt-8 sm:mt-12 bg-white rounded-3xl p-4 sm:p-8 border border-gray-200/80 shadow-md overflow-hidden">
+        <div className="mt-8 sm:mt-12 bg-white dark:bg-[#1D2821] rounded-3xl p-4 sm:p-8 border border-gray-200/80 dark:border-[#344239] shadow-md overflow-hidden">
           <BookingCountdown />
-          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-4 sm:mb-6 mt-4">Select Available Time Slot for {formatDisplayDate(selectedDate)}</h2>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-[#F5F7F5] mb-4 sm:mb-6 mt-4">Select Available Time Slot for {formatDisplayDate(selectedDate)}</h2>
           <TimeSlotsGrid slots={timeSlots} dateLabel={`Available ${formatDisplayDate(selectedDate)}`} />
         </div>
       </SiteContainer>

@@ -26,9 +26,9 @@ export default function BookingConfirmationPage() {
 
   if (!latestBooking) {
     return (
-      <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC]">
+      <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC] dark:bg-[#101512]">
         <SiteContainer className="py-16 sm:py-20 text-center">
-          <p className="text-gray-500 text-sm">Loading booking details...</p>
+          <p className="text-gray-500 dark:text-[#8A9A8E] text-sm">Loading booking details...</p>
         </SiteContainer>
       </div>
     );
@@ -40,15 +40,15 @@ export default function BookingConfirmationPage() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC]">
-      <section className="bg-white border-b border-gray-200/80 py-6 sm:py-10">
+    <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC] dark:bg-[#101512]">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-6 sm:py-10">
         <SiteContainer>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
             <div className="section-head mb-0">
               <Badge icon={<CheckCircle2 className="icon-inline text-green-600" />} size="sm">
                 Booking Confirmed
               </Badge>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight leading-[1.05]">Booking Confirmed!</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight leading-[1.05]">Booking Confirmed!</h1>
               <p className="text-sm text-muted max-w-xl leading-relaxed">
                 Your court has been successfully booked. See you on the court!
               </p>
@@ -60,22 +60,22 @@ export default function BookingConfirmationPage() {
       <SiteContainer className="pb-6">
         <div className="max-w-2xl mx-auto space-y-6">
           {/* Success animation */}
-          <div className="bg-white rounded-[24px] border border-[#E2E8F0] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-5 sm:p-8 text-center space-y-4">
-            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10 text-green-600" />
+          <div className="bg-white dark:bg-[#1D2821] rounded-[24px] border border-[#E2E8F0] dark:border-[#344239] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-5 sm:p-8 text-center space-y-4">
+            <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-950/60 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-[#4ADE80]" />
             </div>
-            <h2 className="font-extrabold text-xl text-[#0F172A]">Thank You, {latestBooking.userName}!</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="font-extrabold text-xl text-[#0F172A] dark:text-[#F5F7F5]">Thank You, {latestBooking.userName}!</h2>
+            <p className="text-sm text-gray-500 dark:text-[#8A9A8E]">
               Your booking has been confirmed and a confirmation email has been sent to{' '}
-              <span className="font-bold text-[#0F172A]">{latestBooking.userEmail}</span>
+              <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{latestBooking.userEmail}</span>
             </p>
           </div>
 
           {/* Booking details */}
-          <div className="bg-white rounded-[24px] border border-[#E2E8F0] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-6 space-y-4">
+          <div className="bg-white dark:bg-[#1D2821] rounded-[24px] border border-[#E2E8F0] dark:border-[#344239] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-extrabold text-sm text-[#0F172A] uppercase tracking-wider">Booking Details</h3>
-              <span className="font-mono text-xs font-bold text-gray-400">{latestBooking.bookingNumber}</span>
+              <h3 className="font-extrabold text-sm text-[#0F172A] dark:text-[#F5F7F5] uppercase tracking-wider">Booking Details</h3>
+              <span className="font-mono text-xs font-bold text-gray-400 dark:text-[#8A9A8E]">{latestBooking.bookingNumber}</span>
             </div>
 
             <div className="flex items-center gap-4">
@@ -93,38 +93,38 @@ export default function BookingConfirmationPage() {
                 />
               </div>
               <div className="min-w-0">
-                <h4 className="font-bold text-sm text-[#0F172A]">{latestBooking.courtName}</h4>
-                <p className="text-[11px] text-gray-500 mt-0.5">{latestBooking.sportType}</p>
+                <h4 className="font-bold text-sm text-[#0F172A] dark:text-[#F5F7F5]">{latestBooking.courtName}</h4>
+                <p className="text-[11px] text-gray-500 dark:text-[#8A9A8E] mt-0.5">{latestBooking.sportType}</p>
               </div>
             </div>
 
             <div className="space-y-2.5 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Date</span>
-                <span className="font-bold text-[#0F172A]">{latestBooking.date}</span>
+                <span className="text-gray-500 dark:text-[#8A9A8E]">Date</span>
+                <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{latestBooking.date}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Time</span>
-                <span className="font-bold text-[#0F172A]">
+                <span className="text-gray-500 dark:text-[#8A9A8E]">Time</span>
+                <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">
                   {latestBooking.startTime} – {latestBooking.endTime}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Duration</span>
-                <span className="font-bold text-[#0F172A]">{latestBooking.durationMinutes} mins</span>
+                <span className="text-gray-500 dark:text-[#8A9A8E]">Duration</span>
+                <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{latestBooking.durationMinutes} mins</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-500">Status</span>
+                <span className="text-gray-500 dark:text-[#8A9A8E]">Status</span>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold badge-available flex items-center gap-1 w-fit">
                   <CheckCircle2 className="w-3 h-3" /> Confirmed
                 </span>
               </div>
             </div>
 
-            <div className="border-t border-gray-100 pt-3">
+            <div className="border-t border-gray-100 dark:border-[#344239] pt-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Paid</span>
-                <span className="text-2xl font-black text-[#0F172A]">EGP {latestBooking.totalPrice}</span>
+                <span className="text-xs font-bold text-gray-400 dark:text-[#8A9A8E] uppercase tracking-wider">Total Paid</span>
+                <span className="text-2xl font-black text-[#0F172A] dark:text-[#F5F7F5]">EGP {latestBooking.totalPrice}</span>
               </div>
             </div>
           </div>

@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/useAuthStore';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Button } from '@/components/ui/button';
+import { WegoLogo } from '@/components/ui/Logo';
 import {
-  Shield,
   LayoutDashboard,
   CalendarCheck,
   CalendarPlus,
@@ -39,19 +40,19 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
       { label: 'Bookings', href: '/admin/bookings', icon: CalendarCheck },
       { label: 'New Booking', icon: CalendarPlus },
       { label: 'Courts', href: '/admin/courts', icon: Building2 },
-      { label: 'Blocked Periods', icon: CalendarOff },
+      { label: 'Blocked Periods', href: '/admin/blocked-periods', icon: CalendarOff },
     ],
   },
   {
     title: 'People',
     items: [
-      { label: 'Customers', icon: Users },
-      { label: 'Notifications', icon: Bell },
+      { label: 'Customers', href: '/admin/customers', icon: Users },
+      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
     ],
   },
   {
     title: 'System',
-    items: [{ label: 'Settings', icon: Settings }],
+    items: [{ label: 'Settings', href: '/admin/settings', icon: Settings }],
   },
 ];
 
@@ -79,18 +80,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const sidebarContent = (
     <nav className="flex h-full flex-col" aria-label="Admin navigation">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-5 h-[72px] border-b border-[var(--border)]">
-        <span className="w-9 h-9 rounded-[var(--radius-md)] bg-[var(--primary-light)] text-[var(--primary-hover)] flex items-center justify-center shrink-0">
-          <Shield className="w-5 h-5" aria-hidden="true" />
-        </span>
-        <span className="flex flex-col leading-none">
-          <span className="text-[15px] font-black text-[var(--text-main)] tracking-[-0.02em]">
-            K-HUB
-          </span>
-          <span className="text-[10px] font-bold text-[var(--primary-hover)] tracking-[0.18em] uppercase mt-0.5">
+      <div className="flex items-center px-5 h-[72px] border-b border-[var(--border)]">
+        <Link href="/admin" className="flex items-center gap-2.5" aria-label="WEGO Admin">
+          <WegoLogo size="md" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-[#4ADE80] border border-green-200 dark:border-green-800/40">
             Admin
           </span>
-        </span>
+        </Link>
       </div>
 
       {/* Sections */}
@@ -130,8 +126,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       onClick={() => setOpenPath(null)}
                       className={`flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-semibold transition-colors ${
                         isActive
-                          ? 'bg-white text-[#15803D] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.05)] ring-1 ring-inset ring-[var(--border)]'
-                          : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/70'
+                          ? 'bg-white text-[#15803D] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.05)] ring-1 ring-inset ring-[var(--border)] dark:bg-[#1D2821] dark:text-[#4ADE80] dark:ring-[#344239]'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/70 dark:hover:bg-[#1D2821]/60'
                       }`}
                     >
                       <NavIcon icon={item.icon} className="w-[18px] h-[18px] shrink-0" />
@@ -165,16 +161,16 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
           <div
-            className="absolute inset-0 bg-slate-900/40"
+            className="absolute inset-0 bg-slate-900/40 dark:bg-black/60"
             onClick={() => setOpenPath(null)}
             aria-hidden="true"
           />
-          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-white border-r border-[var(--border)] shadow-[var(--shadow-floating)]">
+          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-white dark:bg-[#171F1A] border-r border-[var(--border)] shadow-[var(--shadow-floating)]">
             <button
               type="button"
               onClick={() => setOpenPath(null)}
               aria-label="Close admin menu"
-              className="absolute top-4 right-3 w-9 h-9 flex items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:bg-[var(--background)]"
+              className="absolute top-4 right-3 w-9 h-9 flex items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:bg-[var(--background)] cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -186,14 +182,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       {/* Content column */}
       <div className="lg:pl-64">
         {/* Admin header */}
-        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-[var(--border)]">
+        <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#101512]/90 backdrop-blur-xl border-b border-[var(--border)] transition-colors">
           <div className="flex items-center justify-between gap-3 h-[64px] px-4 sm:px-6">
             <div className="flex items-center gap-3 min-w-0">
               <button
                 type="button"
                 onClick={() => setOpenPath(pathname)}
                 aria-label="Open admin menu"
-                className="lg:hidden w-9 h-9 flex items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:bg-[var(--background)]"
+                className="lg:hidden w-9 h-9 flex items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:bg-[var(--background)] cursor-pointer"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -204,11 +200,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     ? 'Bookings'
                     : pathname.startsWith('/admin/courts')
                       ? 'Courts'
-                      : 'Admin'}
+                      : pathname.startsWith('/admin/blocked-periods')
+                        ? 'Blocked Periods'
+                        : pathname.startsWith('/admin/customers')
+                          ? 'Customers'
+                          : pathname.startsWith('/admin/notifications')
+                            ? 'Notifications'
+                            : pathname.startsWith('/admin/settings')
+                              ? 'Settings'
+                              : 'Admin'}
               </h2>
             </div>
 
             <div className="flex items-center gap-1 sm:gap-2">
+              <ThemeToggle variant="compact" />
+
               <NotificationBell />
 
               <Link

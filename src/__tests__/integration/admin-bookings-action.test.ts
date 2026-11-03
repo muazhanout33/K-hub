@@ -307,9 +307,10 @@ describe('getAdminBookingsPageAction', () => {
 
     expect(result.success).toBe(true);
     const orArg = bookingsChain.or.mock.calls[0][0] as string;
-    // Commas/quotes/parens from the input became spaces ('a b  c');
-    // remaining commas are only the .or() condition separators.
-    expect(orArg).toContain('a b  c');
+    // Commas/quotes/parens from the input became spaces and runs of
+    // whitespace were collapsed ('a b c'); remaining commas are only the
+    // .or() condition separators.
+    expect(orArg).toContain('a b c');
     expect(orArg).not.toContain('"');
     expect(orArg).not.toContain('(');
   });
@@ -319,6 +320,26 @@ describe('getAdminBookingsPageAction', () => {
 
     expect(result.success).toBe(true);
     expect(bookingsChain.or).not.toHaveBeenCalled();
+  });
+
+  it('escapes ILIKE wildcards so % and _ match literally', async () => {
+    const result = await getAdminBookingsPageAction({ search: '50%_off' });
+
+    expect(result.success).toBe(true);
+    const orArg = bookingsChain.or.mock.calls[0][0] as string;
+    // A single escaping backslash before the wildcard so postgres ILIKE
+    // (default escape '\') treats it literally, not as a wildcard.
+    expect(orArg).toContain('50\\%\\_off');
+    expect(orArg).not.toContain('50%');
+  });
+
+  it('collapses runs of whitespace in the search term', async () => {
+    const result = await getAdminBookingsPageAction({ search: 'Sara   Ali' });
+
+    expect(result.success).toBe(true);
+    expect(bookingsChain.or).toHaveBeenCalledWith(
+      'booking_number.ilike.%Sara Ali%,user_name.ilike.%Sara Ali%,user_email.ilike.%Sara Ali%,user_phone.ilike.%Sara Ali%'
+    );
   });
 
   // ── Query error handling ──────────────────────────────────────

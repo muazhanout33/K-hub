@@ -101,9 +101,9 @@ export function BookingWidget() {
 
   if (!selectedCourt) {
     return (
-      <div className="bg-white rounded-[24px] border border-[#E2E8F0] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-4 sm:p-6 space-y-5 sm:space-y-6 max-w-2xl mx-auto text-center">
-        <h2 className="font-extrabold text-2xl text-[#0F172A]">Book Your Court</h2>
-        <p className="text-gray-500 text-sm">No court selected. Choose a court to continue.</p>
+      <div className="bg-white dark:bg-[#1D2821] rounded-[24px] border border-[#E2E8F0] dark:border-[#344239] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-4 sm:p-6 space-y-5 sm:space-y-6 max-w-2xl mx-auto text-center">
+        <h2 className="font-extrabold text-2xl text-[#0F172A] dark:text-[#F5F7F5]">Book Your Court</h2>
+        <p className="text-gray-500 dark:text-[#8A9A8E] text-sm">No court selected. Choose a court to continue.</p>
         <Button
           render={<Link href="/courts" />}
           nativeButton={false}
@@ -117,13 +117,13 @@ export function BookingWidget() {
   }
 
   return (
-    <div className="bg-white rounded-[24px] border border-[#E2E8F0] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-4 sm:p-6 space-y-5 sm:space-y-6 max-w-2xl mx-auto">
+    <div className="bg-white dark:bg-[#1D2821] rounded-[24px] border border-[#E2E8F0] dark:border-[#344239] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-4 sm:p-6 space-y-5 sm:space-y-6 max-w-2xl mx-auto">
 
-      <h2 className="font-extrabold text-2xl text-[#0F172A]">Book Your Court</h2>
+      <h2 className="font-extrabold text-2xl text-[#0F172A] dark:text-[#F5F7F5]">Book Your Court</h2>
 
       <BookingSteps />
 
-      <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="rounded-2xl border border-gray-100 dark:border-[#344239] bg-gray-50/70 dark:bg-[#171F1A] p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0">
             <Image
@@ -134,17 +134,17 @@ export function BookingWidget() {
             />
           </div>
           <div className="min-w-0">
-            <h3 className="font-bold text-sm text-[#0F172A] line-clamp-1">{selectedCourt.name}</h3>
-            <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-600 font-medium flex-wrap">
+            <h3 className="font-bold text-sm text-[#0F172A] dark:text-[#F5F7F5] line-clamp-1">{selectedCourt.name}</h3>
+            <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-600 dark:text-[#A1ADA4] font-medium flex-wrap">
               <span className="flex items-center gap-1">
                 <Sun className="w-3 h-3 text-amber-500" />
                 {selectedCourt.isIndoor ? 'Indoor' : 'Outdoor'}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="w-3 h-3 text-gray-500" />
+                <Users className="w-3 h-3 text-gray-500 dark:text-[#8A9A8E]" />
                 {selectedCourt.capacity} Players
               </span>
-              <span className="font-bold text-[#0F172A]">EGP {selectedCourt.pricePerHour}/hr</span>
+              <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">EGP {selectedCourt.pricePerHour}/hr</span>
             </div>
           </div>
        </div>
@@ -161,15 +161,15 @@ export function BookingWidget() {
 
       {/* Day Selector */}
       <div>
-        <label className="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-2">
+        <label className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-2">
           Select Date
         </label>
         <DaySelector selectedDate={selectedDate} onSelectDate={selectDate} />
       </div>
 
       <div>
-        <h3 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-4">
-          Available {formatDisplayDate(selectedDate)} {selectedSlots.length > 0 && <span className="text-green-600">({selectedSlots.length} selected)</span>}
+        <h3 className="text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-4">
+          Available {formatDisplayDate(selectedDate)} {selectedSlots.length > 0 && <span className="text-green-600 dark:text-[#4ADE80]">({selectedSlots.length} selected)</span>}
         </h3>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 w-full">
           {displaySlots.map((slot, idx) => {
@@ -200,7 +200,7 @@ export function BookingWidget() {
       </div>
 
       <div className="pt-2 flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-gray-600">
+        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-gray-600 dark:text-[#A1ADA4]">
           <span className="flex items-center gap-1.5 leading-none">
             <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A] inline-block" /> Available
          </span>
@@ -223,15 +223,15 @@ export function BookingWidget() {
           const total = calculateBookingPrice(selectedCourt.pricePerHour, durationMinutes);
 
           return (
-            <div className="bg-green-50 rounded-2xl p-4 border border-green-200/80 w-full">
-              <p className="text-xs font-bold text-green-800 uppercase tracking-wider">Selected Booking</p>
-              <p className="text-lg font-black text-green-900 mt-1">{selectedSlots.length} Hour{selectedSlots.length > 1 ? 's' : ''}</p>
-              <p className="text-sm font-semibold text-green-700">
+            <div className="bg-green-50 dark:bg-green-950/30 rounded-2xl p-4 border border-green-200/80 dark:border-green-800/40 w-full">
+              <p className="text-xs font-bold text-green-800 dark:text-green-300 uppercase tracking-wider">Selected Booking</p>
+              <p className="text-lg font-black text-green-900 dark:text-[#F5F7F5] mt-1">{selectedSlots.length} Hour{selectedSlots.length > 1 ? 's' : ''}</p>
+              <p className="text-sm font-semibold text-green-700 dark:text-[#4ADE80]">
                 {to12Hour(firstSlot.startTime)} → {to12Hour(lastSlot.endTime)}
               </p>
-              <div className="border-t border-green-200/60 mt-3 pt-3">
-                <p className="text-[10px] font-bold text-green-600 uppercase tracking-wider">Total</p>
-                <p className="text-xl font-black text-green-900">EGP {total}</p>
+              <div className="border-t border-green-200/60 dark:border-green-800/40 mt-3 pt-3">
+                <p className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider">Total</p>
+                <p className="text-xl font-black text-green-900 dark:text-[#F5F7F5]">EGP {total}</p>
               </div>
             </div>
           );

@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { X, Save, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Court } from '@/types';
-import { updateCourtAction, type UpdateCourtPayload } from '@/app/actions/court.actions';
+import {
+  createCourtAction,
+  updateCourtAction,
+  type UpdateCourtPayload,
+} from '@/app/actions/court.actions';
 
 const EDITABLE_SPORT_TYPES = ['Football', 'Tennis', 'Padel'] as const;
 const EDITABLE_STATUSES = ['Available', 'Maintenance'] as const;
@@ -98,15 +102,18 @@ interface FormValues {
 
 interface CourtEditDrawerProps {
   court: Court | null;
+  /** 'edit' (default) requires `court`; 'create' renders the add-court form. */
+  mode?: 'edit' | 'create';
   onClose: () => void;
   /** Called after a successful save so the page can refresh its list. */
   onSaved: () => void;
 }
 
 const inputClass = (hasError: boolean) =>
-  `w-full rounded-xl border ${hasError ? 'border-red-300' : 'border-gray-200'} px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30`;
+  `w-full rounded-xl border ${hasError ? 'border-red-300 dark:border-red-500' : 'border-gray-200 dark:border-[#344239]'} px-3 py-2 text-sm text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#171F1A] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30`;
 
-export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProps) {
+export function CourtEditDrawer({ court, mode = 'edit', onClose, onSaved }: CourtEditDrawerProps) {
+  const isCreateMode = mode === 'create';
   const [values, setValues] = useState<FormValues>(() => ({
     name: court?.name ?? '',
     sportType: court?.sportType ?? 'Padel',
@@ -116,7 +123,12 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
     close: court?.workingHours.close ?? '00:00',
     // Fix #1: a non-editable current status (Booked / Starts Soon) starts empty
     // behind a placeholder — never a silent 'Available' fallback.
-    status: court && isEditableStatus(court.status) ? court.status : '',
+    // Create mode always starts from the DB default 'Available'.
+    status: isCreateMode
+      ? 'Available'
+      : court && isEditableStatus(court.status)
+        ? court.status
+        : '',
     imageUrl: court?.image ?? '',
   }));
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -125,7 +137,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
   // Fix #1: tracks whether the admin explicitly chose a status in the select.
   const [statusDirty, setStatusDirty] = useState(false);
 
-  if (!court) return null;
+  if (!court && !isCreateMode) return null;
 
   const set = (key: keyof FormValues) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setValues((prev) => ({ ...prev, [key]: event.target.value }));
@@ -139,13 +151,37 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
     event.preventDefault();
     if (busy) return;
 
-    const errors = validate(values, statusDirty);
+    const errors = validate(values, isCreateMode || statusDirty);
     setFieldErrors(errors);
     setFormError(null);
     if (Object.keys(errors).length > 0) return;
 
     setBusy(true);
     try {
+      if (isCreateMode) {
+        const result = await createCourtAction({
+          name: values.name.trim(),
+          sportType: values.sportType,
+          surface: values.surface.trim(),
+          pricePerHour: Number(values.price),
+          workingHoursOpen: values.open,
+          workingHoursClose: values.close,
+          imageUrl: values.imageUrl.trim(),
+          status: values.status,
+        });
+
+        if (result.success && result.court) {
+          toast.success(`Court "${result.court.name}" created.`);
+          onSaved();
+          onClose();
+          return;
+        }
+        setFormError(result.error || 'Failed to create the court.');
+        return;
+      }
+
+      if (!court) return;
+
       const basePayload: UpdateCourtPayload = {
         courtId: court.id,
         name: values.name.trim(),
@@ -196,13 +232,13 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="edit-court-title">
-      <div className="absolute inset-0 bg-slate-900/40" onClick={busy ? undefined : onClose} aria-hidden="true" />
-      <div className="relative w-full max-w-md h-full bg-white border-l border-[var(--border)] shadow-[var(--shadow-floating)] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between gap-3">
+      <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/70" onClick={busy ? undefined : onClose} aria-hidden="true" />
+      <div className="relative w-full max-w-md h-full bg-white dark:bg-[#1D2821] border-l border-[var(--border)] shadow-[var(--shadow-floating)] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-[#1D2821] border-b border-gray-100 dark:border-[#344239] px-5 py-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <ShieldCheck className="w-4 h-4 text-[var(--primary)] shrink-0" aria-hidden="true" />
-            <h2 id="edit-court-title" className="text-sm font-bold text-gray-800 truncate">
-              Edit court
+            <h2 id="edit-court-title" className="text-sm font-bold text-gray-800 dark:text-[#F5F7F5] truncate">
+              {isCreateMode ? 'Add court' : 'Edit court'}
             </h2>
           </div>
           <button
@@ -218,7 +254,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
 
         <form onSubmit={handleSubmit} className="px-5 py-5 space-y-4" noValidate>
           <div>
-            <label htmlFor="court-name" className="block text-xs font-bold text-gray-600 mb-1">
+            <label htmlFor="court-name" className="block text-xs font-bold text-gray-600 dark:text-[#A1ADA4] mb-1">
               Court name
             </label>
             <input
@@ -235,7 +271,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="court-sport" className="block text-xs font-bold text-gray-600 mb-1">
+              <label htmlFor="court-sport" className="block text-xs font-bold text-gray-600 dark:text-[#A1ADA4] mb-1">
                 Sport type
               </label>
               <select
@@ -253,7 +289,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
               {errorFor('sportType')}
             </div>
             <div>
-              <label htmlFor="court-surface" className="block text-xs font-bold text-gray-600 mb-1">
+              <label htmlFor="court-surface" className="block text-xs font-bold text-gray-600 dark:text-[#A1ADA4] mb-1">
                 Surface
               </label>
               <input
@@ -270,7 +306,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
           </div>
 
           <div>
-            <label htmlFor="court-price" className="block text-xs font-bold text-gray-600 mb-1">
+            <label htmlFor="court-price" className="block text-xs font-bold text-gray-600 dark:text-[#A1ADA4] mb-1">
               Hourly price (EGP)
             </label>
             <input
@@ -289,7 +325,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="court-open" className="block text-xs font-bold text-gray-600 mb-1">
+              <label htmlFor="court-open" className="block text-xs font-bold text-gray-600 dark:text-[#A1ADA4] mb-1">
                 Opens
               </label>
               <input
@@ -303,7 +339,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
               {errorFor('open')}
             </div>
             <div>
-              <label htmlFor="court-close" className="block text-xs font-bold text-gray-600 mb-1">
+              <label htmlFor="court-close" className="block text-xs font-bold text-gray-600 dark:text-[#A1ADA4] mb-1">
                 Closes
               </label>
               <input
@@ -317,13 +353,13 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
               {errorFor('close')}
             </div>
           </div>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-gray-400 dark:text-[#8A9A8E]">
             Overnight hours are allowed (closing earlier than opening). Changing hours never
             cancels existing bookings — you will be warned before saving.
           </p>
 
           <div>
-            <label htmlFor="court-status" className="block text-xs font-bold text-gray-600 mb-1">
+            <label htmlFor="court-status" className="block text-xs font-bold text-gray-600 dark:text-[#A1ADA4] mb-1">
               Operational status
             </label>
             <select
@@ -332,7 +368,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
               onChange={handleStatusChange}
               className={inputClass(Boolean(fieldErrors.status))}
             >
-              {!isEditableStatus(court.status) && (
+              {court && !isEditableStatus(court.status) && (
                 <option value="" disabled>
                   {court.status} (not editable — choose a status to change it)
                 </option>
@@ -344,14 +380,14 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
               ))}
             </select>
             {errorFor('status')}
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-[11px] text-gray-400 dark:text-[#8A9A8E]">
               Maintenance blocks new bookings only; existing bookings are untouched. The current
               status is kept unless you choose a new one.
             </p>
           </div>
 
           <div>
-            <label htmlFor="court-image" className="block text-xs font-bold text-gray-600 mb-1">
+            <label htmlFor="court-image" className="block text-xs font-bold text-gray-600 dark:text-[#A1ADA4] mb-1">
               Image URL
             </label>
             <input
@@ -365,22 +401,23 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
               className={inputClass(Boolean(fieldErrors.imageUrl))}
             />
             {errorFor('imageUrl')}
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-[11px] text-gray-400 dark:text-[#8A9A8E]">
               Local /images/ path or absolute HTTPS URL. External URLs may currently show the
               public fallback image.
             </p>
           </div>
 
-          <div className="rounded-xl bg-gray-50 border border-gray-100 px-3 py-2">
-            <p className="text-xs text-gray-500">
-              Slot duration: <span className="font-bold text-gray-700">{court.slotDurationMinutes} min</span>{' '}
+          <div className="rounded-xl bg-gray-50 dark:bg-[#171F1A] border border-gray-100 dark:border-[#344239] px-3 py-2">
+            <p className="text-xs text-gray-500 dark:text-[#8A9A8E]">
+              Slot duration:{' '}
+              <span className="font-bold text-gray-700 dark:text-[#F5F7F5]">{court?.slotDurationMinutes ?? 60} min</span>{' '}
               (fixed — not editable)
             </p>
           </div>
 
           {formError && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2" role="alert">
-              <p className="text-sm text-red-600">{formError}</p>
+            <div className="rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-3 py-2" role="alert">
+              <p className="text-sm text-red-600 dark:text-red-400">{formError}</p>
             </div>
           )}
 
@@ -399,7 +436,7 @@ export function CourtEditDrawer({ court, onClose, onSaved }: CourtEditDrawerProp
               className="rounded-[var(--radius-md)] px-4 py-2 text-xs font-bold bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
               <Save className="w-3.5 h-3.5" aria-hidden="true" />
-              {busy ? 'Saving…' : 'Save changes'}
+              {busy ? 'Saving…' : isCreateMode ? 'Create court' : 'Save changes'}
             </button>
           </div>
         </form>

@@ -101,7 +101,7 @@ test.describe('Admin auth redirect fixes (Phase 1 follow-up)', () => {
 
     // No false authentication: the real login form must render
     await expect(page.locator('input[type="password"]')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('h1:has-text("Sign In to K-HUB")')).toBeVisible();
+    await expect(page.locator('h1:has-text("Sign In to WEGO")')).toBeVisible();
 
     // No redirect loop to /book
     await page.waitForTimeout(3000);
@@ -139,7 +139,24 @@ test.describe('Admin auth redirect fixes (Phase 1 follow-up)', () => {
     });
   });
 
-  test('unsafe next value → rejected, falls back to /book', async ({ page }) => {
+  test('unsafe next value for regular user → rejected, falls back to /book', async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.goto(
+      `${BASE}/auth/login?next=${encodeURIComponent('https://evil.com')}`,
+      { waitUntil: 'domcontentloaded' }
+    );
+    await realLogin(page, USER_A_EMAIL, USER_A_PASSWORD);
+
+    await page.waitForFunction(
+      () => window.location.pathname === '/book',
+      undefined,
+      { timeout: 30000 }
+    );
+    expect(page.url()).not.toContain('evil.com');
+    expect(new URL(page.url()).pathname).toBe('/book');
+  });
+
+  test('unsafe next value for admin → rejected, falls back to /admin', async ({ page }) => {
     test.setTimeout(120_000);
     await page.goto(
       `${BASE}/auth/login?next=${encodeURIComponent('https://evil.com')}`,
@@ -148,24 +165,77 @@ test.describe('Admin auth redirect fixes (Phase 1 follow-up)', () => {
     await realLogin(page, ADMIN_EMAIL, ADMIN_PASSWORD);
 
     await page.waitForFunction(
-      () => window.location.pathname === '/book',
+      () => window.location.pathname === '/admin',
       undefined,
       { timeout: 30000 }
     );
     expect(page.url()).not.toContain('evil.com');
+    expect(new URL(page.url()).pathname).toBe('/admin');
   });
 
-  test('ordinary login without next → existing /book behavior preserved', async ({
+  test('ordinary login without next for regular user → lands on /book', async ({
     page,
   }) => {
     test.setTimeout(120_000);
     await page.goto(`${BASE}/auth/login`, { waitUntil: 'domcontentloaded' });
-    await realLogin(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+    await realLogin(page, USER_A_EMAIL, USER_A_PASSWORD);
 
     await page.waitForFunction(
       () => window.location.pathname === '/book',
       undefined,
       { timeout: 30000 }
     );
+    expect(new URL(page.url()).pathname).toBe('/book');
+  });
+
+  test('ordinary login without next for Admin → lands on /admin, never /book', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const navs: string[] = [];
+    trackNavigations(page, navs);
+
+    await page.goto(`${BASE}/auth/login`, { waitUntil: 'domcontentloaded' });
+    await realLogin(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+
+    await page.waitForFunction(
+      () => window.location.pathname === '/admin',
+      undefined,
+      { timeout: 30000 }
+    );
+    await expect(page.locator('h1:has-text("Admin Dashboard")')).toBeVisible({
+      timeout: 30000,
+    });
+    expect(paths(navs)).not.toContain('/book');
+  });
+
+  test('admin signed in on public website navigates to /admin → stays on /admin after refresh', async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    // Sign in as Admin on public site
+    await page.goto(`${BASE}/auth/login`, { waitUntil: 'domcontentloaded' });
+    await realLogin(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+
+    const navs: string[] = [];
+    trackNavigations(page, navs);
+
+    // Navigate directly to /admin
+    await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/admin$/, { timeout: 30000 });
+    await expect(page.locator('h1:has-text("Admin Dashboard")')).toBeVisible({
+      timeout: 30000,
+    });
+
+    // Refresh at /admin
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/admin$/, { timeout: 30000 });
+    await expect(page.locator('h1:has-text("Admin Dashboard")')).toBeVisible({
+      timeout: 30000,
+    });
+
+    const seen = paths(navs);
+    expect(seen).not.toContain('/book');
+    expect(seen).not.toContain('/auth/login');
   });
 });

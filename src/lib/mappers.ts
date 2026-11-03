@@ -35,6 +35,7 @@ import {
   Testimonial,
 } from '@/types';
 import { FALLBACK_COURT_IMAGE } from '@/services/court.service';
+import { resolveEventImage } from '@/lib/sport-images';
 
 /**
  * Helper to add days to a YYYY-MM-DD date string.
@@ -188,6 +189,7 @@ export function mapDbCourtToCourt(db: DbCourt): Court {
       close: db.working_hours_close.substring(0, 5),
     },
     slotDurationMinutes: db.slot_duration_minutes,
+    deletedAt: db.deleted_at ?? undefined,
   };
 }
 
@@ -418,7 +420,10 @@ export function mapDbEventToEvent(db: DbEvent): EventItem {
     id: db.id,
     title: db.title,
     description: db.description ?? '',
-    image: db.image_url ?? '',
+    // Never empty: events without a usable image_url (e.g. null in the DB)
+    // previously produced <Image src=""> runtime errors. Resolves to an
+    // allowed remote image or a sport-appropriate local asset.
+    image: resolveEventImage(db.image_url, db.sport_type),
     date: db.event_date,
     time: db.start_time && db.end_time
       ? `${db.start_time} - ${db.end_time}`

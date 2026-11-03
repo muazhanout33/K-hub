@@ -100,9 +100,9 @@ export default function MyBookingsPage() {
   if (!user && !isRedirecting) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-6">
-        <div className="bg-white rounded-[var(--radius-xl)] p-12 text-center border border-gray-200 max-w-md mx-auto shadow-sm">
-          <LogIn className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="font-extrabold text-gray-900 text-lg">Sign In Required</h3>
+        <div className="bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] p-12 text-center border border-gray-200 dark:border-[#344239] max-w-md mx-auto shadow-sm">
+          <LogIn className="w-12 h-12 text-gray-300 dark:text-[#8A9A8E] mx-auto mb-3" />
+          <h3 className="font-extrabold text-gray-900 dark:text-[#F5F7F5] text-lg">Sign In Required</h3>
           <p className="text-xs text-muted mt-1">Please sign in to view your bookings.</p>
           <Button
             render={<Link href="/auth/login" />}
@@ -122,12 +122,12 @@ export default function MyBookingsPage() {
   return (
     <div className="space-y-6 sm:space-y-10">
       {/* Header */}
-      <section className="bg-white border-b border-gray-200/80 py-6 sm:py-10">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-6 sm:py-10">
         <SiteContainer>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
             <div className="section-head mb-0">
               <Badge variant="brand" size="sm">Player Dashboard</Badge>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight">My Reservations</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight">My Reservations</h1>
               <p className="text-sm sm:text-base text-muted leading-relaxed max-w-2xl">
                 Manage your upcoming court bookings, view session history, and check reservation status.
               </p>
@@ -151,18 +151,18 @@ export default function MyBookingsPage() {
       <SiteContainer as="section" className="pb-12">
         {/* Tab Bar */}
         {allBookings.length > 0 && (
-          <div className="flex gap-1 mb-8 bg-gray-100 rounded-[var(--radius-pill)] p-1 w-fit">
+          <div className="flex gap-1 mb-8 bg-gray-100 dark:bg-[#1D2821] border border-transparent dark:border-[#344239] rounded-[var(--radius-pill)] p-1 w-fit">
             <button
               onClick={() => setActiveTab('upcoming')}
               className={`px-5 py-2.5 rounded-[var(--radius-pill)] text-sm font-bold transition-all cursor-pointer ${
                 activeTab === 'upcoming'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white dark:bg-[#26332A] text-gray-900 dark:text-[#F5F7F5] shadow-sm'
+                  : 'text-gray-500 dark:text-[#8A9A8E] hover:text-gray-700 dark:hover:text-[#F5F7F5]'
               }`}
             >
               Upcoming
               <span className={`ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black ${
-                activeTab === 'upcoming' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'
+                activeTab === 'upcoming' ? 'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-[#4ADE80]' : 'bg-gray-200 dark:bg-[#171F1A] text-gray-500 dark:text-[#8A9A8E]'
               }`}>
                 {upcoming.length}
               </span>
@@ -171,14 +171,14 @@ export default function MyBookingsPage() {
               onClick={() => setActiveTab('past')}
               className={`px-5 py-2.5 rounded-[var(--radius-pill)] text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeTab === 'past'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white dark:bg-[#26332A] text-gray-900 dark:text-[#F5F7F5] shadow-sm'
+                  : 'text-gray-500 dark:text-[#8A9A8E] hover:text-gray-700 dark:hover:text-[#F5F7F5]'
               }`}
             >
               <History className="w-3.5 h-3.5" />
               Past
               <span className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black ${
-                activeTab === 'past' ? 'bg-gray-200 text-gray-700' : 'bg-gray-200 text-gray-500'
+                activeTab === 'past' ? 'bg-gray-200 dark:bg-[#171F1A] text-gray-700 dark:text-[#F5F7F5]' : 'bg-gray-200 dark:bg-[#171F1A] text-gray-500 dark:text-[#8A9A8E]'
               }`}>
                 {past.length}
               </span>
@@ -198,7 +198,7 @@ export default function MyBookingsPage() {
                 return (
                   <div
                     key={booking.id}
-                    className="bg-white rounded-[var(--radius-xl)] p-6 border border-gray-200/80 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5"
+                    className="bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] p-6 border border-gray-200/80 dark:border-[#344239] shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5"
                   >
                     {/* Left Thumbnail & Details */}
                     <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
@@ -217,7 +217,7 @@ export default function MyBookingsPage() {
                       </div>
                       <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-mono text-xs font-bold text-gray-400">{booking.bookingNumber}</span>
+                          <span className="font-mono text-xs font-bold text-gray-400 dark:text-[#8A9A8E]">{booking.bookingNumber}</span>
                           {isReserved ? (
                             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold status-reserved flex items-center gap-1">
                               <Clock className="w-3 h-3" /> Reserved
@@ -227,31 +227,31 @@ export default function MyBookingsPage() {
                               <CheckCircle2 className="w-3 h-3" /> Confirmed
                             </span>
                           ) : isExpired ? (
-                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-100 text-orange-700 flex items-center gap-1">
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-400 flex items-center gap-1">
                               <AlertCircle className="w-3 h-3" /> Expired
                             </span>
                           ) : (
-                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-500 flex items-center gap-1">
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-500 dark:bg-[#171F1A] dark:text-[#8A9A8E] flex items-center gap-1">
                               <XCircle className="w-3 h-3" /> Cancelled
                             </span>
                           )}
                         </div>
-                        <h3 className="font-extrabold text-base lg:text-lg text-gray-900 truncate">{booking.courtName}</h3>
+                        <h3 className="font-extrabold text-base lg:text-lg text-gray-900 dark:text-[#F5F7F5] truncate">{booking.courtName}</h3>
                         <p className="text-xs text-muted font-medium flex items-center gap-1.5">
                           <Clock className="icon-inline text-gray-400 shrink-0" />
                           {booking.date} · {booking.startTime} - {booking.endTime} ({booking.durationMinutes} Mins)
                         </p>
-                        <p className="text-xs font-semibold text-gray-700">
+                        <p className="text-xs font-semibold text-gray-700 dark:text-[#A1ADA4]">
                           Player: {booking.userName} ({booking.userPhone})
                         </p>
                       </div>
                     </div>
 
                     {/* Right Price & Actions */}
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 pt-4 sm:pt-0 border-t sm:border-t-0 border-gray-100 shrink-0">
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 pt-4 sm:pt-0 border-t sm:border-t-0 border-gray-100 dark:border-[#344239] shrink-0">
                       <div className="text-left sm:text-right">
-                        <span className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider block mb-0.5">Total Amount</span>
-                        <span className="text-2xl font-black text-gray-900">EGP {booking.totalPrice}</span>
+                        <span className="text-[11px] font-extrabold text-gray-400 dark:text-[#8A9A8E] uppercase tracking-wider block mb-0.5">Total Amount</span>
+                        <span className="text-2xl font-black text-gray-900 dark:text-[#F5F7F5]">EGP {booking.totalPrice}</span>
                       </div>
 
                       {(isConfirmed || isReserved) && (
@@ -260,7 +260,7 @@ export default function MyBookingsPage() {
                           disabled={isCancelling}
                           variant="destructive"
                           size="sm"
-                          className={`h-10 px-4 rounded-[var(--radius-md)] font-bold text-xs border border-red-200/80 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 transition-colors flex items-center gap-1.5 ${isCancelling ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          className={`h-10 px-4 rounded-[var(--radius-md)] font-bold text-xs border border-red-200/80 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-800 dark:hover:text-red-300 transition-colors flex items-center gap-1.5 ${isCancelling ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         >
                           <XCircle className="icon-inline" />
                           <span>{isCancelling ? 'Cancelling…' : 'Cancel Booking'}</span>
@@ -272,15 +272,15 @@ export default function MyBookingsPage() {
               })}
             </div>
           ) : (
-            <div className="bg-white rounded-[var(--radius-xl)] p-6 sm:p-12 text-center border border-gray-200 max-w-md mx-auto my-6">
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <div className="bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] p-6 sm:p-12 text-center border border-gray-200 dark:border-[#344239] max-w-md mx-auto my-6">
+              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#171F1A] flex items-center justify-center mx-auto mb-3">
                 {activeTab === 'upcoming' ? (
                   <CalendarCheck className="w-5 h-5 text-gray-400" />
                 ) : (
                   <History className="w-5 h-5 text-gray-400" />
                 )}
               </div>
-              <h3 className="font-extrabold text-gray-900 text-base">
+              <h3 className="font-extrabold text-gray-900 dark:text-[#F5F7F5] text-base">
                 No {activeTab === 'upcoming' ? 'Upcoming' : 'Past'} Bookings
               </h3>
               <p className="text-xs text-muted mt-1">
@@ -291,9 +291,9 @@ export default function MyBookingsPage() {
             </div>
           )
         ) : (
-          <div className="bg-white rounded-[var(--radius-xl)] p-6 sm:p-12 text-center border border-gray-200 max-w-md mx-auto my-8 sm:my-12">
+          <div className="bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] p-6 sm:p-12 text-center border border-gray-200 dark:border-[#344239] max-w-md mx-auto my-8 sm:my-12">
             <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="font-extrabold text-gray-900 text-lg">No Reservations Yet</h3>
+            <h3 className="font-extrabold text-gray-900 dark:text-[#F5F7F5] text-lg">No Reservations Yet</h3>
             <p className="text-xs text-muted mt-1">You haven&apos;t booked any courts. Explore available slots now</p>
             <Button
               render={<Link href="/book" />}

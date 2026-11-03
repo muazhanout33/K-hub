@@ -137,9 +137,9 @@ export default function BookingPaymentPage() {
 
   if (!selectedCourt || selectedSlots.length === 0) {
     return (
-      <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC]">
+      <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC] dark:bg-[#101512]">
         <SiteContainer className="py-16 sm:py-20 text-center">
-          <p className="text-gray-500 text-sm">No booking in progress. Please select a court and time first.</p>
+          <p className="text-gray-500 dark:text-[#8A9A8E] text-sm">No booking in progress. Please select a court and time first.</p>
           <Button render={<a href="/book" />} nativeButton={false} variant="primary" size="md" className="mt-4">
             Start Booking
           </Button>
@@ -150,9 +150,9 @@ export default function BookingPaymentPage() {
 
   if (!bookingHydrated) {
     return (
-      <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC]">
+      <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC] dark:bg-[#101512]">
         <SiteContainer className="py-16 sm:py-20 text-center">
-          <div className="text-gray-400 text-sm">Loading booking details...</div>
+          <div className="text-gray-400 dark:text-[#8A9A8E] text-sm">Loading booking details...</div>
         </SiteContainer>
       </div>
     );
@@ -164,15 +164,15 @@ export default function BookingPaymentPage() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC]">
-      <section className="bg-white border-b border-gray-200/80 py-6 sm:py-10">
+    <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC] dark:bg-[#101512]">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-6 sm:py-10">
         <SiteContainer>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
             <div className="section-head mb-0">
               <Badge icon={<CreditCard className="icon-inline text-green-600" />} size="sm">
                 Step 4 of 4
               </Badge>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight leading-[1.05]">Payment</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight leading-[1.05]">Payment</h1>
               <p className="text-sm text-muted max-w-xl leading-relaxed">
                 Review your booking and confirm payment.
               </p>
@@ -185,38 +185,38 @@ export default function BookingPaymentPage() {
         <div className="max-w-2xl mx-auto space-y-6">
           <BookingSteps />
 
-          <div className="bg-white rounded-[24px] border border-[#E2E8F0] shadow-[0_8px-30px_rgba(15,23,42,0.06)] p-6 space-y-5">
-            <h3 className="font-extrabold text-sm text-[#0F172A] uppercase tracking-wider">Order Summary</h3>
+          <div className="bg-white dark:bg-[#1D2821] rounded-[24px] border border-[#E2E8F0] dark:border-[#344239] shadow-[0_8px-30px_rgba(15,23,42,0.06)] p-6 space-y-5">
+            <h3 className="font-extrabold text-sm text-[#0F172A] dark:text-[#F5F7F5] uppercase tracking-wider">Order Summary</h3>
 
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Court</span>
-                <span className="font-bold text-[#0F172A]">{selectedCourt.name}</span>
+                <span className="text-gray-500 dark:text-[#8A9A8E]">Court</span>
+                <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{selectedCourt.name}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Date</span>
-                <span className="font-bold text-[#0F172A]">{selectedDate}</span>
+                <span className="text-gray-500 dark:text-[#8A9A8E]">Date</span>
+                <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{selectedDate}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Duration</span>
-                <span className="font-bold text-[#0F172A]">{durationMinutes} mins</span>
+                <span className="text-gray-500 dark:text-[#8A9A8E]">Duration</span>
+                <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{durationMinutes} mins</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Player</span>
-                <span className="font-bold text-[#0F172A]">{userName}</span>
+                <span className="text-gray-500 dark:text-[#8A9A8E]">Player</span>
+                <span className="font-bold text-[#0F172A] dark:text-[#F5F7F5]">{userName}</span>
               </div>
             </div>
 
-            <div className="border-t border-gray-100 pt-4">
+            <div className="border-t border-gray-100 dark:border-[#344239] pt-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">Total Amount</span>
-                <span className="text-2xl sm:text-3xl font-black text-[#0F172A]">EGP {formatPrice(totalPrice)}</span>
+                <span className="text-sm font-bold text-gray-400 dark:text-[#8A9A8E] uppercase tracking-wider">Total Amount</span>
+                <span className="text-2xl sm:text-3xl font-black text-[#0F172A] dark:text-[#F5F7F5]">EGP {formatPrice(totalPrice)}</span>
               </div>
             </div>
 
-            <div className="bg-green-50 rounded-xl p-3 flex items-start gap-2">
-              <ShieldCheck className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
-              <p className="text-[11px] text-green-700 font-medium">
+            <div className="bg-green-50 dark:bg-green-950/40 border border-transparent dark:border-green-800/40 rounded-xl p-3 flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-green-600 dark:text-[#4ADE80] shrink-0 mt-0.5" />
+              <p className="text-[11px] text-green-700 dark:text-green-300 font-medium">
                 Your payment is secured with 256-bit SSL encryption. We never store your card details.
               </p>
             </div>
@@ -258,12 +258,12 @@ export default function BookingPaymentPage() {
 
           {/* F3: Error state with retry affordance */}
           {confirmationError && !isProcessing && (
-            <div className="bg-red-50 border border-red-200 rounded-[24px] p-6 space-y-4">
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/40 rounded-[24px] p-6 space-y-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <h3 className="font-bold text-sm text-red-800">Booking Confirmation Issue</h3>
-                  <p className="text-sm text-red-700">{confirmationError}</p>
+                  <h3 className="font-bold text-sm text-red-800 dark:text-red-300">Booking Confirmation Issue</h3>
+                  <p className="text-sm text-red-700 dark:text-red-400">{confirmationError}</p>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3">

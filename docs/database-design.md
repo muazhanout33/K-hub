@@ -99,6 +99,7 @@ All public tables enforce Row Level Security:
 - **Notifications**: Strictly isolated to the owning user (`auth.uid() = user_id`).
 - **Courts, FAQs, Testimonials, Ad Spaces**: Public read access. Writes restricted to Admins.
 - **Sponsorship & Ad Requests**: Public insert access for business visitors; Admin management access.
+- **System Settings**: Admin-only read and manage. Migration `20261101000000_restrict_system_settings_read.sql` removes the former public `USING (true)` SELECT policy (prepared file — applied separately); admins retain full access via `Admins manage system settings` (`FOR ALL USING (public.is_admin())`). No secrets are stored in this table.
 
 ---
 

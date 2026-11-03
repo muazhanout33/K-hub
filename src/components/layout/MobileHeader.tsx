@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, X, CalendarCheck } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { useReservationTimer } from '@/features/booking/useReservationTimer';
+import { WegoLogo } from '@/components/ui/Logo';
 
 export function MobileHeader() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,13 +14,8 @@ export function MobileHeader() {
   return (
     <>
       <header className="lg:hidden sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center text-white font-extrabold text-base">
-            K
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-gray-900">
-            K-HUB <span className="text-green-600 font-semibold text-xs">SPORTS</span>
-          </span>
+        <Link href="/" className="flex items-center" aria-label="WEGO Home">
+          <WegoLogo size="sm" showTagline={false} />
         </Link>
 
         {isActive && (

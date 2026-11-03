@@ -4,10 +4,12 @@ import { toast } from 'sonner';
 import { Court } from '@/types';
 
 const updateCourtActionMock = vi.fn();
+const createCourtActionMock = vi.fn();
 
 vi.mock('@/app/actions/court.actions', () => ({
   getAdminCourtsAction: vi.fn(),
   updateCourtAction: (...args: unknown[]) => updateCourtActionMock(...args),
+  createCourtAction: (...args: unknown[]) => createCourtActionMock(...args),
 }));
 
 import { CourtEditDrawer } from '@/app/admin/courts/CourtEditDrawer';
@@ -257,5 +259,86 @@ describe('CourtEditDrawer', () => {
 
     await waitFor(() => expect(updateCourtActionMock).toHaveBeenCalledTimes(1));
     expect(updateCourtActionMock.mock.calls[0][0]).toMatchObject({ status: 'Maintenance' });
+  });
+
+  // ── Create mode (Phase 3) ──────────────────────────────────────
+
+  it('renders the add-court form for mode="create" with court=null and defaults', () => {
+    render(<CourtEditDrawer mode="create" court={null} onClose={noop} onSaved={noop} />);
+
+    expect(screen.getByText('Add court')).toBeInTheDocument();
+    expect(screen.getByLabelText('Court name')).toHaveValue('');
+    expect(screen.getByLabelText('Hourly price (EGP)')).toHaveValue(null);
+    expect(screen.getByLabelText('Operational status')).toHaveValue('Available');
+    expect(screen.getByLabelText('Opens')).toHaveValue('07:00');
+    expect(screen.getByLabelText('Closes')).toHaveValue('00:00');
+    // Edit-mode null guard is untouched: court absent + edit mode => closed.
+    expect(createCourtActionMock).not.toHaveBeenCalled();
+  });
+
+  it('blocks create submission with client validation and never calls the action', async () => {
+    render(<CourtEditDrawer mode="create" court={null} onClose={noop} onSaved={noop} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Create court/ }));
+
+    expect(await screen.findByText(/Name is required/)).toBeInTheDocument();
+    expect(createCourtActionMock).not.toHaveBeenCalled();
+  });
+
+  it('calls createCourtAction with the trimmed default-backed payload and closes on success', async () => {
+    createCourtActionMock.mockResolvedValue({
+      success: true,
+      court: makeCourt({ name: 'Court Three', id: 'court-3' }),
+    });
+    const onSaved = vi.fn();
+    const onClose = vi.fn();
+    render(
+      <CourtEditDrawer mode="create" court={null} onClose={onClose} onSaved={onSaved} />
+    );
+
+    fireEvent.change(screen.getByLabelText('Court name'), { target: { value: 'Court Three' } });
+    fireEvent.change(screen.getByLabelText('Surface'), { target: { value: 'Grass' } });
+    fireEvent.change(screen.getByLabelText('Hourly price (EGP)'), { target: { value: '200' } });
+    fireEvent.change(screen.getByLabelText('Image URL'), {
+      target: { value: '/images/courts/court-3.jpg' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Create court/ }));
+
+    await waitFor(() => expect(createCourtActionMock).toHaveBeenCalledTimes(1));
+    expect(createCourtActionMock.mock.calls[0][0]).toEqual({
+      name: 'Court Three',
+      sportType: 'Padel',
+      surface: 'Grass',
+      pricePerHour: 200,
+      workingHoursOpen: '07:00',
+      workingHoursClose: '00:00',
+      imageUrl: '/images/courts/court-3.jpg',
+      status: 'Available',
+    });
+    expect(toast.success).toHaveBeenCalledWith('Court "Court Three" created.');
+    expect(onSaved).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(updateCourtActionMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps the drawer open with the server error when creation fails', async () => {
+    createCourtActionMock.mockResolvedValue({ success: false, error: 'boom-static' });
+    const onClose = vi.fn();
+
+    render(
+      <CourtEditDrawer mode="create" court={null} onClose={onClose} onSaved={vi.fn()} />
+    );
+
+    fireEvent.change(screen.getByLabelText('Court name'), { target: { value: 'Court Three' } });
+    fireEvent.change(screen.getByLabelText('Surface'), { target: { value: 'Grass' } });
+    fireEvent.change(screen.getByLabelText('Hourly price (EGP)'), { target: { value: '200' } });
+    fireEvent.change(screen.getByLabelText('Image URL'), {
+      target: { value: '/images/courts/court-3.jpg' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Create court/ }));
+
+    expect(await screen.findByText('boom-static')).toBeInTheDocument();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

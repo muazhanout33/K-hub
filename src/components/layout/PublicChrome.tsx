@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { BottomNav } from './BottomNav';
 
 /**
  * Renders the public site chrome (Navbar + Footer) on every route EXCEPT the
@@ -22,6 +23,7 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
       {!isAdminRoute && <Navbar />}
       {children}
       {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <BottomNav />}
     </>
   );
 }

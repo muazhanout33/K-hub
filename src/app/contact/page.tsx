@@ -44,7 +44,7 @@ export default function ContactPage() {
   return (
     <div>
       {/* Page hero — no mt-14 hack; sticky navbar handled by layout */}
-      <section className="bg-white border-b border-gray-200/80 py-8 sm:py-14 text-center">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-8 sm:py-14 text-center">
         <SiteContainer>
           <div className="page-hero-inner page-hero-inner--center">
             <div className="flex justify-center">
@@ -52,7 +52,7 @@ export default function ContactPage() {
                 Contact &amp; Support
               </Badge>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight leading-[1.05]">We Are Here To Help</h1>
+            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight leading-[1.05]">We Are Here To Help</h1>
             <p className="text-sm sm:text-base text-muted max-w-2xl mx-auto leading-relaxed">
               Have a question about court reservations, membership plans, or private tournament hosting? Reach out anytime!
             </p>
@@ -61,15 +61,15 @@ export default function ContactPage() {
       </section>
 
       <SiteContainer as="section" className="py-10 sm:py-16 pb-12">
-        <div className="bg-white rounded-[var(--radius-xl)] border border-gray-200/80 p-5 sm:p-8 lg:p-12 shadow-xl grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
+        <div className="bg-white dark:bg-[#1D2821] rounded-[var(--radius-xl)] border border-gray-200/80 dark:border-[#344239] p-5 sm:p-8 lg:p-12 shadow-xl grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-start">
           {/* Left Form */}
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-4 sm:mb-6">Send A Direct Message</h2>
+            <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-[#F5F7F5] mb-4 sm:mb-6">Send A Direct Message</h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 {/* Label directly above input with consistent mb-1.5 gap */}
-                <label htmlFor="contact-name" className="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label htmlFor="contact-name" className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                   Your Full Name *
                 </label>
                 {/* Standard .khub-input height (44px) — no !h-12 override */}
@@ -85,7 +85,7 @@ export default function ContactPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="contact-phone" className="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1.5">
+                  <label htmlFor="contact-phone" className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                     Phone Number
                   </label>
                   <input
@@ -98,7 +98,7 @@ export default function ContactPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="contact-email" className="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1.5">
+                  <label htmlFor="contact-email" className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                     Email Address *
                   </label>
                   <input
@@ -113,7 +113,7 @@ export default function ContactPage() {
                 </div>
               </div>
               <div>
-                <label htmlFor="contact-subject" className="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label htmlFor="contact-subject" className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                   Subject *
                 </label>
                 <input
@@ -127,7 +127,7 @@ export default function ContactPage() {
                 />
               </div>
               <div>
-                <label htmlFor="contact-message" className="block text-xs font-extrabold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label htmlFor="contact-message" className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                   Message *
                 </label>
                 <textarea
@@ -161,36 +161,36 @@ export default function ContactPage() {
           {/* Right Info & Map */}
           <div className="space-y-6 flex flex-col">
             {/* Info Card */}
-            <div className="bg-white rounded-[var(--radius-lg)] border border-gray-200/80 p-4 sm:p-6 shadow-sm">
-              <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-1">Club Location &amp; Hours</h2>
+            <div className="bg-white dark:bg-[#171F1A] rounded-[var(--radius-lg)] border border-gray-200/80 dark:border-[#344239] p-4 sm:p-6 shadow-sm">
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-[#F5F7F5] mb-1">Club Location &amp; Hours</h2>
               <p className="text-xs text-muted mb-5 leading-relaxed">
                 Visit us in person or reach the front desk during operating hours.
               </p>
 
               <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3.5 rounded-[var(--radius-sm)] bg-gray-50 border border-gray-100">
+                <div className="flex items-start gap-3 p-3.5 rounded-[var(--radius-sm)] bg-gray-50 dark:bg-[#1D2821] border border-gray-100 dark:border-[#344239]">
                   <MapPin className="icon-btn text-green-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-gray-900 block">Address</span>
-                    <a href="https://maps.app.goo.gl/ZCf1mssj1hdpqiop9" target="_blank" rel="noreferrer" className="text-muted text-sm hover:text-green-600 transition-colors">
+                    <span className="font-bold text-gray-900 dark:text-[#F5F7F5] block">Address</span>
+                    <a href="https://maps.app.goo.gl/ZCf1mssj1hdpqiop9" target="_blank" rel="noreferrer" className="text-muted text-sm hover:text-green-600 dark:hover:text-[#4ADE80] transition-colors">
                       Hamdi Kandil Buildings,<br />Shebin El-Kom,<br />Monufia, Egypt
                     </a>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3.5 rounded-[var(--radius-sm)] bg-gray-50 border border-gray-100">
+                <div className="flex items-start gap-3 p-3.5 rounded-[var(--radius-sm)] bg-gray-50 dark:bg-[#1D2821] border border-gray-100 dark:border-[#344239]">
                   <Phone className="icon-btn text-green-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-gray-900 block">Telephone Hotline</span>
+                    <span className="font-bold text-gray-900 dark:text-[#F5F7F5] block">Telephone Hotline</span>
                     <div className="flex flex-col gap-0.5">
-                      <a href="tel:01097747738" className="text-muted text-sm hover:text-green-600 transition-colors inline-block py-3">0109 774 7738</a>
-                      <a href="tel:01031882128" className="text-muted text-sm hover:text-green-600 transition-colors inline-block py-3">0103 188 2128</a>
+                      <a href="tel:01097747738" className="text-muted text-sm hover:text-green-600 dark:hover:text-[#4ADE80] transition-colors inline-block py-3">0109 774 7738</a>
+                      <a href="tel:01031882128" className="text-muted text-sm hover:text-green-600 dark:hover:text-[#4ADE80] transition-colors inline-block py-3">0103 188 2128</a>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3.5 rounded-[var(--radius-sm)] bg-gray-50 border border-gray-100">
+                <div className="flex items-start gap-3 p-3.5 rounded-[var(--radius-sm)] bg-gray-50 dark:bg-[#1D2821] border border-gray-100 dark:border-[#344239]">
                   <Clock className="icon-btn text-green-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-gray-900 block">Operating Hours</span>
+                    <span className="font-bold text-gray-900 dark:text-[#F5F7F5] block">Operating Hours</span>
                     <span className="text-muted text-sm">Monday – Sunday: 06:00 AM – 12:00 AM (Midnight)</span>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ export default function ContactPage() {
                 href="https://maps.app.goo.gl/ZCf1mssj1hdpqiop9"
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 w-full h-11 rounded-[var(--radius-md)] bg-green-600 hover:bg-green-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-sm shadow-green-600/20"
+                className="mt-4 w-full h-11 rounded-[var(--radius-md)] bg-green-600 hover:bg-green-700 dark:bg-[#16A34A] dark:hover:bg-[#22C55E] text-white dark:text-[#101512] font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-sm shadow-green-600/20"
               >
                 <Navigation className="icon-inline" />
                 <span>Get Directions</span>
@@ -208,8 +208,8 @@ export default function ContactPage() {
             </div>
 
             {/* Map Card — explicit fixed height, rounded, clipped container */}
-            <div className="bg-white rounded-[var(--radius-lg)] border border-gray-200/80 p-3 shadow-sm flex-1">
-              <div className="h-72 md:h-80 w-full rounded-[var(--radius-sm)] overflow-hidden bg-gray-100">
+            <div className="bg-white dark:bg-[#171F1A] rounded-[var(--radius-lg)] border border-gray-200/80 dark:border-[#344239] p-3 shadow-sm flex-1">
+              <div className="h-72 md:h-80 w-full rounded-[var(--radius-sm)] overflow-hidden bg-gray-100 dark:bg-[#101512]">
                 <iframe
                   title="Google Map"
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d0!2d0!3d0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z4pShIDQzwrAyMiczMi44TiIgMjYywrAyMicxNi40RQ!5e0!3m2!1sen!2seg!4v1620000000000!5m2!1sen!2seg"

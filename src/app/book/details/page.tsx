@@ -35,9 +35,9 @@ export default function BookingDetailsPage() {
 
   if (!selectedCourt || selectedSlots.length === 0) {
     return (
-      <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC]">
+      <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC] dark:bg-[#101512]">
         <SiteContainer className="py-16 sm:py-20 text-center">
-          <p className="text-gray-500 text-sm">No booking in progress. Please select a court and time first.</p>
+          <p className="text-gray-500 dark:text-[#8A9A8E] text-sm">No booking in progress. Please select a court and time first.</p>
           <Button render={<a href="/book" />} nativeButton={false} variant="primary" size="md" className="mt-4">
             Start Booking
           </Button>
@@ -68,15 +68,15 @@ export default function BookingDetailsPage() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC]">
-      <section className="bg-white border-b border-gray-200/80 py-6 sm:py-10">
+    <div className="space-y-6 sm:space-y-10 bg-[#F8FAFC] dark:bg-[#101512]">
+      <section className="bg-white dark:bg-[#171F1A] border-b border-gray-200/80 dark:border-[#344239] py-6 sm:py-10">
         <SiteContainer>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
             <div className="section-head mb-0">
               <Badge icon={<UserCheck className="icon-inline text-green-600" />} size="sm">
                 Step 3 of 4
               </Badge>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 tracking-tight leading-[1.05]">Your Details</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight leading-[1.05]">Your Details</h1>
               <p className="text-sm text-muted max-w-xl leading-relaxed">
                 Enter your contact information to complete the booking.
               </p>
@@ -89,9 +89,9 @@ export default function BookingDetailsPage() {
         <div className="max-w-2xl mx-auto space-y-6">
           <BookingSteps />
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-[24px] border border-[#E2E8F0] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-4 sm:p-6 space-y-5">
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1D2821] rounded-[24px] border border-[#E2E8F0] dark:border-[#344239] shadow-[0_8px_30px_rgba(15,23,42,0.06)] p-4 sm:p-6 space-y-5">
             <div>
-              <label htmlFor="name" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label htmlFor="name" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                 Full Name *
               </label>
               <input
@@ -100,12 +100,12 @@ export default function BookingDetailsPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your full name"
-                className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm text-[#0F172A] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-[#344239] bg-gray-50 dark:bg-[#171F1A] text-sm text-[#0F172A] dark:text-[#F5F7F5] placeholder:text-gray-400 dark:placeholder-[#8A9A8E] focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label htmlFor="email" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                 Email Address *
               </label>
               <input
@@ -114,12 +114,12 @@ export default function BookingDetailsPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm text-[#0F172A] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-[#344239] bg-gray-50 dark:bg-[#171F1A] text-sm text-[#0F172A] dark:text-[#F5F7F5] placeholder:text-gray-400 dark:placeholder-[#8A9A8E] focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
               />
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label htmlFor="phone" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                 Phone Number *
               </label>
               <input
@@ -128,7 +128,7 @@ export default function BookingDetailsPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+20 100 000 0000"
-                className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm text-[#0F172A] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
+                className="w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-[#344239] bg-gray-50 dark:bg-[#171F1A] text-sm text-[#0F172A] dark:text-[#F5F7F5] placeholder:text-gray-400 dark:placeholder-[#8A9A8E] focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all"
               />
             </div>
 

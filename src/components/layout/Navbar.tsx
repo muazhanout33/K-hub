@@ -11,6 +11,8 @@ import { SiteContainer } from './SiteContainer';
 import { getCourtsFromSupabase } from '@/services/court.service';
 import { useBookingStore } from '@/features/booking/useBookingStore';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { WegoLogo } from '@/components/ui/Logo';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
@@ -103,29 +105,12 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-        <SiteContainer className="h-[76px] lg:h-[80px] flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-white/85 dark:bg-[#101512]/90 backdrop-blur-xl border-b border-slate-200/60 dark:border-[#344239] shadow-[0_1px_3px_rgba(0,0,0,0.02)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)] transition-colors">
+        <SiteContainer className="h-[76px] lg:h-[80px] flex items-center justify-between px-3 sm:px-6 lg:px-20">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3.5 sm:gap-4 shrink-0 group py-1">
-            <div className="relative w-12 h-12 sm:w-13 sm:h-13 lg:w-14 lg:h-14 shrink-0 transition-transform duration-200 ease-out group-hover:scale-[1.03]">
-              <Image
-                src="/khub logo.png"
-                alt="K-HUB Sports Club Logo"
-                width={56}
-                height={56}
-                className="w-full h-full object-contain drop-shadow-sm"
-                priority
-              />
-            </div>
-            <div className="flex flex-col justify-center">
-              <span className="font-black text-[22px] sm:text-[24px] lg:text-[26px] text-slate-900 tracking-[-0.03em] leading-none group-hover:text-black transition-colors">
-                K-HUB
-              </span>
-              <span className="text-[10px] sm:text-[11px] lg:text-[11.5px] font-bold text-[#16A34A] tracking-[0.22em] uppercase leading-none mt-[3.5px]">
-                Sports Club
-              </span>
-            </div>
+          <Link href="/" className="flex items-center shrink-0 py-1" aria-label="WEGO Home">
+            <WegoLogo size="lg" showTagline />
           </Link>
 
           {/* Desktop Nav */}
@@ -144,8 +129,8 @@ export function Navbar() {
                   href={item.href}
                   className={`px-3 xl:px-4.5 py-2 rounded-xl text-sm xl:text-[15px] font-medium transition-all duration-150 ${
                     isActive
-                      ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold'
-                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50/80'
+                      ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold dark:bg-[#16A34A]/20 dark:text-[#4ADE80]'
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50/80 dark:text-[#A1ADA4] dark:hover:text-[#F5F7F5] dark:hover:bg-[#1D2821]'
                   }`}
                 >
                   {item.label}
@@ -155,12 +140,15 @@ export function Navbar() {
           </nav>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            {/* Theme Toggle (Desktop & Tablet) */}
+            <ThemeToggle variant="compact" className="hidden sm:inline-flex" />
+
             {/* Notification Bell */}
             <NotificationBell />
 
             {/* Divider */}
-            <div className="w-px h-6 bg-gray-200 hidden md:block" />
+            <div className="w-px h-6 bg-gray-200 dark:bg-[#344239] hidden md:block" />
 
             {/* Book Now CTA */}
             <Button
@@ -177,7 +165,7 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => router.push('/profile')}
-                  className="w-11 h-11 rounded-full overflow-hidden ring-[1.5px] ring-gray-200 hover:ring-[#16A34A] transition-all duration-200 shrink-0 flex items-center justify-center cursor-pointer"
+                  className="w-11 h-11 rounded-full overflow-hidden ring-[1.5px] ring-gray-200 dark:ring-[#344239] hover:ring-[#16A34A] transition-all duration-200 shrink-0 flex items-center justify-center cursor-pointer"
                   aria-label="My profile"
                 >
                   {user.avatar ? (
@@ -190,8 +178,8 @@ export function Navbar() {
                       />
                     </div>
                   ) : (
-                    <div className="w-full h-full bg-[#16A34A]/10 flex items-center justify-center">
-                      <User className="w-[18px] h-[18px] text-[#16A34A]" />
+                    <div className="w-full h-full bg-[#16A34A]/10 dark:bg-[#16A34A]/20 flex items-center justify-center">
+                      <User className="w-[18px] h-[18px] text-[#16A34A] dark:text-[#4ADE80]" />
                     </div>
                   )}
                 </button>
@@ -207,17 +195,17 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/auth/register"
-                  className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold text-[#16A34A] border border-[#16A34A]/30 hover:bg-[#16A34A]/5 transition-colors"
+                  className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold text-[#16A34A] border border-[#16A34A]/30 hover:bg-[#16A34A]/5 dark:text-[#4ADE80] dark:border-[#4ADE80]/30 dark:hover:bg-[#4ADE80]/10 transition-colors"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   Register
                 </Link>
                 <Link
                   href="/auth/login"
-                  className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200/80 transition-colors shrink-0"
+                  className="w-11 h-11 rounded-full bg-gray-100 dark:bg-[#1D2821] flex items-center justify-center hover:bg-gray-200/80 dark:hover:bg-[#26332A] transition-colors shrink-0"
                   aria-label="Sign in"
                 >
-                  <User className="w-4 h-4 text-gray-500" />
+                  <User className="w-4 h-4 text-gray-500 dark:text-[#A1ADA4]" />
                 </Link>
               </div>
             )}
@@ -227,7 +215,7 @@ export function Navbar() {
               ref={menuButtonRef}
               variant="ghost"
               size="icon"
-              className="xl:hidden h-11 w-11 rounded-xl"
+              className="xl:hidden h-11 w-11 rounded-xl text-gray-700 dark:text-[#F5F7F5]"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav-drawer"
@@ -253,28 +241,12 @@ export function Navbar() {
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
-            className="relative ml-auto w-[300px] bg-white h-full shadow-2xl flex flex-col"
+            className="relative ml-auto w-[300px] bg-white dark:bg-[#171F1A] border-l border-slate-100 dark:border-[#344239] h-full shadow-2xl flex flex-col"
           >
-            <div className="px-5 h-[68px] border-b border-slate-100 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 shrink-0">
-                  <Image
-                    src="/khub logo.png"
-                    alt="K-HUB Sports Club Logo"
-                    width={40}
-                    height={40}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div className="flex flex-col justify-center">
-                  <span className="font-black text-[19px] text-slate-900 tracking-[-0.03em] leading-none">
-                    K-HUB
-                  </span>
-                  <span className="text-[10px] font-bold text-[#16A34A] tracking-[0.20em] uppercase leading-none mt-[2.5px]">
-                    Sports Club
-                  </span>
-                </div>
-              </div>
+            <div className="px-5 h-[68px] border-b border-slate-100 dark:border-[#344239] flex items-center justify-between shrink-0">
+              <Link href="/" onClick={closeMenu} className="flex items-center" aria-label="WEGO Home">
+                <WegoLogo size="md" showTagline />
+              </Link>
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -284,6 +256,15 @@ export function Navbar() {
                 <X className="w-5 h-5" />
               </Button>
             </div>
+
+            {/* Theme Selector in Mobile Drawer */}
+            <div className="px-5 py-3 border-b border-slate-100 dark:border-[#344239] flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-500 dark:text-[#A1ADA4] uppercase tracking-wider">
+                Theme
+              </span>
+              <ThemeToggle variant="compact" />
+            </div>
+
             <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
               {NAV_ITEMS.filter((item) => {
                 if (item.authOnly && !isAuthenticated) return false;
@@ -300,8 +281,8 @@ export function Navbar() {
                     onClick={closeMenu}
                     className={`flex items-center px-4 py-3 rounded-xl text-[14px] font-medium transition-colors ${
                       isActive
-                        ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold dark:bg-[#16A34A]/20 dark:text-[#4ADE80]'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-[#A1ADA4] dark:hover:bg-[#1D2821] dark:hover:text-[#F5F7F5]'
                     }`}
                   >
                     {item.label}
@@ -316,15 +297,15 @@ export function Navbar() {
                     onClick={closeMenu}
                     className={`flex items-center px-4 py-3 rounded-xl text-[14px] font-medium transition-colors ${
                       pathname === '/profile'
-                        ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-[#16A34A]/10 text-[#15803D] font-semibold dark:bg-[#16A34A]/20 dark:text-[#4ADE80]'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-[#A1ADA4] dark:hover:bg-[#1D2821] dark:hover:text-[#F5F7F5]'
                     }`}
                   >
                     Profile
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center w-full px-4 py-3 rounded-xl text-[14px] font-medium text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex items-center w-full px-4 py-3 rounded-xl text-[14px] font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
                   >
                     Sign Out
                   </button>
@@ -335,14 +316,14 @@ export function Navbar() {
                 <Link
                   href="/auth/register"
                   onClick={closeMenu}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-[14px] font-semibold text-[#16A34A] hover:bg-[#16A34A]/5 transition-colors"
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-[14px] font-semibold text-[#16A34A] hover:bg-[#16A34A]/5 dark:text-[#4ADE80] dark:hover:bg-[#4ADE80]/10 transition-colors"
                 >
                   <UserPlus className="w-4 h-4" />
                   Register
                 </Link>
               )}
             </nav>
-            <div className="p-4 border-t border-gray-100/60">
+            <div className="p-4 border-t border-gray-100/60 dark:border-[#344239]">
               <Button
                 onClick={() => { handleBookNow(); closeMenu(); }}
                 variant="primary"

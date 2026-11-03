@@ -57,14 +57,14 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md bg-white p-5 sm:p-8 rounded-3xl border border-gray-200 shadow-xl space-y-5 sm:space-y-6">
+      <div className="w-full max-w-md bg-white dark:bg-[#1D2821] p-5 sm:p-8 rounded-3xl border border-gray-200 dark:border-[#344239] shadow-xl space-y-5 sm:space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-full bg-green-600 text-white font-black text-2xl flex items-center justify-center mx-auto shadow-md">
+          <div className="w-16 h-16 rounded-full bg-green-600 dark:bg-[#16A34A] text-white dark:text-[#101512] font-black text-2xl flex items-center justify-center mx-auto shadow-md">
             <User className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">My Profile</h1>
-          <p className="text-xs text-gray-500">Manage your account details</p>
+          <h1 className="text-2xl font-black text-gray-900 dark:text-[#F5F7F5]">My Profile</h1>
+          <p className="text-xs text-gray-500 dark:text-[#8A9A8E]">Manage your account details</p>
         </div>
 
         {/* Role badge */}
@@ -81,7 +81,7 @@ export default function ProfilePage() {
         {/* Form */}
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Full Name *</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Full Name *</label>
             <input
               type="text"
               required
@@ -92,18 +92,18 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Email Address</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Email Address</label>
             <input
               type="email"
               disabled
               value={user.email}
-              className="w-full khub-input bg-gray-50 text-gray-500 cursor-not-allowed"
+              className="w-full khub-input bg-gray-50 dark:bg-[#171F1A] text-gray-500 dark:text-[#8A9A8E] cursor-not-allowed"
             />
-            <p className="text-[10px] text-gray-400 mt-1">Email cannot be changed</p>
+            <p className="text-[10px] text-gray-400 dark:text-[#8A9A8E] mt-1">Email cannot be changed</p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Phone Number</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Phone Number</label>
             <input
               type="tel"
               value={phone}
@@ -114,12 +114,12 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Member Since</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Member Since</label>
             <input
               type="text"
               disabled
               value={user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-              className="w-full khub-input bg-gray-50 text-gray-500 cursor-not-allowed"
+              className="w-full khub-input bg-gray-50 dark:bg-[#171F1A] text-gray-500 dark:text-[#8A9A8E] cursor-not-allowed"
             />
           </div>
 

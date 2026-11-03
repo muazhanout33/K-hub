@@ -172,7 +172,12 @@ describe('Payment Lifecycle Integration', () => {
 
       let paymentId: string;
       act(() => {
-        const res = result.current.createPayment('booking-dp-1', 6000);
+        // Explicit distinct keys: the auto-generated key is
+        // `idem-${bookingId}-${Date.now()}`, and two quick creates can land in
+        // the same millisecond (worst under full-suite load), colliding the
+        // keys and returning the *Duplicate* error instead of the
+        // *already been paid for* error this test is about.
+        const res = result.current.createPayment('booking-dp-1', 6000, 'dp-key-1');
         paymentId = res.payment!.paymentId;
       });
 
@@ -180,10 +185,10 @@ describe('Payment Lifecycle Integration', () => {
         result.current.processPayment(paymentId!, 'success');
       });
 
-      // Try to pay again for same booking
+      // Try to pay again for same booking (retry with a different key)
       let secondRes: any;
       act(() => {
-        secondRes = result.current.createPayment('booking-dp-1', 6000);
+        secondRes = result.current.createPayment('booking-dp-1', 6000, 'dp-key-1-retry');
       });
 
       expect(secondRes.success).toBe(false);

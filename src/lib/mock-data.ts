@@ -13,11 +13,12 @@ export const MOCK_COURTS: Court[] = [
     pricePerHour: 400,
     rating: 4.9,
     reviewCount: 128,
-    image: '/images/courts/padel-1.jpg',
+    // Content-verified: real padel imagery (racket on blue padel turf).
+    image: '/images/courts/padel.jpg',
     gallery: [
-      '/images/courts/padel-1.jpg',
-      '/images/courts/gallery-padel-2.jpg',
+      '/images/courts/padel.jpg',
       '/images/courts/gallery-padel-3.jpg',
+      '/images/courts/gallery-padel-2.jpg',
     ],
     description: 'State-of-the-art panoramic indoor Padel court featuring official WPT turf, LED lighting system, and climate control for year-round optimal performance.',
     features: ['Panoramic Glass Walls', 'Official WPT Turf', 'Climate Controlled', 'Pro Audio System', 'Locker Room Access'],
@@ -82,9 +83,12 @@ export const MOCK_COURTS: Court[] = [
     pricePerHour: 250,
     rating: 4.75,
     reviewCount: 65,
-    image: '/images/courts/padel-1.jpg',
+    // Only real padel imagery available — duplicates Court 1's primary.
+    // Documented limitation: no outdoor padel court photography exists in the
+    // repo and illustrative generation was unavailable.
+    image: '/images/courts/padel.jpg',
     gallery: [
-      '/images/courts/padel-1.jpg',
+      '/images/courts/padel.jpg',
     ],
     description: 'Scenic outdoor court perfect for evening matches with high-lux LED illumination and breeze shade net cover.',
     features: ['LED Night Lighting', 'Shade Canopy', 'Lounge Area Nearby', 'Fresh Towel Service'],
@@ -124,8 +128,11 @@ export const MOCK_COURTS: Court[] = [
     pricePerHour: 60,
     rating: 4.88,
     reviewCount: 79,
-    image: '/images/courts/tennis-clay.jpg',
+    // Content-verified: 'tennis-clay.jpg' actually depicts a blue hard court,
+    // so the authentic clay surface image (clay terracotta aerial) is used here.
+    image: '/images/courts/padel-1.jpg',
     gallery: [
+      '/images/courts/padel-1.jpg',
       '/images/courts/tennis-clay.jpg',
     ],
     description: 'Authentic European red clay court maintained daily. Drag-mat provided before and after every match.',
@@ -183,9 +190,9 @@ export const MOCK_SPONSORS: Sponsor[] = [
 export const MOCK_EVENTS: EventItem[] = [
   {
     id: 'event-1',
-    title: 'K-HUB Open Padel Championship 2026',
+    title: 'WEGO Open Padel Championship 2026',
     description: 'Join the biggest Padel tournament of the summer! Cash prizes up to $5,000 for top 3 teams, live DJ, BBQ, and sponsor giveaways.',
-    image: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=1200&q=80',
+    image: '/images/courts/padel.jpg',
     date: '2026-08-15',
     time: '09:00 AM - 08:00 PM',
     location: 'Pro Padel Center Arenas 1-4',
@@ -193,14 +200,17 @@ export const MOCK_EVENTS: EventItem[] = [
     maxParticipants: 32,
     currentParticipants: 24,
     entryFee: 500,
-    organizer: 'K-HUB Sports Director',
+    organizer: 'WEGO Sports Director',
     registeredUsers: ['user-1', 'user-2'],
   },
   {
     id: 'event-2',
     title: 'Summer 5v5 Football Night League',
     description: 'Under-the-lights 5-a-side football league running every Friday evening. Trophy, medals, and free kit customization for winning team.',
-    image: 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1200&q=80',
+    // Content-verified: 'gallery-padel-2.jpg' actually depicts football
+    // PLAYERS ON TURF despite its filename (mislabeled asset), so it fits this
+    // 5v5 football event. No football-specific asset exists in the repo.
+    image: '/images/courts/gallery-padel-2.jpg',
     date: '2026-08-21',
     time: '07:00 PM - 11:00 PM',
     location: 'Emirates Pitch 5v5',
@@ -208,14 +218,14 @@ export const MOCK_EVENTS: EventItem[] = [
     maxParticipants: 16,
     currentParticipants: 12,
     entryFee: 1200,
-    organizer: 'K-HUB Football Academy',
+    organizer: 'WEGO Football Academy',
     registeredUsers: ['user-1'],
   },
   {
     id: 'event-3',
     title: 'Tennis Masters Singles Knockout',
     description: 'UTR-rated tennis tournament open to intermediate and advanced players. Certified umpire matches with video recording.',
-    image: 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=1200&q=80',
+    image: '/images/courts/tennis-hard-1.jpg',
     date: '2026-09-02',
     time: '10:00 AM - 06:00 PM',
     location: 'Grandstand Hard Court 1',
@@ -223,7 +233,7 @@ export const MOCK_EVENTS: EventItem[] = [
     maxParticipants: 16,
     currentParticipants: 10,
     entryFee: 400,
-    organizer: 'K-HUB Tennis Head Coach',
+    organizer: 'WEGO Tennis Head Coach',
     registeredUsers: [],
   },
 ];
@@ -235,7 +245,7 @@ export const MOCK_TESTIMONIALS: Testimonial[] = [
     role: 'Pro Padel Player & Club Member',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     rating: 5,
-    comment: 'K-HUB is miles ahead of any sports club in the region. The court quality is unbelievable, and reserving a slot takes literally 15 seconds. Seamless!',
+    comment: 'WEGO is miles ahead of any sports club in the region. The court quality is unbelievable, and reserving a slot takes literally 15 seconds. Seamless!',
     date: '2 days ago',
   },
   {

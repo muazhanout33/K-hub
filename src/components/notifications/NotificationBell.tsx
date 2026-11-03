@@ -26,11 +26,11 @@ export const NotificationBell = memo(function NotificationBell() {
         size="icon"
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative text-gray-500 hover:text-gray-900 h-11 w-11 rounded-xl"
+        className="relative text-gray-500 hover:text-gray-900 h-11 w-11 rounded-xl dark:text-[#A1ADA4] dark:hover:text-[#F5F7F5] dark:hover:bg-[#1D2821]"
       >
         <Bell className="w-[18px] h-[18px] strokeWidth-[2]" />
         {unreadCount > 0 && (
-          <span className="absolute top-[6px] right-[6px] min-w-[18px] h-[18px] bg-[#16A34A] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-[1.5px] border-white leading-none">
+          <span className="absolute top-[6px] right-[6px] min-w-[18px] h-[18px] bg-[#16A34A] text-white dark:text-[#101512] text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-[1.5px] border-white dark:border-[#171F1A] leading-none">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}

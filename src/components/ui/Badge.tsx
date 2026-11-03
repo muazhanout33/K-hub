@@ -11,10 +11,10 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
-  brand: 'bg-green-50 text-green-700 border-green-100',
-  neutral: 'bg-gray-100 text-gray-700 border-gray-200',
-  outline: 'bg-white text-gray-700 border-gray-200',
-  subtle: 'bg-green-100/90 text-green-800 border-green-200/60',
+  brand: 'bg-green-50 text-green-700 border-green-100 dark:bg-[rgba(22,163,74,0.18)] dark:text-[#4ADE80] dark:border-[rgba(74,222,128,0.25)]',
+  neutral: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-[#1D2821] dark:text-[#F5F7F5] dark:border-[#344239]',
+  outline: 'bg-white text-gray-700 border-gray-200 dark:bg-transparent dark:text-[#F5F7F5] dark:border-[#344239]',
+  subtle: 'bg-green-100/90 text-green-800 border-green-200/60 dark:bg-[rgba(22,163,74,0.15)] dark:text-[#86EFAC] dark:border-[rgba(74,222,128,0.2)]',
 };
 
 const SIZE_CLASSES: Record<BadgeSize, string> = {

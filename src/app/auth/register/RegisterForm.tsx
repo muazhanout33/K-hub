@@ -8,6 +8,7 @@ import { useAuthStore } from '@/features/auth/useAuthStore';
 import { UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { WegoLogo } from '@/components/ui/Logo';
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -57,7 +58,7 @@ export default function RegisterForm() {
       return;
     }
 
-    toast.success('Account created successfully! Welcome to K-HUB Sports.');
+    toast.success('Account created successfully! Welcome to WEGO.');
     router.push('/book');
   };
 
@@ -71,18 +72,18 @@ export default function RegisterForm() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md bg-white p-5 sm:p-8 rounded-3xl border border-gray-200 shadow-xl space-y-5 sm:space-y-6">
+      <div className="w-full max-w-md bg-white dark:bg-[#1D2821] p-5 sm:p-8 rounded-3xl border border-gray-200 dark:border-[#344239] shadow-xl space-y-5 sm:space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-green-600 text-white font-black text-2xl flex items-center justify-center mx-auto shadow-md">
-            K
+          <div className="flex justify-center mb-1">
+            <WegoLogo size="xl" showTagline />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">Create Player Account</h1>
-          <p className="text-xs text-gray-500">Join K-HUB to reserve courts and track bookings</p>
+          <h1 className="text-2xl font-black text-gray-900 dark:text-[#F5F7F5]">Create Player Account</h1>
+          <p className="text-xs text-gray-500 dark:text-[#8A9A8E]">Join WEGO to reserve courts and track bookings</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="register-name" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Full Name *</label>
+            <label htmlFor="register-name" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Full Name *</label>
             <input
               id="register-name"
               type="text"
@@ -95,7 +96,7 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <label htmlFor="register-email" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Email Address *</label>
+            <label htmlFor="register-email" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Email Address *</label>
             <input
               id="register-email"
               type="email"
@@ -108,7 +109,7 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <label htmlFor="register-phone" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Phone Number *</label>
+            <label htmlFor="register-phone" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Phone Number *</label>
             <input
               id="register-phone"
               type="tel"
@@ -121,7 +122,7 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <label htmlFor="register-password" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Password *</label>
+            <label htmlFor="register-password" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Password *</label>
             <input
               id="register-password"
               type="password"
@@ -134,7 +135,7 @@ export default function RegisterForm() {
           </div>
 
           <div>
-            <label htmlFor="register-confirm-password" className="block text-xs font-bold text-gray-700 uppercase mb-1.5">Confirm Password *</label>
+            <label htmlFor="register-confirm-password" className="block text-xs font-bold text-gray-700 dark:text-[#A1ADA4] uppercase mb-1.5">Confirm Password *</label>
             <input
               id="register-confirm-password"
               type="password"
@@ -159,9 +160,9 @@ export default function RegisterForm() {
           </Button>
         </form>
 
-        <p className="text-center text-xs text-gray-500">
+        <p className="text-center text-xs text-gray-500 dark:text-[#8A9A8E]">
           Already have an account?{' '}
-          <Link href="/auth/login" className="font-extrabold text-green-600 hover:underline inline-block py-3.5">
+          <Link href="/auth/login" className="font-extrabold text-green-600 dark:text-[#4ADE80] hover:underline inline-block py-3.5">
             Sign In Here
           </Link>
         </p>

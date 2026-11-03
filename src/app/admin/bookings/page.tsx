@@ -17,10 +17,10 @@ const PAGE_SIZE_FALLBACK = 25;
 const STATUS_FILTERS = ['All', 'Reserved', 'Confirmed', 'Cancelled', 'Expired'];
 
 function statusPillClass(status: Booking['status']) {
-  if (status === 'Confirmed') return 'bg-green-100 text-green-700';
-  if (status === 'Cancelled') return 'bg-red-100 text-red-700';
-  if (status === 'Expired') return 'bg-gray-100 text-gray-500';
-  return 'bg-yellow-100 text-yellow-700';
+  if (status === 'Confirmed') return 'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-[#4ADE80]';
+  if (status === 'Cancelled') return 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400';
+  if (status === 'Expired') return 'bg-gray-100 text-gray-500 dark:bg-[#171F1A] dark:text-[#8A9A8E]';
+  return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/60 dark:text-yellow-400';
 }
 
 export default function AdminBookingsPage() {
@@ -235,7 +235,7 @@ export default function AdminBookingsPage() {
     <div className="min-h-[80vh] px-4 sm:px-6 py-6 sm:py-8">
       <div className="max-w-6xl mx-auto space-y-5">
         {/* Toolbar */}
-        <div className="bg-white rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] p-4 space-y-3">
+        <div className="bg-white dark:bg-[#1D2821] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] p-4 space-y-3">
           <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-center gap-2">
             <label htmlFor="booking-search" className="sr-only">
               Search bookings
@@ -246,7 +246,7 @@ export default function AdminBookingsPage() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search booking #, name, email or phone"
-              className="flex-1 min-w-[220px] rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+              className="flex-1 min-w-[220px] rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-sm text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#171F1A] placeholder:text-gray-400 dark:placeholder:text-[#8A9A8E] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
             />
             <button
               type="submit"
@@ -267,7 +267,7 @@ export default function AdminBookingsPage() {
                 setCourtId(e.target.value);
                 setPage(1);
               }}
-              className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+              className="rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-xs font-medium text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#171F1A] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
             >
               <option value="">All courts</option>
               {courts.map((court) => (
@@ -288,9 +288,9 @@ export default function AdminBookingsPage() {
                 setDateFrom(e.target.value);
                 setPage(1);
               }}
-              className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+              className="rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-xs font-medium text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#171F1A] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
             />
-            <span className="text-xs text-gray-400" aria-hidden="true">
+            <span className="text-xs text-gray-400 dark:text-[#8A9A8E]" aria-hidden="true">
               to
             </span>
             <label htmlFor="date-to" className="sr-only">
@@ -304,7 +304,7 @@ export default function AdminBookingsPage() {
                 setDateTo(e.target.value);
                 setPage(1);
               }}
-              className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+              className="rounded-xl border border-gray-200 dark:border-[#344239] px-3 py-2 text-xs font-medium text-gray-700 dark:text-[#F5F7F5] bg-white dark:bg-[#171F1A] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
             />
 
             {hasFilters && (
@@ -328,7 +328,7 @@ export default function AdminBookingsPage() {
           />
 
           {dateRangeInvalid && (
-            <p className="text-xs text-red-500" role="alert">
+            <p className="text-xs text-red-500 dark:text-red-400" role="alert">
               Start date must be on or before end date.
             </p>
           )}
@@ -337,14 +337,14 @@ export default function AdminBookingsPage() {
         {/* Inline error banner (data already on screen) */}
         {error && bookings !== null && (
           <div
-            className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 flex flex-wrap items-center justify-between gap-2"
+            className="rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 px-4 py-3 flex flex-wrap items-center justify-between gap-2"
             role="alert"
           >
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             <button
               type="button"
               onClick={handleRetry}
-              className="text-xs font-bold text-red-600 hover:underline"
+              className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
             >
               Retry
             </button>
@@ -353,13 +353,13 @@ export default function AdminBookingsPage() {
 
         {/* Table */}
         <div
-          className="bg-white rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] overflow-hidden"
+          className="bg-white dark:bg-[#1D2821] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] overflow-hidden"
           aria-busy={loading}
         >
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
-            <h1 className="text-xs sm:text-sm font-bold text-gray-700 uppercase">All Bookings</h1>
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 dark:border-[#344239] flex flex-wrap items-center justify-between gap-2">
+            <h1 className="text-xs sm:text-sm font-bold text-gray-700 dark:text-[#F5F7F5] uppercase">All Bookings</h1>
             {rows.length > 0 && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-[#8A9A8E]">
                 Showing {rangeStart}–{rangeEnd} of {total} bookings
               </span>
             )}
@@ -367,7 +367,7 @@ export default function AdminBookingsPage() {
 
           {rows.length === 0 ? (
             <div className="px-6 py-12 text-center space-y-3">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-[#8A9A8E]">
                 {hasFilters ? 'No bookings match your filters.' : 'No bookings yet.'}
               </p>
             </div>
@@ -375,7 +375,7 @@ export default function AdminBookingsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-xs font-bold text-gray-500 uppercase border-b border-gray-100">
+                  <tr className="text-xs font-bold text-gray-500 dark:text-[#8A9A8E] uppercase border-b border-gray-100 dark:border-[#344239]">
                     <th className="px-4 sm:px-6 py-3 text-left">Booking #</th>
                     <th className="px-4 sm:px-6 py-3 text-left">Customer</th>
                     <th className="px-4 sm:px-6 py-3 text-left">Court</th>
@@ -386,25 +386,25 @@ export default function AdminBookingsPage() {
                     <th className="px-4 sm:px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50 dark:divide-[#344239]">
                   {rows.map((b) => (
-                    <tr key={b.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 sm:px-6 py-3 font-mono text-xs text-gray-700">
+                    <tr key={b.id} className="hover:bg-gray-50 dark:hover:bg-[#171F1A] transition-colors">
+                      <td className="px-4 sm:px-6 py-3 font-mono text-xs text-gray-700 dark:text-[#A1ADA4]">
                         {b.bookingNumber}
                       </td>
-                      <td className="px-4 sm:px-6 py-3 text-gray-700">
+                      <td className="px-4 sm:px-6 py-3 text-gray-700 dark:text-[#A1ADA4]">
                         {b.userId == null ? (
-                          <span className="text-gray-500">Walk-in</span>
+                          <span className="text-gray-500 dark:text-[#8A9A8E]">Walk-in</span>
                         ) : (
                           b.userName || 'Guest'
                         )}
                       </td>
-                      <td className="px-4 sm:px-6 py-3 text-gray-700">{b.courtName}</td>
-                      <td className="px-4 sm:px-6 py-3 text-gray-700">{b.date}</td>
-                      <td className="px-4 sm:px-6 py-3 text-gray-700">
+                      <td className="px-4 sm:px-6 py-3 text-gray-700 dark:text-[#A1ADA4]">{b.courtName}</td>
+                      <td className="px-4 sm:px-6 py-3 text-gray-700 dark:text-[#A1ADA4]">{b.date}</td>
+                      <td className="px-4 sm:px-6 py-3 text-gray-700 dark:text-[#A1ADA4]">
                         {b.startTime}–{b.endTime}
                       </td>
-                      <td className="px-4 sm:px-6 py-3 font-bold text-gray-900">
+                      <td className="px-4 sm:px-6 py-3 font-bold text-gray-900 dark:text-[#F5F7F5]">
                         {b.totalPrice} EGP
                       </td>
                       <td className="px-4 sm:px-6 py-3">
@@ -432,7 +432,7 @@ export default function AdminBookingsPage() {
 
           {/* Pagination */}
           {rows.length > 0 && (
-            <div className="px-4 sm:px-6 py-3 border-t border-gray-100 flex items-center justify-between gap-2">
+            <div className="px-4 sm:px-6 py-3 border-t border-gray-100 dark:border-[#344239] flex items-center justify-between gap-2">
               <button
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -441,7 +441,7 @@ export default function AdminBookingsPage() {
               >
                 Previous
               </button>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-[#8A9A8E]">
                 Page {page} of {totalPages}
               </span>
               <button

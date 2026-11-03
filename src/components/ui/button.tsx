@@ -9,17 +9,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-[#16A34A] text-white font-bold shadow-[0_4px_14px_rgba(22,163,74,0.3)] hover:bg-[#15803D] hover:-translate-y-px active:translate-y-0",
+          "bg-[#16A34A] text-white font-bold shadow-[0_4px_14px_rgba(22,163,74,0.3)] hover:bg-[#15803D] hover:-translate-y-px active:translate-y-0 dark:bg-[#16A34A] dark:text-[#101512] dark:hover:bg-[#22C55E]",
         secondary:
-          "bg-white text-[#0F172A] font-bold border border-[#E2E8F0] hover:bg-[#F8FAFC] hover:border-[#CBD5E1]",
+          "bg-white text-[#0F172A] font-bold border border-[#E2E8F0] hover:bg-[#F8FAFC] hover:border-[#CBD5E1] dark:bg-[#1D2821] dark:text-[#F5F7F5] dark:border-[#344239] dark:hover:bg-[#26332A] dark:hover:border-[#4B5E52]",
         destructive:
-          "bg-transparent text-[#DC2626] font-bold border-[1.5px] border-[#FECACA] hover:bg-[#FEF2F2] hover:border-[#FCA5A5]",
+          "bg-transparent text-[#DC2626] font-bold border-[1.5px] border-[#FECACA] hover:bg-[#FEF2F2] hover:border-[#FCA5A5] dark:text-[#FCA5A5] dark:border-[#7F1D1D] dark:hover:bg-[#450A0A]/40 dark:hover:border-[#991B1B]",
         ghost:
-          "text-gray-500 hover:text-gray-900 hover:bg-gray-100",
+          "text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-[#A1ADA4] dark:hover:text-[#F5F7F5] dark:hover:bg-[#1D2821]",
         outline:
-          "border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 hover:text-gray-900",
+          "border border-gray-200 bg-white text-gray-700 font-semibold hover:bg-gray-50 hover:text-gray-900 dark:border-[#344239] dark:bg-[#171F1A] dark:text-[#F5F7F5] dark:hover:bg-[#1D2821] dark:hover:text-[#F5F7F5]",
         link:
-          "text-[#16A34A] underline-offset-4 hover:underline",
+          "text-[#16A34A] underline-offset-4 hover:underline dark:text-[#4ADE80]",
       },
       size: {
         sm: "h-10 px-4 text-xs gap-1.5 rounded-[var(--radius-sm)] [&_svg]:size-[var(--icon-md)]",

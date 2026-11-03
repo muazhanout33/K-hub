@@ -93,29 +93,33 @@ export default function AdminPage() {
       label: 'Total Bookings',
       value: totalBookings,
       icon: CalendarCheck,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      color: 'text-blue-600 dark:text-blue-400',
+      bg: 'bg-blue-50 dark:bg-blue-950/40',
+      helper: 'All time',
     },
     {
       label: 'Confirmed',
       value: confirmedBookings,
       icon: Shield,
-      color: 'text-green-600',
-      bg: 'bg-green-50',
+      color: 'text-green-600 dark:text-[#4ADE80]',
+      bg: 'bg-green-50 dark:bg-green-950/40',
+      helper: 'Active reservations',
     },
     {
       label: 'Cancelled',
       value: cancelledBookings,
       icon: Users,
-      color: 'text-red-600',
-      bg: 'bg-red-50',
+      color: 'text-red-600 dark:text-red-400',
+      bg: 'bg-red-50 dark:bg-red-950/40',
+      helper: 'Refunded / voided',
     },
     {
-      label: 'Revenue (EGP)',
-      value: totalRevenue.toLocaleString(),
+      label: 'Revenue',
+      value: `EGP ${totalRevenue.toLocaleString()}`,
       icon: Banknote,
-      color: 'text-yellow-600',
-      bg: 'bg-yellow-50',
+      color: 'text-emerald-600 dark:text-emerald-400',
+      bg: 'bg-emerald-50 dark:bg-emerald-950/40',
+      helper: 'Confirmed bookings',
     },
   ];
 
@@ -124,7 +128,7 @@ export default function AdminPage() {
   const visibleBookings = showAll ? bookings : bookings.slice(0, 5);
 
   const quickLinkClass =
-    'inline-flex items-center gap-1.5 rounded-[var(--radius-md)] px-3 py-2 text-xs font-bold bg-white border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--primary-hover)] hover:border-[var(--primary)] transition-colors';
+    'inline-flex items-center gap-1.5 rounded-[var(--radius-md)] px-3 py-2 text-xs font-bold bg-white dark:bg-[#1D2821] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--primary-hover)] hover:border-[var(--primary)] transition-colors';
 
   return (
     <div className="min-h-[80vh] px-4 sm:px-6 py-6 sm:py-12">
@@ -132,7 +136,7 @@ export default function AdminPage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <Shield className="w-6 h-6 text-[var(--primary)]" />
-          <h1 className="text-xl sm:text-2xl font-black text-gray-900">Admin Dashboard</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-[#F5F7F5]">Admin Dashboard</h1>
         </div>
 
         {/* Stats grid */}
@@ -140,13 +144,18 @@ export default function AdminPage() {
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="bg-white rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] p-4 sm:p-5 space-y-2"
+              className="surface-card p-4 sm:p-5 flex flex-col justify-between"
             >
-              <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center`}>
-                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-[11px] font-bold text-muted uppercase tracking-wider">{stat.label}</span>
+                <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center`}>
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </div>
               </div>
-              <p className="text-xs font-bold text-gray-500 uppercase">{stat.label}</p>
-              <p className="text-2xl font-black text-gray-900">{stat.value}</p>
+              <div>
+                <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-[#F5F7F5] tracking-tight">{stat.value}</p>
+                <p className="text-[11px] text-muted mt-1">{stat.helper}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -172,9 +181,9 @@ export default function AdminPage() {
         </div>
 
         {/* Bookings — recent by default, full list on toggle */}
-        <div className="bg-white rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] overflow-hidden">
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-xs sm:text-sm font-bold text-gray-700 uppercase">All Bookings</h2>
+        <div className="bg-white dark:bg-[#1D2821] rounded-2xl border border-[var(--border)] shadow-[var(--shadow-card)] overflow-hidden">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 dark:border-[#344239] flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-xs sm:text-sm font-bold text-gray-700 dark:text-[#F5F7F5] uppercase">All Bookings</h2>
             {bookings.length > 0 && (
               <div className="flex items-center gap-3">
                 <span className="text-xs text-gray-500">
@@ -201,7 +210,7 @@ export default function AdminPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-xs font-bold text-gray-500 uppercase border-b border-gray-100">
+                  <tr className="text-xs font-bold text-gray-500 dark:text-[#8A9A8E] uppercase border-b border-gray-100 dark:border-[#344239]">
                     <th className="px-6 py-3 text-left">Booking #</th>
                     <th className="px-6 py-3 text-left">User</th>
                     <th className="px-6 py-3 text-left">Court</th>
@@ -211,15 +220,15 @@ export default function AdminPage() {
                     <th className="px-6 py-3 text-left">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50 dark:divide-[#344239]">
                   {visibleBookings.map((b) => (
-                    <tr key={b.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-3 font-mono text-xs text-gray-700">{b.bookingNumber}</td>
-                      <td className="px-6 py-3 text-gray-700">{b.userName || 'Guest'}</td>
-                      <td className="px-6 py-3 text-gray-700">{b.courtName}</td>
-                      <td className="px-6 py-3 text-gray-700">{b.date}</td>
-                      <td className="px-6 py-3 text-gray-700">{b.startTime}–{b.endTime}</td>
-                      <td className="px-6 py-3 font-bold text-gray-900">{b.totalPrice} EGP</td>
+                    <tr key={b.id} className="hover:bg-gray-50 dark:hover:bg-[#171F1A] transition-colors">
+                      <td className="px-6 py-3 font-mono text-xs text-gray-700 dark:text-[#F5F7F5]">{b.bookingNumber}</td>
+                      <td className="px-6 py-3 text-gray-700 dark:text-[#F5F7F5]">{b.userName || 'Guest'}</td>
+                      <td className="px-6 py-3 text-gray-700 dark:text-[#F5F7F5]">{b.courtName}</td>
+                      <td className="px-6 py-3 text-gray-700 dark:text-[#F5F7F5]">{b.date}</td>
+                      <td className="px-6 py-3 text-gray-700 dark:text-[#F5F7F5]">{b.startTime}–{b.endTime}</td>
+                      <td className="px-6 py-3 font-bold text-gray-900 dark:text-[#F5F7F5]">{b.totalPrice} EGP</td>
                       <td className="px-6 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${
                           b.status === 'Confirmed'

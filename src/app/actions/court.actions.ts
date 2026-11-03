@@ -22,13 +22,15 @@ export interface AdminCourtsResult {
  *   no service-role key and no RLS changes.
  * - Visibility (documented Step A decision): active courts only
  *   (`deleted_at IS NULL`) — byte-for-byte the same visibility rule as
- *   `getCourtsFromSupabase` (src/services/court.service.ts). Soft-deleted
- *   courts are NOT surfaced to admins in this step; showing them requires
- *   an explicit product decision (Phase 3 audit §3 / gate G4). The public
- *   court-service behavior is untouched.
+ *   `getCourtsFromSupabase` (src/services/court.service.ts). Pass
+ *   `{ includeArchived: true }` (Phase 3) to also list soft-deleted
+ *   (archived) courts — visible to admins only, via the admin branch of
+ *   the SELECT policy; the public court-service behavior is untouched.
  * - Mapping: real `mapDbCourtToCourt` (same data layer as the public site).
  */
-export async function getAdminCourtsAction(): Promise<AdminCourtsResult> {
+export async function getAdminCourtsAction(
+  options: { includeArchived?: boolean } = {}
+): Promise<AdminCourtsResult> {
   try {
     const supabase = await createClient();
 
@@ -47,11 +49,12 @@ export async function getAdminCourtsAction(): Promise<AdminCourtsResult> {
       return { success: false, error: 'Admin access required.' };
     }
 
-    const { data, error } = await supabase
+    const base = supabase
       .from('courts')
       .select('*')
-      .is('deleted_at', null)
       .order('created_at', { ascending: true });
+
+    const { data, error } = await (options.includeArchived ? base : base.is('deleted_at', null));
 
     if (error) {
       // Keep the raw database message server-side only; clients get a safe,
@@ -355,5 +358,242 @@ export async function updateCourtAction(payload: UpdateCourtPayload): Promise<Up
   } catch (err: unknown) {
     console.error('updateCourtAction failed:', err);
     return { success: false, error: COURT_UPDATE_ERROR };
+  }
+}
+
+// ── Court creation & archive lifecycle (Phase 3 close) ───────────
+
+/**
+ * Payload for Admin court creation. Identical field rules to
+ * `UpdateCourtPayload` (same validators), minus `courtId`.
+ */
+export interface CreateCourtPayload {
+  name: string;
+  sportType: string;
+  surface: string;
+  pricePerHour: number;
+  /** HH:mm, Africa/Cairo wall-clock (Model B convention). */
+  workingHoursOpen: string;
+  /** HH:mm. close < open = overnight session (allowed); close == open rejected. */
+  workingHoursClose: string;
+  /** Local `/images/...` path or absolute HTTPS URL (D1), max 500 chars. */
+  imageUrl: string;
+  /** Optional; the DB default 'Available' applies when omitted. */
+  status?: string;
+}
+
+export interface CreateCourtResult {
+  success: boolean;
+  court?: Court;
+  /** Safe, user-facing message — never raw database output. */
+  error?: string;
+}
+
+const COURT_CREATE_ERROR = 'Failed to create the court. Please try again.';
+
+/**
+ * Server Action: Admin-only court creation (Phase 3).
+ *
+ * - Authorization: A3 re-check, fail closed; RLS `Admins write courts`
+ *   (FOR ALL, WITH CHECK = USING) is the insert boundary; no service-role.
+ * - Validation: server-side and authoritative — the exact same rules as
+ *   `updateCourtAction` (sport whitelist, price bounds D3, strict HH:mm
+ *   with the D4 overnight rule, image URL rule D1, status whitelist).
+ *   Status is written only when provided; otherwise the DB default
+ *   'Available' applies.
+ * - Payload minimality: only columns the admin actually provided are
+ *   written; every schema default (is_indoor, capacity, rating,
+ *   gallery_urls, features, rules, slot_duration_minutes, timestamps)
+ *   is left to the database.
+ * - Errors: raw database messages logged server-side only; clients
+ *   receive static messages.
+ */
+export async function createCourtAction(payload: CreateCourtPayload): Promise<CreateCourtResult> {
+  try {
+    const supabase = await createClient();
+
+    // ── A3: server-side Admin role re-check (fail closed) ──
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      return { success: false, error: 'Authentication required.' };
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+
+    if (!profile || (profile as { role?: string }).role !== 'Admin') {
+      return { success: false, error: 'Admin access required.' };
+    }
+
+    // ── Input validation (server-side, authoritative — same rules as update) ──
+    const name = typeof payload?.name === 'string' ? payload.name.trim() : '';
+    if (name.length === 0 || name.length > MAX_NAME_LENGTH) {
+      return { success: false, error: `Enter a court name (${MAX_NAME_LENGTH} characters max).` };
+    }
+
+    const surface = typeof payload?.surface === 'string' ? payload.surface.trim() : '';
+    if (surface.length === 0 || surface.length > MAX_SURFACE_LENGTH) {
+      return { success: false, error: `Enter a surface (${MAX_SURFACE_LENGTH} characters max).` };
+    }
+
+    if (!EDITABLE_SPORT_TYPES.includes(payload.sportType)) {
+      return { success: false, error: 'Invalid sport type.' };
+    }
+
+    if (!isValidPrice(payload.pricePerHour)) {
+      return {
+        success: false,
+        error: 'Price must be a number between 0 and 100,000 EGP with at most two decimal places.',
+      };
+    }
+
+    if (
+      !isValidWorkingHour(payload.workingHoursOpen) ||
+      !isValidWorkingHour(payload.workingHoursClose)
+    ) {
+      return { success: false, error: 'Working hours must be valid HH:mm times (e.g. 07:00).' };
+    }
+    if (payload.workingHoursOpen === payload.workingHoursClose) {
+      return { success: false, error: 'Opening and closing times cannot be the same.' };
+    }
+
+    if (payload.status !== undefined && !EDITABLE_COURT_STATUSES.includes(payload.status)) {
+      return { success: false, error: "Status must be 'Available' or 'Maintenance'." };
+    }
+
+    const imageUrl = typeof payload.imageUrl === 'string' ? payload.imageUrl.trim() : '';
+    if (!isValidImageUrl(imageUrl)) {
+      return {
+        success: false,
+        error:
+          'Image URL must be a local /images/ path or an absolute HTTPS URL (max 500 characters).',
+      };
+    }
+
+    // ── Insert (RLS `Admins write courts` is the boundary) ──
+    const insertPayload: {
+      name: string;
+      sport_type: SportTypeEnum;
+      surface: string;
+      price_per_hour: number;
+      working_hours_open: string;
+      working_hours_close: string;
+      image_url: string;
+      status?: CourtStatusEnum;
+    } = {
+      name,
+      sport_type: payload.sportType as SportTypeEnum,
+      surface,
+      price_per_hour: payload.pricePerHour,
+      working_hours_open: `${payload.workingHoursOpen}:00`,
+      working_hours_close: `${payload.workingHoursClose}:00`,
+      image_url: imageUrl,
+    };
+    if (payload.status !== undefined) {
+      insertPayload.status = payload.status as CourtStatusEnum;
+    }
+
+    // Same repo-wide supabase-js v2.112 insert() generic gap as the other
+    // actions — `as never` keeps this file lint-clean while the explicit
+    // payload object above remains the real type contract.
+    const { data: insertedRow, error } = await supabase
+      .from('courts')
+      .insert(insertPayload as never)
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('createCourtAction: courts insert failed:', error.message);
+      return { success: false, error: COURT_CREATE_ERROR };
+    }
+
+    return { success: true, court: mapDbCourtToCourt(insertedRow as DbCourt) };
+  } catch (err: unknown) {
+    console.error('createCourtAction failed:', err);
+    return { success: false, error: COURT_CREATE_ERROR };
+  }
+}
+
+export interface SetCourtArchivedPayload {
+  courtId: string;
+  /** true = archive (set deleted_at); false = restore (clear deleted_at). */
+  archived: boolean;
+}
+
+export interface SetCourtArchivedResult {
+  success: boolean;
+  courtId?: string;
+  /** Safe, user-facing message — never raw database output. */
+  error?: string;
+}
+
+const COURT_ARCHIVE_ERROR = 'Failed to update the court archive state. Please try again.';
+
+/**
+ * Server Action: Admin-only archive/restore (soft delete) of a court.
+ *
+ * - Authorization: A3 re-check, fail closed; RLS `Admins write courts` is
+ *   the write boundary (USING is admin() also matches already-archived
+ *   rows, so restoring works).
+ * - Guarantees: writes ONLY `deleted_at` on exactly one court row. Existing
+ *   bookings and blocked periods are NEVER modified, cancelled or hidden by
+ *   this action. Archiving hides the court from the public site through the
+ *   existing `Public read courts` policy — no data is deleted.
+ * - Outcome verification: the update is followed by `.select('id')` so BOTH
+ *   the database error AND the affected-row count are checked (zero rows →
+ *   'Court not found.').
+ */
+export async function setCourtArchivedAction(
+  payload: SetCourtArchivedPayload
+): Promise<SetCourtArchivedResult> {
+  try {
+    const supabase = await createClient();
+
+    // ── A3: server-side Admin role re-check (fail closed) ──
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      return { success: false, error: 'Authentication required.' };
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+
+    if (!profile || (profile as { role?: string }).role !== 'Admin') {
+      return { success: false, error: 'Admin access required.' };
+    }
+
+    if (typeof payload?.courtId !== 'string' || !UUID_RE.test(payload.courtId)) {
+      return { success: false, error: 'Invalid court id.' };
+    }
+    if (typeof payload?.archived !== 'boolean') {
+      return { success: false, error: 'Invalid archive state.' };
+    }
+
+    const { data: affectedRows, error } = await supabase
+      .from('courts')
+      .update({ deleted_at: payload.archived ? new Date().toISOString() : null } as never)
+      .eq('id', payload.courtId)
+      .select('id');
+
+    if (error) {
+      console.error('setCourtArchivedAction: courts update failed:', error.message);
+      return { success: false, error: COURT_ARCHIVE_ERROR };
+    }
+
+    const rows = (affectedRows ?? []) as { id: string }[];
+    if (rows.length === 0) {
+      return { success: false, error: 'Court not found.' };
+    }
+
+    return { success: true, courtId: rows[0].id };
+  } catch (err: unknown) {
+    console.error('setCourtArchivedAction failed:', err);
+    return { success: false, error: COURT_ARCHIVE_ERROR };
   }
 }
