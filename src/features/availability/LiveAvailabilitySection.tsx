@@ -105,7 +105,7 @@ export function LiveAvailabilitySection() {
   };
 
   return (
-    <section className="surface-card p-5 sm:p-8 w-full">
+    <section className="surface-card p-5 sm:p-8 w-full overflow-hidden">
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
         <div className="section-head mb-0">
@@ -143,7 +143,7 @@ export function LiveAvailabilitySection() {
 
         {/* Quick strip — today + next 13 days. Intentional horizontal scroll. */}
         <div
-          className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+          className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide overscroll-x-contain"
           role="group"
           aria-label="Quick date selection, next 14 days"
         >

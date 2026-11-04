@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 export interface LogoProps {
   className?: string;
@@ -31,7 +32,7 @@ export function WegoLogo({
   };
 
   return (
-    <div className={`inline-flex flex-col select-none leading-none ${className}`}>
+    <div className={cn('inline-flex flex-col select-none leading-none', className)}>
       <span className={`font-black font-sans uppercase ${sizeStyles[size]}`}>
         <span className="text-[#0F172A] dark:text-[#F5F7F5] transition-colors">WE</span>
         <span className="text-[#15803D] dark:text-[#22C55E] transition-colors">GO</span>

@@ -106,11 +106,16 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white/85 dark:bg-[#101512]/90 backdrop-blur-xl border-b border-slate-200/60 dark:border-[#344239] shadow-[0_1px_3px_rgba(0,0,0,0.02)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.4)] transition-colors">
-        <SiteContainer className="h-[76px] lg:h-[80px] flex items-center justify-between px-3 sm:px-6 lg:px-20">
+        <SiteContainer className="h-[68px] sm:h-[76px] lg:h-[80px] flex items-center justify-between px-3.5 sm:px-6 lg:px-20">
 
-          {/* Logo */}
+          {/* Logo — responsive sizing: compact on mobile, full tagline on desktop */}
           <Link href="/" className="flex items-center shrink-0 py-1" aria-label="WEGO Home">
-            <WegoLogo size="lg" showTagline />
+            <span className="sm:hidden flex items-center">
+              <WegoLogo size="md" showTagline={false} />
+            </span>
+            <span className="hidden sm:flex items-center">
+              <WegoLogo size="lg" showTagline />
+            </span>
           </Link>
 
           {/* Desktop Nav */}
@@ -140,9 +145,11 @@ export function Navbar() {
           </nav>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-            {/* Theme Toggle (Desktop & Tablet) */}
-            <ThemeToggle variant="compact" className="hidden sm:inline-flex" />
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Theme Toggle (Desktop & Tablet only — mobile is housed in the drawer) */}
+            <div className="hidden sm:inline-flex shrink-0">
+              <ThemeToggle variant="compact" />
+            </div>
 
             {/* Notification Bell */}
             <NotificationBell />
@@ -165,7 +172,7 @@ export function Navbar() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => router.push('/profile')}
-                  className="w-11 h-11 rounded-full overflow-hidden ring-[1.5px] ring-gray-200 dark:ring-[#344239] hover:ring-[#16A34A] transition-all duration-200 shrink-0 flex items-center justify-center cursor-pointer"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden ring-[1.5px] ring-gray-200 dark:ring-[#344239] hover:ring-[#16A34A] transition-all duration-200 shrink-0 flex items-center justify-center cursor-pointer"
                   aria-label="My profile"
                 >
                   {user.avatar ? (
@@ -202,7 +209,7 @@ export function Navbar() {
                 </Link>
                 <Link
                   href="/auth/login"
-                  className="w-11 h-11 rounded-full bg-gray-100 dark:bg-[#1D2821] flex items-center justify-center hover:bg-gray-200/80 dark:hover:bg-[#26332A] transition-colors shrink-0"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gray-100 dark:bg-[#1D2821] flex items-center justify-center hover:bg-gray-200/80 dark:hover:bg-[#26332A] transition-colors shrink-0"
                   aria-label="Sign in"
                 >
                   <User className="w-4 h-4 text-gray-500 dark:text-[#A1ADA4]" />
@@ -215,7 +222,7 @@ export function Navbar() {
               ref={menuButtonRef}
               variant="ghost"
               size="icon"
-              className="xl:hidden h-11 w-11 rounded-xl text-gray-700 dark:text-[#F5F7F5]"
+              className="xl:hidden h-10 w-10 sm:h-11 sm:w-11 rounded-xl text-gray-700 dark:text-[#F5F7F5]"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav-drawer"

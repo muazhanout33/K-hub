@@ -29,7 +29,7 @@ describe('Payment Lifecycle Integration', () => {
     // Clear the in-memory payment service state
     clearPayments();
     // Reset the store state
-    usePaymentStore.setState({ payments: [], lastIdempotencyKey: null });
+    usePaymentStore.setState({ payments: [], lastIdempotencyKey: null, pendingConfirmation: null, lastBookingId: null, _hasHydrated: true });
   });
 
   describe('Create → Process → Full lifecycle', () => {

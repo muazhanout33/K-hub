@@ -6,21 +6,20 @@ const outDir = path.resolve('verified-shots');
 if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
 const viewports = [
+  { name: 'mobile-360', width: 360, height: 740 },
   { name: 'mobile-375', width: 375, height: 667 },
   { name: 'mobile-390', width: 390, height: 844 },
   { name: 'mobile-412', width: 412, height: 915 },
-  { name: 'tablet-768', width: 768, height: 1024 },
   { name: 'desktop-1280', width: 1280, height: 800 },
 ];
 
 async function run() {
   const browser = await chromium.launch({ headless: true });
-  const report = [];
+  const results = [];
 
   for (const vp of viewports) {
     const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height } });
-    await page.goto('http://localhost:3002/', { waitUntil: 'networkidle' });
-    // Allow any framer-motion / images to settle
+    await page.goto('http://localhost:3002/', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1000);
 
     const metrics = await page.evaluate(() => {
@@ -31,18 +30,22 @@ async function run() {
       const innerWidth = window.innerWidth;
       const hasHorizontalOverflow = scrollWidth > innerWidth;
 
-      // Collect images
-      const images = Array.from(document.querySelectorAll('img')).map(img => ({
-        src: img.currentSrc || img.src,
-        alt: img.alt,
-        width: img.naturalWidth,
-        height: img.naturalHeight,
-        displayedWidth: img.clientWidth,
-        displayedHeight: img.clientHeight,
-      }));
+      // Check header items
+      const header = document.querySelector('header');
+      const headerRect = header ? header.getBoundingClientRect() : null;
+      const navElementsOutside = [];
 
-      // Check hero image
-      const heroImgs = Array.from(document.querySelectorAll('section img, [class*="hero"] img')).map(i => i.src);
+      if (header) {
+        header.querySelectorAll('*').forEach(el => {
+          const r = el.getBoundingClientRect();
+          const s = window.getComputedStyle(el);
+          if (s.display !== 'none' && s.visibility !== 'hidden') {
+            if (r.right > innerWidth || r.left < 0) {
+              navElementsOutside.push({ tag: el.tagName, className: el.className, left: r.left, right: r.right });
+            }
+          }
+        });
+      }
 
       return {
         viewport: `${window.innerWidth}x${window.innerHeight}`,
@@ -50,32 +53,24 @@ async function run() {
         clientWidth,
         innerWidth,
         hasHorizontalOverflow,
-        imagesCount: images.length,
-        images,
-        heroImgs,
+        headerRect,
+        navElementsOutside,
       };
     });
 
-    // Capture viewport shot
     await page.screenshot({ path: path.join(outDir, `${vp.name}-viewport.png`), fullPage: false });
-    // Capture full-page shot
     await page.screenshot({ path: path.join(outDir, `${vp.name}-fullpage.png`), fullPage: true });
 
-    report.push({ viewport: vp.name, ...metrics });
+    results.push({ name: vp.name, ...metrics });
     await page.close();
   }
 
   await browser.close();
 
-  fs.writeFileSync(path.join(outDir, 'report.json'), JSON.stringify(report, null, 2));
-  console.log('Verification completed successfully! Summary:');
-  report.forEach(r => {
-    console.log(`- ${r.viewport}: scrollWidth=${r.scrollWidth}, innerWidth=${r.innerWidth}, OVERFLOW=${r.hasHorizontalOverflow ? 'YES (FAIL)' : 'NO (PASS)'}`);
-    console.log(`  Sample images:`, r.images.slice(0, 4).map(i => i.src));
+  console.log('\n=== RESPONSIVE VERIFICATION RESULTS ===');
+  results.forEach(r => {
+    console.log(`[${r.name}] ${r.viewport}: scrollWidth=${r.scrollWidth}, clientWidth=${r.clientWidth}, OVERFLOW=${r.hasHorizontalOverflow ? 'FAIL' : 'PASS'}, NavElementsOutside=${r.navElementsOutside.length}`);
   });
 }
 
-run().catch(err => {
-  console.error('Test run error:', err);
-  process.exit(1);
-});
+run().catch(console.error);

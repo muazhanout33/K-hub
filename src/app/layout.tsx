@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-[var(--background)] text-[var(--text-main)] antialiased selection:bg-green-100 selection:text-green-800 dark:selection:bg-green-900/40 dark:selection:text-green-300">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:bg-[var(--primary)] focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:bg-[var(--primary)] focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-white m-0"
         >
           Skip to main content
         </a>

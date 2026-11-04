@@ -5,6 +5,7 @@ import { BookingResult, CancellationResult, Booking } from '@/types';
 import { formatTstzrange, parseTstzrangeStart, mapDbBookingToBooking } from '@/lib/mappers';
 import { DbBooking } from '@/types/database.types';
 import { getCourtInfoForBooking, getCourtInfoMap } from '@/services/court.service';
+import { createNotification } from '@/services/notification.service';
 import { calculateBookingPrice } from '@/lib/pricing';
 import { isSlotPast, isSlotCancellable, CANCELLATION_WINDOW_HOURS, cairoExpiryNowRange, addDaysToDateString } from '@/lib/timezone';
 
@@ -131,16 +132,19 @@ export async function createBookingAction(
     const courtInfo = await getCourtInfoForBooking(payload.courtId);
     const newBooking: Booking = mapDbBookingToBooking(data as DbBooking, courtInfo);
 
-    // Create a notification for the user
-    await (supabase.from('notifications') as any).insert({
-      user_id: userId,
+    // Create a notification for the user (owner = the booking's user).
+    // Failures are logged and never fail the booking itself.
+    const newBookingNotification = await createNotification({
+      userId: newBooking.userId ?? userId,
       type: 'new_booking',
       title: 'Booking Reserved',
       message: `Your reservation ${bookingNumber} for ${payload.date} at ${payload.startTime} has been created.`,
-      related_booking_id: newBooking.id,
-      is_read: false,
-      dedupe_key: `new_booking:${newBooking.id}`,
+      relatedBookingId: newBooking.id,
+      dedupeKey: `new_booking:${newBooking.id}`,
     });
+    if (!newBookingNotification.success) {
+      console.error('Failed to create new_booking notification:', newBookingNotification.error);
+    }
 
     return { success: true, booking: newBooking };
   } catch (err: unknown) {
@@ -238,16 +242,20 @@ export async function cancelBookingAction(bookingId: string): Promise<Cancellati
     const cancelledCourtInfo = await getCourtInfoForBooking(data.court_id);
     const cancelledBooking: Booking = mapDbBookingToBooking(data as DbBooking, cancelledCourtInfo);
 
-    // Insert booking_cancelled notification
-    await (supabase.from('notifications') as any).insert({
-      user_id: authData.user.id,
+    // Insert booking_cancelled notification for the booking OWNER
+    // (an admin may cancel someone else's booking — notify the owner).
+    // Failures are logged and never fail the cancellation itself.
+    const cancelNotification = await createNotification({
+      userId: cancelledBooking.userId ?? authData.user.id,
       type: 'booking_cancelled',
       title: 'Booking Cancelled',
       message: `Booking ${cancelledBooking.bookingNumber} has been cancelled.`,
-      related_booking_id: cancelledBooking.id,
-      is_read: false,
-      dedupe_key: `booking_cancelled:${cancelledBooking.id}`,
+      relatedBookingId: cancelledBooking.id,
+      dedupeKey: `booking_cancelled:${cancelledBooking.id}`,
     });
+    if (!cancelNotification.success) {
+      console.error('Failed to create booking_cancelled notification:', cancelNotification.error);
+    }
 
     return { success: true, booking: cancelledBooking, refund: undefined };
   } catch (err: unknown) {
@@ -543,31 +551,90 @@ export async function confirmBookingStatusAction(
     const courtInfo = await getCourtInfoForBooking(data.court_id);
     const confirmed: Booking = mapDbBookingToBooking(data as DbBooking, courtInfo);
 
-    // Create booking_confirmed notification
-    await (supabase.from('notifications') as any).insert({
-      user_id: authData.user.id,
+    // Create booking_confirmed notification for the booking OWNER.
+    // Failures are logged and never fail the confirmation itself.
+    const confirmedNotification = await createNotification({
+      userId: confirmed.userId ?? authData.user.id,
       type: 'booking_confirmed',
       title: 'Booking Confirmed!',
       message: `Your booking ${confirmed.bookingNumber} is confirmed. See you on ${confirmed.date} at ${confirmed.startTime}!`,
-      related_booking_id: confirmed.id,
-      is_read: false,
-      dedupe_key: `booking_confirmed:${confirmed.id}`,
+      relatedBookingId: confirmed.id,
+      dedupeKey: `booking_confirmed:${confirmed.id}`,
     });
+    if (!confirmedNotification.success) {
+      console.error('Failed to create booking_confirmed notification:', confirmedNotification.error);
+    }
 
-    // Create payment_successful notification
-    await (supabase.from('notifications') as any).insert({
-      user_id: authData.user.id,
+    // Create payment_successful notification for the booking OWNER.
+    const paymentNotification = await createNotification({
+      userId: confirmed.userId ?? authData.user.id,
       type: 'payment_successful',
       title: 'Payment Successful',
       message: `EGP ${confirmed.totalPrice} payment processed for booking ${confirmed.bookingNumber}.`,
-      related_booking_id: confirmed.id,
-      is_read: false,
-      dedupe_key: `payment_successful:${confirmed.id}`,
+      relatedBookingId: confirmed.id,
+      dedupeKey: `payment_successful:${confirmed.id}`,
     });
+    if (!paymentNotification.success) {
+      console.error('Failed to create payment_successful notification:', paymentNotification.error);
+    }
 
     return { success: true, booking: confirmed };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to confirm booking';
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Server Action: Fetch a single booking's current status/data.
+ *
+ * Used by the confirmation page to recover durable booking context
+ * after a refresh/redirect (e.g. when the local store is empty but a
+ * payment/confirmation is pending). Enforces authentication and
+ * ownership (or Admin role), like the other booking actions.
+ */
+export async function getBookingStatusAction(
+  bookingId: string
+): Promise<BookingResult> {
+  try {
+    const supabase = await createClient();
+
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      return { success: false, error: 'Authentication required.' };
+    }
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('id', bookingId)
+      .maybeSingle();
+
+    if (error || !data) {
+      return { success: false, error: 'Booking not found or access denied.' };
+    }
+
+    const row = data as DbBooking;
+
+    // Ownership check (Admin bypass) — mirrors confirmBookingStatusAction
+    const isOwner = row.user_id === authData.user.id;
+    if (!isOwner) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+
+      if (!profile || (profile as { role?: string }).role !== 'Admin') {
+        return { success: false, error: 'Not authorized.' };
+      }
+    }
+
+    const courtInfo = await getCourtInfoForBooking(row.court_id);
+    const booking = mapDbBookingToBooking(row, courtInfo);
+    return { success: true, booking };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to fetch booking';
     return { success: false, error: message };
   }
 }
@@ -623,18 +690,11 @@ export async function expireStaleBookingsAction(): Promise<{
       return { success: false, expiredCount: 0, error: error.message };
     }
 
-    // Create booking_expired notifications for each expired booking
+    // Create booking_expired notifications for each expired booking.
+    // Per-row via createNotification (dedupe-safe): a batch insert is
+    // all-or-nothing, so one duplicate dedupe_key would drop every
+    // other notification. Failures are logged, never fail the action.
     if (data && data.length > 0) {
-      const expiredNotifications = data.map((row: { id: string }) => ({
-        type: 'booking_expired',
-        title: 'Booking Expired',
-        message: 'A Reserved booking has expired and is no longer valid.',
-        related_booking_id: row.id,
-        is_read: false,
-      }));
-
-      // Batch insert notifications (admin context, no user_id filter needed for RLS)
-      // We need user_ids — fetch them in one query
       const bookingIds = data.map((row: { id: string }) => row.id);
       const { data: bookingsData } = await supabase
         .from('bookings')
@@ -644,20 +704,25 @@ export async function expireStaleBookingsAction(): Promise<{
       if (bookingsData) {
         // notifications.user_id is NOT NULL — walk-in bookings (user_id NULL)
         // have no account to notify and are skipped (manual-booking migration).
-        const notifications = bookingsData
-          .filter((b: { user_id: string | null }) => b.user_id != null)
-          .map((b: { id: string; user_id: string; booking_number: string }) => ({
-            user_id: b.user_id,
+        const targets = bookingsData.filter(
+          (b: { user_id: string | null }) => b.user_id != null
+        ) as { id: string; user_id: string; booking_number: string }[];
+
+        for (const b of targets) {
+          const expiredNotification = await createNotification({
+            userId: b.user_id,
             type: 'booking_expired',
             title: 'Booking Expired',
             message: `Your booking ${b.booking_number} has expired and is no longer valid.`,
-            related_booking_id: b.id,
-            is_read: false,
-            dedupe_key: `booking_expired:${b.id}`,
-          }));
-
-        if (notifications.length > 0) {
-          await (supabase.from('notifications') as any).insert(notifications);
+            relatedBookingId: b.id,
+            dedupeKey: `booking_expired:${b.id}`,
+          });
+          if (!expiredNotification.success) {
+            console.error(
+              `Failed to create booking_expired notification for ${b.id}:`,
+              expiredNotification.error
+            );
+          }
         }
       }
     }

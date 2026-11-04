@@ -14,7 +14,7 @@ vi.mock('@/features/booking/useBookingStore', () => ({
 
 beforeEach(() => {
   clearPayments();
-  usePaymentStore.setState({ payments: [], lastIdempotencyKey: null });
+  usePaymentStore.setState({ payments: [], lastIdempotencyKey: null, pendingConfirmation: null, lastBookingId: null, _hasHydrated: true });
 });
 
 describe('usePaymentStore', () => {

@@ -21,6 +21,7 @@ vi.mock('@/app/actions/booking.actions', () => ({
   cancelBookingAction: vi.fn(),
   confirmBookingStatusAction: vi.fn(),
   expireStaleBookingsAction: vi.fn(),
+  getBookingStatusAction: vi.fn(),
 }));
 
 const bookingActions = vi.mocked(await import('@/app/actions/booking.actions'));
@@ -46,6 +47,9 @@ function resetAllStores() {
   usePaymentStore.setState({
     payments: [],
     lastIdempotencyKey: null,
+    pendingConfirmation: null,
+    lastBookingId: null,
+    _hasHydrated: true,
   });
   useAuthStore.setState({
     user: { id: 'user-bf-1', name: 'John Doe', email: 'john@test.com', phone: '+1234567890', role: 'Guest', createdAt: '2026-01-01T00:00:00Z' },
@@ -253,8 +257,19 @@ describe('Booking Flow Integration', () => {
       expect(bookingResult.success).toBe(true);
 
       expect(result.current.bookings).toHaveLength(1);
-      expect(result.current.selectedSlots).toHaveLength(0);
+      // Slots are intentionally KEPT after confirm so a failed payment /
+      // confirmation retry still shows the user's selection.
+      expect(result.current.selectedSlots).toHaveLength(2);
       expect(result.current.bookingStep).toBe(4);
+      // A durable pending-confirmation op was registered for recovery.
+      expect(usePaymentStore.getState().pendingConfirmation?.bookingId).toBe(
+        mockBooking.id
+      );
+
+      // resetBookingFlow clears the selection and the durable op.
+      act(() => { result.current.resetBookingFlow(); });
+      expect(result.current.selectedSlots).toHaveLength(0);
+      expect(usePaymentStore.getState().pendingConfirmation).toBeNull();
     });
   });
 });

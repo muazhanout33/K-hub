@@ -10,6 +10,15 @@ interface NotificationState {
   notifications: Notification[];
   soundEnabled: boolean;
 
+  /**
+   * Transient (never persisted) queue of notification IDs that should
+   * play a sound once. Populated only when a notification actually
+   * ARRIVES (realtime INSERT or optimistic add) — never by initial
+   * fetch or background refetch, so refreshes are always silent.
+   * Drained by `useNotificationSound` via `consumePendingSounds`.
+   */
+  pendingSoundIds: string[];
+
   /** Initialize notifications for user from Supabase and subscribe to Realtime. */
   initNotifications: (userId: string) => Promise<void>;
 
@@ -24,6 +33,12 @@ interface NotificationState {
     userId: string,
     relatedBookingId?: string
   ) => Notification;
+
+  /** Queue an ID for one sound play (dedupes existing IDs). */
+  enqueueSound: (id: string) => void;
+
+  /** Return and clear the pending sound queue. */
+  consumePendingSounds: () => string[];
 
   toggleSound: () => void;
   markAsRead: (id: string) => Promise<void>;
@@ -40,14 +55,138 @@ interface NotificationState {
 let idCounter = 1000;
 let realtimeChannel: RealtimeChannel | null = null;
 
+/** User the current Realtime subscription belongs to. */
+let currentUserId: string | null = null;
+/** Reconnect backoff state (1s → 30s exponential). */
+let reconnectAttempts = 0;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+/** True once the first server fetch of this session has completed. */
+let hasFetchedOnce = false;
+/** True while global online/visibility listeners are installed. */
+let globalListenersInstalled = false;
+
+const RECONNECT_BASE_MS = 1000;
+const RECONNECT_MAX_MS = 30000;
+
+function sortNotifications(list: Notification[]): Notification[] {
+  return [...list].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
+
+/**
+ * Merge server rows into local state.
+ * - `keepLocalOnly`: entries that exist only locally (optimistic /
+ *   not yet persisted) survive; server wins for shared IDs.
+ */
+function mergeServerRows(
+  state: NotificationState,
+  remote: Notification[],
+  keepLocalOnly: boolean
+): Partial<NotificationState> {
+  const remoteIds = new Set(remote.map((n) => n.id));
+  const localOnly = keepLocalOnly
+    ? state.notifications.filter((n) => !remoteIds.has(n.id))
+    : [];
+  const merged = new Map<string, Notification>();
+  for (const n of [...localOnly, ...remote]) merged.set(n.id, n);
+  return { notifications: sortNotifications([...merged.values()]) };
+}
+
+function cancelReconnect(): void {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+}
+
+function scheduleReconnect(): void {
+  if (!currentUserId) return; // logged out / torn down
+  cancelReconnect();
+  const delay = Math.min(
+    RECONNECT_MAX_MS,
+    RECONNECT_BASE_MS * 2 ** reconnectAttempts
+  );
+  reconnectAttempts += 1;
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null;
+    if (!currentUserId) return;
+    void useNotificationStore.getState().initNotifications(currentUserId);
+  }, delay);
+}
+
+function handleOnline(): void {
+  if (!currentUserId) return;
+  reconnectAttempts = 0;
+  cancelReconnect();
+  void useNotificationStore.getState().initNotifications(currentUserId);
+}
+
+function handleVisibilityChange(): void {
+  if (document.visibilityState !== 'visible') return;
+  if (!currentUserId) return;
+  reconnectAttempts = 0;
+  // Re-init when the channel is gone; otherwise just refresh silently.
+  if (!realtimeChannel) {
+    void useNotificationStore.getState().initNotifications(currentUserId);
+    return;
+  }
+  void syncFromServer(currentUserId);
+}
+
+function installGlobalListeners(): void {
+  if (globalListenersInstalled) return;
+  globalListenersInstalled = true;
+  window.addEventListener('online', handleOnline);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+}
+
+function removeGlobalListeners(): void {
+  if (!globalListenersInstalled) return;
+  globalListenersInstalled = false;
+  window.removeEventListener('online', handleOnline);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+}
+
+/** Fetch the user's notifications and merge them in without sounds. */
+async function syncFromServer(userId: string): Promise<void> {
+  try {
+    const supabase = createClient();
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) return;
+
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', authData.user.id)
+      .order('created_at', { ascending: false });
+
+    if (data) {
+      const mapped = (data as DbNotification[]).map(mapDbNotificationToNotification);
+      useNotificationStore.setState((state) =>
+        mergeServerRows(state, mapped, true)
+      );
+    }
+  } catch {
+    // Keep existing state on network error
+  }
+}
+
 export const useNotificationStore = create<NotificationState>()(
   persist(
     (set, get) => ({
       notifications: [],
       soundEnabled: true,
+      pendingSoundIds: [],
 
       initNotifications: async (userId: string) => {
         if (!userId) return;
+        // Idempotent: a retry/visibility re-init must not stack timers
+        // or channels for the same user.
+        cancelReconnect();
+        currentUserId = userId;
+        installGlobalListeners();
+
         try {
           const supabase = createClient();
           const { data: authData } = await supabase.auth.getUser();
@@ -61,12 +200,17 @@ export const useNotificationStore = create<NotificationState>()(
 
           if (data) {
             const mapped = (data as DbNotification[]).map(mapDbNotificationToNotification);
-            set({ notifications: mapped });
+            // First fetch of the session is authoritative (replaces the
+            // localStorage cache); later reconnect refetches merge and
+            // keep local-only entries.
+            set((state) => mergeServerRows(state, mapped, hasFetchedOnce));
+            hasFetchedOnce = true;
           }
 
           // Subscribe to Realtime INSERT events for this user's notifications
           if (realtimeChannel) {
             supabase.removeChannel(realtimeChannel);
+            realtimeChannel = null;
           }
           realtimeChannel = supabase
             .channel(`notifications:${authData.user.id}`)
@@ -81,18 +225,37 @@ export const useNotificationStore = create<NotificationState>()(
               (payload) => {
                 const dbRow = payload.new as DbNotification;
                 const mapped = mapDbNotificationToNotification(dbRow);
-                set((state) => {
-                  // Dedup: skip if notification ID already exists
-                  if (state.notifications.some((n) => n.id === mapped.id)) {
-                    return state;
-                  }
-                  return { notifications: [mapped, ...state.notifications] };
+                const state = get();
+                // Dedup: skip if notification ID already exists (also
+                // suppresses a duplicate sound for the same row).
+                if (state.notifications.some((n) => n.id === mapped.id)) {
+                  return;
+                }
+                set({
+                  notifications: [mapped, ...state.notifications],
+                  pendingSoundIds: [...state.pendingSoundIds, mapped.id],
                 });
               }
             )
-            .subscribe();
+            .subscribe((status) => {
+              if (status === 'SUBSCRIBED') {
+                reconnectAttempts = 0;
+                // Silent refresh: recover any rows missed while offline.
+                void syncFromServer(userId);
+                return;
+              }
+              if (
+                status === 'CHANNEL_ERROR' ||
+                status === 'TIMED_OUT' ||
+                status === 'CLOSED'
+              ) {
+                scheduleReconnect();
+              }
+            });
         } catch {
-          // Keep existing state on network error
+          // Keep existing state on network error; retry on next
+          // visibility/online event or via backoff.
+          scheduleReconnect();
         }
       },
 
@@ -113,9 +276,11 @@ export const useNotificationStore = create<NotificationState>()(
           createdAt: new Date().toISOString(),
         };
 
-        // Optimistic local update
+        // Optimistic local update + queue its sound (arrived via a
+        // genuine user action, not a background refetch).
         set((state) => ({
           notifications: [notification, ...state.notifications],
+          pendingSoundIds: [...state.pendingSoundIds, notification.id],
         }));
 
         // Persist to Supabase (fire-and-forget, non-blocking)
@@ -139,13 +304,24 @@ export const useNotificationStore = create<NotificationState>()(
 
             // Replace local optimistic ID with real DB UUID
             if (data) {
-              set((state) => ({
-                notifications: state.notifications.map((n) =>
+              set((state) => {
+                const replaced = state.notifications.map((n) =>
                   n.id === notification.id
                     ? { ...n, id: data.id, userId: authData.user.id }
                     : n
-                ),
-              }));
+                );
+                // If the realtime INSERT already delivered the same DB
+                // row, drop the duplicate instead of showing it twice.
+                const deduped = replaced.filter(
+                  (n, i) => replaced.findIndex((x) => x.id === n.id) === i
+                );
+                // The optimistic and DB IDs refer to the SAME
+                // notification — don't let it play twice.
+                const pendingSoundIds = state.pendingSoundIds.filter(
+                  (id) => id !== data.id
+                );
+                return { notifications: deduped, pendingSoundIds };
+              });
             }
           } catch {
             // Keep local notification on network error
@@ -153,6 +329,22 @@ export const useNotificationStore = create<NotificationState>()(
         })();
 
         return notification;
+      },
+
+      enqueueSound: (id) => {
+        if (!id) return;
+        set((state) =>
+          state.pendingSoundIds.includes(id)
+            ? state
+            : { pendingSoundIds: [...state.pendingSoundIds, id] }
+        );
+      },
+
+      consumePendingSounds: () => {
+        const queue = get().pendingSoundIds;
+        if (queue.length === 0) return [];
+        set({ pendingSoundIds: [] });
+        return queue;
       },
 
       toggleSound: () =>
@@ -249,14 +441,20 @@ export const useNotificationStore = create<NotificationState>()(
           .length,
 
       clearNotifications: () => {
-        // Unsubscribe from Realtime
+        // Unsubscribe from Realtime + stop any pending reconnect
+        cancelReconnect();
+        currentUserId = null;
+        reconnectAttempts = 0;
+        hasFetchedOnce = false;
+        removeGlobalListeners();
         if (realtimeChannel) {
           const supabase = createClient();
           supabase.removeChannel(realtimeChannel);
           realtimeChannel = null;
         }
-        // Clear all client state
-        set({ notifications: [] });
+        // Clear all client state (including queued sounds — a logout
+        // must never burst-play pending notification sounds).
+        set({ notifications: [], pendingSoundIds: [] });
       },
     }),
     {

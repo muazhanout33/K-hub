@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useNotificationStore } from '@/features/notifications/useNotificationStore';
 import { playNotificationSound } from '@/lib/audio';
 
@@ -25,55 +25,43 @@ const SOUND_TYPES = new Set([
 ]);
 
 /**
- * Hook that plays a notification sound when a new notification
- * is added to the store via `addNotification`.
+ * Hook that plays a notification sound for NEW notifications that
+ * arrived in real time (or were optimistically added by the user's
+ * own action).
+ *
+ * Sound gating model:
+ *   - The notification store records a transient `pendingSoundIds`
+ *     queue whenever a notification actually arrives (realtime INSERT
+ *     or optimistic add). Initial fetches and background refetches
+ *     never enqueue, so refreshing the page is always silent.
+ *   - This hook drains that queue once per change and plays only for
+ *     IDs that (a) still exist in the store and (b) match SOUND_TYPES.
+ *   - `soundEnabled` is checked at play time; when muted the queue is
+ *     still consumed (so no stale sounds burst on re-enable).
  *
  * Safety guarantees:
- *   - NEVER plays on page refresh / hydration (skips initial state)
+ *   - NEVER plays on page refresh / hydration (queue starts empty)
  *   - NEVER plays on initial render
- *   - Only reacts to notifications added AFTER this hook mounts
- *   - Only plays for sound-worthy notification types
- *   - Prevents overlapping playback
- *   - Respects the `soundEnabled` store flag (future Settings page)
- *
- * Mount once at the root layout. Do not mount in child components.
+ *   - Audio failure never blocks or breaks notification delivery
  */
 export function useNotificationSound(): void {
-  const lastCount = useRef<number>(-1);
+  const notifications = useNotificationStore((s) => s.notifications);
+  const soundEnabled = useNotificationStore((s) => s.soundEnabled);
 
   useEffect(() => {
-    const unsubscribe = useNotificationStore.subscribe((state) => {
-      // Skip the very first subscription call (hydration / initial state)
-      if (lastCount.current === -1) {
-        lastCount.current = state.notifications.length;
-        return;
-      }
+    // Drain first so IDs are never double-played across renders —
+    // even when muted (no stale burst when re-enabled).
+    const ids = useNotificationStore.getState().consumePendingSounds();
+    if (ids.length === 0) return;
+    if (!soundEnabled) return;
 
-      // Only react to actual additions (count went up)
-      if (state.notifications.length <= lastCount.current) {
-        lastCount.current = state.notifications.length;
-        return;
-      }
-
-      lastCount.current = state.notifications.length;
-
-      // Check if sound is enabled (future Settings page integration)
-      const soundEnabled = (state as { soundEnabled?: boolean }).soundEnabled;
-      if (soundEnabled === false) return;
-
-      // Find the newest notification (first in array — prepended on add)
-      const newest = state.notifications[0];
-      if (!newest) return;
-
-      // Only play for sound-worthy types
-      if (!SOUND_TYPES.has(newest.type)) return;
-
+    const byId = new Map(notifications.map((n) => [n.id, n]));
+    for (const id of ids) {
+      const notification = byId.get(id);
+      if (!notification) continue; // stale ID (refetch/merge dropped it)
+      if (!SOUND_TYPES.has(notification.type)) continue;
       playNotificationSound();
-    });
-
-    // Initialize count from current state (skip this value on next subscription)
-    lastCount.current = useNotificationStore.getState().notifications.length;
-
-    return unsubscribe;
-  }, []);
+      break; // audio module coalesces; one call per batch is enough
+    }
+  }, [notifications, soundEnabled]);
 }

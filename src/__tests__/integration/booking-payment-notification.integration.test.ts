@@ -16,6 +16,7 @@ vi.mock('@/app/actions/booking.actions', () => ({
   cancelBookingAction: vi.fn(),
   confirmBookingStatusAction: vi.fn(),
   expireStaleBookingsAction: vi.fn(),
+  getBookingStatusAction: vi.fn(),
 }));
 
 // Mock booking service (external I/O only)
@@ -82,7 +83,7 @@ describe('Booking ↔ Payment ↔ Notification Integration', () => {
       hasExtendedReservation: false,
     });
 
-    usePaymentStore.setState({ payments: [], lastIdempotencyKey: null });
+    usePaymentStore.setState({ payments: [], lastIdempotencyKey: null, pendingConfirmation: null, lastBookingId: null, _hasHydrated: true });
     useNotificationStore.setState({ notifications: [], soundEnabled: true });
   });
 

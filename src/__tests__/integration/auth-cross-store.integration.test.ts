@@ -16,6 +16,7 @@ vi.mock('@/app/actions/booking.actions', () => ({
   cancelBookingAction: vi.fn(),
   confirmBookingStatusAction: vi.fn(),
   expireStaleBookingsAction: vi.fn(),
+  getBookingStatusAction: vi.fn(),
 }));
 
 // Mock booking service (external I/O)
@@ -82,6 +83,9 @@ describe('Auth Cross-Store Integration', () => {
     usePaymentStore.setState({
       payments: [],
       lastIdempotencyKey: null,
+      pendingConfirmation: null,
+      lastBookingId: null,
+      _hasHydrated: true,
     });
 
     useNotificationStore.setState({

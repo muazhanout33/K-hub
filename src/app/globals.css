@@ -151,6 +151,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    max-width: 100vw;
   }
 
   body {
@@ -158,6 +159,9 @@
     background-color: var(--background);
     color: var(--text-main);
     line-height: 1.5;
+    overflow-x: hidden;
+    max-width: 100%;
+    position: relative;
   }
 }
 

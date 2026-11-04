@@ -7,6 +7,7 @@ vi.mock('@/app/actions/booking.actions', () => ({
   cancelBookingAction: vi.fn(),
   confirmBookingStatusAction: vi.fn(),
   expireStaleBookingsAction: vi.fn(),
+  getBookingStatusAction: vi.fn(),
 }));
 
 vi.mock('@/services/booking.service', () => ({

@@ -8,7 +8,7 @@ import { isBookingFullyPast, isSlotCancellable, addDaysToDateString, CANCELLATIO
 import { useBlockedPeriodStore } from '@/features/booking/useBlockedPeriodStore';
 import { usePaymentStore } from '@/features/payment/usePaymentStore';
 import { useAuthStore } from '@/features/auth/useAuthStore';
-import { createBookingAction, cancelBookingAction, confirmBookingStatusAction, expireStaleBookingsAction } from '@/app/actions/booking.actions';
+import { createBookingAction, cancelBookingAction, confirmBookingStatusAction, expireStaleBookingsAction, getBookingStatusAction } from '@/app/actions/booking.actions';
 import { calculateBookingPrice } from '@/lib/pricing';
 
 // ── Cancellation Policy ──
@@ -55,6 +55,15 @@ function isBookingPast(b: Booking): boolean {
  * Payment domain converts to smallest unit (piastres) when creating Payment.amount.
  */
 export { calculateBookingPrice } from '@/lib/pricing';
+
+/**
+ * Drop any durable pending confirmation when the user changes their
+ * selection — a stale confirmation must never hijack a new flow.
+ * (`?.` keeps this safe when the payment store is mocked in tests.)
+ */
+function clearPendingConfirmation(): void {
+  usePaymentStore.getState().clearConfirmation?.();
+}
 
 export type BookingStep = 1 | 2 | 3 | 4 | 5;
 
@@ -138,11 +147,22 @@ export const useBookingStore = create<BookingStoreState>()(
       isCancelling: false,
       _hasHydrated: false,
 
-      selectCourt: (court) => set({ selectedCourt: court, selectedSlots: [] }),
+      selectCourt: (court) => {
+        // A new selection invalidates any pending confirmation attempt —
+        // it must never hijack a different booking's flow.
+        clearPendingConfirmation();
+        set({ selectedCourt: court, selectedSlots: [] });
+      },
 
-      selectDate: (date) => set({ selectedDate: date, selectedSlots: [] }),
+      selectDate: (date) => {
+        clearPendingConfirmation();
+        set({ selectedDate: date, selectedSlots: [] });
+      },
 
-      setSelectedDateOnly: (date) => set({ selectedDate: date, selectedSlots: [] }),
+      setSelectedDateOnly: (date) => {
+        clearPendingConfirmation();
+        set({ selectedDate: date, selectedSlots: [] });
+      },
 
       toggleSlot: (slot) => {
         const { selectedSlots, selectedCourt, selectedDate, bookings } = get();
@@ -167,11 +187,13 @@ export const useBookingStore = create<BookingStoreState>()(
           const isAtEdge =
             slot.id === sorted[0].id || slot.id === sorted[sorted.length - 1].id;
           if (!isAtEdge) return;
+          clearPendingConfirmation();
           set({ selectedSlots: sorted.filter((s) => s.id !== slot.id) });
           return;
         }
 
         if (selectedSlots.length === 0) {
+          clearPendingConfirmation();
           set({ selectedSlots: [slot] });
           return;
         }
@@ -184,6 +206,7 @@ export const useBookingStore = create<BookingStoreState>()(
             set({ maxHoursReachedTick: get().maxHoursReachedTick + 1 });
             return;
           }
+          clearPendingConfirmation();
           set({ selectedSlots: testSlots });
         }
       },
@@ -251,6 +274,54 @@ export const useBookingStore = create<BookingStoreState>()(
           return { success: false, error: 'Please fill in your name and email before confirming.' };
         }
 
+        // Idempotent re-entry: if a confirmation is already pending for an
+        // existing booking (retry after refresh/redirect), reuse that
+        // booking instead of creating a duplicate reservation.
+        const pending = usePaymentStore.getState().pendingConfirmation;
+        if (pending?.bookingId) {
+          const existing = get().bookings.find((b) => b.id === pending.bookingId);
+          if (
+            existing &&
+            (existing.status === 'Reserved' || existing.status === 'Confirmed')
+          ) {
+            return { success: true, booking: existing };
+          }
+          if (!existing) {
+            // Not in the local store (e.g. cleared storage / other device):
+            // ask the server before ever creating a second booking.
+            const fetched = await getBookingStatusAction(pending.bookingId);
+            if (fetched.success && fetched.booking) {
+              if (
+                fetched.booking.status === 'Reserved' ||
+                fetched.booking.status === 'Confirmed'
+              ) {
+                const recovered = fetched.booking;
+                set({
+                  bookings: [
+                    recovered,
+                    ...get().bookings.filter((b) => b.id !== recovered.id),
+                  ],
+                });
+                return { success: true, booking: recovered };
+              }
+              // Server says cancelled/expired/deleted — safe to start fresh.
+              clearPendingConfirmation();
+            } else {
+              // Could not verify (network/auth). Never risk a duplicate
+              // booking for a possibly-paid reservation — fail retryably.
+              return {
+                success: false,
+                error:
+                  fetched.error ||
+                  'Unable to verify your pending booking. Please try again.',
+              };
+            }
+          } else {
+            // Cancelled / Expired locally — start fresh.
+            clearPendingConfirmation();
+          }
+        }
+
         const sorted = [...selectedSlots].sort(
           (a, b) => parseHour(a.startTime) - parseHour(b.startTime)
         );
@@ -282,12 +353,19 @@ export const useBookingStore = create<BookingStoreState>()(
 
           set({
             bookings: [newBooking, ...bookings],
-            selectedSlots: [],
+            // selectedSlots intentionally KEPT: if payment/confirmation
+            // fails, the retry UI must still show what the user picked.
+            // Cleared on flow success (payment page) and resetBookingFlow.
             reservationStartTime: null,
             reservationExpiresAt: null,
             hasExtendedReservation: false,
             bookingStep: 4,
           });
+
+          // Durable confirmation op: survives refresh/redirect so the
+          // payment page can recover and retry confirm-only (never ask
+          // the user to pay twice, never create a duplicate booking).
+          usePaymentStore.getState().beginConfirmation?.(newBooking.id);
 
           return { success: true, booking: newBooking };
         }
@@ -297,21 +375,63 @@ export const useBookingStore = create<BookingStoreState>()(
 
       /**
        * Promotes a Reserved booking to Confirmed after payment succeeds.
+       *
+       * Idempotent: a booking that is ALREADY confirmed (e.g. a previous
+       * retry actually succeeded server-side, or a second click raced)
+       * is treated as success — never surfaced as an error, never
+       * prompting the user to pay again.
        */
       confirmBookingAfterPayment: async (bookingId: string): Promise<BookingResult> => {
         // M1: Persist status change to Supabase
         const serverResult = await confirmBookingStatusAction(bookingId);
-        if (!serverResult.success) {
+        const alreadyConfirmed =
+          !serverResult.success &&
+          /booking is already confirmed\./i.test(serverResult.error ?? '');
+
+        if (!serverResult.success && !alreadyConfirmed) {
           return serverResult;
         }
 
-        // Update local store to match DB
         const { bookings } = get();
-        const updatedBookings = bookings.map((b) =>
-          b.id === bookingId ? { ...b, status: 'Confirmed' as const, updatedAt: new Date().toISOString() } : b
-        );
+        const local = bookings.find((b) => b.id === bookingId);
+
+        let confirmed: Booking | undefined;
+
+        if (local) {
+          // Prefer the local (richer: courtName/courtImage/selectedSlotIds)
+          // entry, merged with whatever the server returned.
+          confirmed = {
+            ...(serverResult.booking ?? {}),
+            ...local,
+            status: 'Confirmed' as const,
+            updatedAt: new Date().toISOString(),
+          };
+        } else if (serverResult.booking) {
+          confirmed = {
+            ...serverResult.booking,
+            status: 'Confirmed' as const,
+          };
+        } else {
+          // "Already confirmed" with no local copy (refresh/other device):
+          // recover the booking from the server instead of failing.
+          const fetched = await getBookingStatusAction(bookingId);
+          if (fetched.success && fetched.booking) {
+            confirmed = fetched.booking;
+          }
+        }
+
+        if (!confirmed) {
+          return {
+            success: false,
+            error: serverResult.error || 'Failed to confirm booking.',
+          };
+        }
+
+        const updatedBookings = local
+          ? bookings.map((b) => (b.id === bookingId ? confirmed! : b))
+          : [confirmed, ...bookings];
         set({ bookings: updatedBookings });
-        return { success: true, booking: updatedBookings.find((b) => b.id === bookingId)! };
+        return { success: true, booking: confirmed };
       },
 
       cancelBooking: async (bookingId: string): Promise<CancellationResult> => {
@@ -387,6 +507,8 @@ export const useBookingStore = create<BookingStoreState>()(
       },
 
       resetBookingFlow: () => {
+        // A fresh flow must not inherit a stale confirmation attempt.
+        clearPendingConfirmation();
         set({
           selectedCourt: null,
           selectedDate: getToday(),

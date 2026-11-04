@@ -86,7 +86,7 @@ vi.mock('@/lib/timezone', () => ({
 // ─────────────────────────────────────────────────────────────────
 // cancelBookingAction
 // ─────────────────────────────────────────────────────────────────
-import { cancelBookingAction } from '@/app/actions/booking.actions';
+import { cancelBookingAction, getBookingStatusAction } from '@/app/actions/booking.actions';
 
 describe('cancelBookingAction', () => {
   beforeEach(() => {
@@ -429,5 +429,79 @@ describe('expireStaleBookingsAction', () => {
     const result = await expireStaleBookingsAction();
     expect(result.success).toBe(true);
     expect(result.expiredCount).toBe(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────
+// getBookingStatusAction  (recovery path for refresh/redirect)
+// ─────────────────────────────────────────────────────────────────
+describe('getBookingStatusAction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    supabaseChain = makeSupabaseChain({ data: null, error: null });
+  });
+
+  it('returns error when unauthenticated', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    const result = await getBookingStatusAction('booking-1');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Authentication required');
+  });
+
+  it('returns error when the booking does not exist', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    supabaseChain.maybeSingle = vi.fn(() =>
+      Promise.resolve({ data: null, error: null })
+    );
+
+    const result = await getBookingStatusAction('missing-booking');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('not found');
+  });
+
+  it('returns the booking when the caller is the owner', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    supabaseChain.maybeSingle = vi.fn(() =>
+      Promise.resolve({
+        data: { id: 'booking-1', user_id: 'user-1', court_id: 'court-1' },
+        error: null,
+      })
+    );
+
+    const result = await getBookingStatusAction('booking-1');
+    expect(result.success).toBe(true);
+    expect(result.booking?.id).toBe('booking-1');
+    expect(supabaseChain.eq).toHaveBeenCalledWith('id', 'booking-1');
+  });
+
+  it('rejects a non-owner without the Admin role', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'intruder' } } });
+    supabaseChain.maybeSingle = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: { id: 'booking-1', user_id: 'someone-else', court_id: 'court-1' },
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: { role: 'Guest' }, error: null });
+
+    const result = await getBookingStatusAction('booking-1');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Not authorized');
+  });
+
+  it('allows an Admin to fetch another user\'s booking', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+    supabaseChain.maybeSingle = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: { id: 'booking-1', user_id: 'someone-else', court_id: 'court-1' },
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: { role: 'Admin' }, error: null });
+
+    const result = await getBookingStatusAction('booking-1');
+    expect(result.success).toBe(true);
+    expect(result.booking?.id).toBe('booking-1');
   });
 });

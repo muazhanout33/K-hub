@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Sun, Moon, Laptop } from 'lucide-react';
 import { useTheme, type Theme } from '@/lib/theme/useTheme';
+import { cn } from '@/lib/utils';
 
 interface ThemeToggleProps {
   /**
@@ -25,9 +26,11 @@ export function ThemeToggle({ variant = 'compact', className = '' }: ThemeToggle
     // Render an inert placeholder during SSR to prevent layout shift
     return (
       <div
-        className={`inline-flex items-center rounded-full border border-gray-200 dark:border-[#344239] p-0.5 bg-gray-100/80 dark:bg-[#1D2821] ${
-          variant === 'compact' ? 'h-9 w-[104px]' : 'h-10 w-full max-w-[280px]'
-        } ${className}`}
+        className={cn(
+          'inline-flex items-center rounded-full border border-gray-200 dark:border-[#344239] p-0.5 bg-gray-100/80 dark:bg-[#1D2821]',
+          variant === 'compact' ? 'h-9 w-[104px]' : 'h-10 w-full max-w-[280px]',
+          className
+        )}
         aria-hidden="true"
       />
     );
@@ -44,7 +47,10 @@ export function ThemeToggle({ variant = 'compact', className = '' }: ThemeToggle
       <div
         role="radiogroup"
         aria-label="Theme selection"
-        className={`inline-flex items-center p-1 rounded-full border border-gray-200 dark:border-[#344239] bg-gray-100/90 dark:bg-[#1D2821] w-full max-w-[320px] transition-colors ${className}`}
+        className={cn(
+          'inline-flex items-center p-1 rounded-full border border-gray-200 dark:border-[#344239] bg-gray-100/90 dark:bg-[#1D2821] w-full max-w-[320px] transition-colors',
+          className
+        )}
       >
         {options.map(({ value, label, icon: Icon }) => {
           const isActive = theme === value;
@@ -75,7 +81,10 @@ export function ThemeToggle({ variant = 'compact', className = '' }: ThemeToggle
     <div
       role="radiogroup"
       aria-label="Theme selection"
-      className={`inline-flex items-center p-0.5 rounded-full border border-gray-200 dark:border-[#344239] bg-gray-100/80 dark:bg-[#171F1A] transition-colors shrink-0 ${className}`}
+      className={cn(
+        'inline-flex items-center p-0.5 rounded-full border border-gray-200 dark:border-[#344239] bg-gray-100/80 dark:bg-[#171F1A] transition-colors shrink-0',
+        className
+      )}
     >
       {options.map(({ value, label, icon: Icon }) => {
         const isActive = theme === value;
