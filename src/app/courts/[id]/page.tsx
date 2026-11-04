@@ -10,7 +10,8 @@ import { TimeSlotsGrid } from '@/features/booking/TimeSlotsGrid';
 import { BookingCountdown } from '@/features/booking/BookingCountdown';
 import DaySelector from '@/features/booking/DaySelector';
 import { formatDisplayDate, getToday } from '@/lib/dates';
-import { Court } from '@/types';
+import { Court, Booking } from '@/types';
+import { useAllBookingsForDate } from '@/hooks/useAllBookingsForDate';
 
 import { SiteContainer } from '@/components/layout/SiteContainer';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,21 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
   const [error, setError] = useState<string | null>(null);
 
   const selectCourt = useBookingStore((state) => state.selectCourt);
-  const bookings = useBookingStore((state) => state.bookings);
+  const localBookings = useBookingStore((state) => state.bookings);
+  const { bookings: publicBookings } = useAllBookingsForDate(selectedDate);
+
+  const effectiveBookings = useMemo(() => {
+    const map = new Map<string, Booking>();
+    for (const b of publicBookings) {
+      map.set(b.id, b);
+    }
+    for (const b of localBookings) {
+      if (!map.has(b.id)) {
+        map.set(b.id, b);
+      }
+    }
+    return Array.from(map.values());
+  }, [publicBookings, localBookings]);
 
   const fetchCourt = useCallback(async () => {
     setLoading(true);
@@ -57,8 +72,8 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
   }, [fetchCourt]);
 
   const timeSlots = useMemo(
-    () => (court ? generateTimeSlots(court, selectedDate, court.pricePerHour, bookings) : []),
-    [court, selectedDate, bookings]
+    () => (court ? generateTimeSlots(court, selectedDate, court.pricePerHour, effectiveBookings) : []),
+    [court, selectedDate, effectiveBookings]
   );
 
   if (loading || !court) {

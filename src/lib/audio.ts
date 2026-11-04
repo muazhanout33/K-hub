@@ -207,6 +207,8 @@ export async function unlockAudio(): Promise<void> {
 // ── Gesture wiring ──
 
 let unlockListeners: Array<[keyof WindowEventMap, EventListener]> | null = null;
+/** Number of active installers sharing the single listener set. */
+let unlockRefCount = 0;
 
 /**
  * Install global user-gesture listeners that unlock audio playback.
@@ -224,11 +226,16 @@ export function installAudioUnlock(): () => void {
       window.addEventListener(event, listener, { passive: true });
     }
   }
+  unlockRefCount += 1;
 
   let released = false;
   return () => {
     if (released) return;
     released = true;
+    unlockRefCount -= 1;
+    // Other subscribers still hold the listeners open.
+    if (unlockRefCount > 0) return;
+    unlockRefCount = 0;
     if (!unlockListeners) return;
     for (const [event, listener] of unlockListeners) {
       window.removeEventListener(event, listener);
@@ -246,6 +253,7 @@ export function disposeAudio(): void {
       }
       unlockListeners = null;
     }
+    unlockRefCount = 0;
     playInFlight = false;
     followUpQueued = false;
     warmUpActive = false;

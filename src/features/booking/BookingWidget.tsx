@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/features/auth/useAuthStore';
 import { createClient } from '@/lib/supabase/client';
+import { useAllBookingsForDate } from '@/hooks/useAllBookingsForDate';
+import { Booking } from '@/types';
 
 export function BookingWidget() {
   const router = useRouter();
@@ -31,13 +33,31 @@ export function BookingWidget() {
   const startTemporaryReservation = useBookingStore((s) => s.startTemporaryReservation);
   const maxHoursReachedTick = useBookingStore((s) => s.maxHoursReachedTick);
 
+  // Cross-user live availability from Supabase
+  const { bookings: publicBookings } = useAllBookingsForDate(selectedDate);
+
+  const effectiveBookings = useMemo(() => {
+    const map = new Map<string, Booking>();
+    // 1. Authoritative public bookings from Supabase
+    for (const b of publicBookings) {
+      map.set(b.id, b);
+    }
+    // 2. Add local store bookings
+    for (const b of bookings) {
+      if (!map.has(b.id)) {
+        map.set(b.id, b);
+      }
+    }
+    return Array.from(map.values());
+  }, [publicBookings, bookings]);
+
   useEffect(() => {
     if (maxHoursReachedTick > 0) {
       toast.error(`Maximum booking duration is ${MAX_BOOKING_HOURS} hours. Please deselect a slot first.`);
     }
   }, [maxHoursReachedTick]);
 
-  // Supabase Realtime subscription for live court availability
+  // Realtime subscription for live court availability (broadcast + DB events)
   useEffect(() => {
     if (!selectedCourt) return;
 
@@ -53,10 +73,15 @@ export function BookingWidget() {
           filter: `court_id=eq.${selectedCourt.id}`,
         },
         () => {
-          // Toast subtle alert when availability changes live
           toast.info('Court availability updated live.', { duration: 2000 });
         }
       )
+      .on('broadcast', { event: 'availability-change' }, (payload) => {
+        const cId = payload?.payload?.courtId;
+        if (!cId || cId === 'all' || cId === selectedCourt.id) {
+          toast.info('Court availability updated live.', { duration: 2000 });
+        }
+      })
       .subscribe();
 
     return () => {
@@ -64,10 +89,35 @@ export function BookingWidget() {
     };
   }, [selectedCourt]);
 
+  // Deselect if another player books one of currently selected slots in real time
+  useEffect(() => {
+    if (selectedSlots.length === 0 || !selectedCourt) return;
+    const bookedSlotIds = new Set<string>();
+    for (const b of effectiveBookings) {
+      if (
+        b.courtId === selectedCourt.id &&
+        b.date === selectedDate &&
+        (b.status === 'Confirmed' || b.status === 'Reserved')
+      ) {
+        for (const sId of b.selectedSlotIds) {
+          bookedSlotIds.add(sId);
+        }
+      }
+    }
+
+    const conflicting = selectedSlots.filter((s) => bookedSlotIds.has(s.id));
+    if (conflicting.length > 0) {
+      for (const slot of conflicting) {
+        toggleSlot(slot);
+      }
+      toast.error('A slot you selected was just booked by another player.');
+    }
+  }, [effectiveBookings, selectedCourt, selectedDate, selectedSlots, toggleSlot]);
+
   const rawSlots = useMemo(() => {
     if (!selectedCourt) return [];
-    return generateTimeSlots(selectedCourt, selectedDate, selectedCourt.pricePerHour, bookings);
-  }, [selectedCourt, selectedDate, bookings]);
+    return generateTimeSlots(selectedCourt, selectedDate, selectedCourt.pricePerHour, effectiveBookings);
+  }, [selectedCourt, selectedDate, effectiveBookings]);
 
   const displaySlots = useMemo(
     () => rawSlots.map((s) => ({ timeRange: `${to12Hour(s.startTime)} – ${to12Hour(s.endTime)}`, status: s.status })),

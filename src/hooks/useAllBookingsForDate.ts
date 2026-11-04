@@ -1,14 +1,21 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Booking } from '@/types';
-import { mapDbBookingToBooking } from '@/lib/mappers';
-import { DbBooking } from '@/types/database.types';
-import { getCourtInfoMap } from '@/services/court.service';
+import { getPublicCourtAvailabilityAction } from '@/app/actions/booking.actions';
 
 /**
- * Fetches ALL bookings for a specific date from Supabase (not just current user).
- * Used by LiveAvailabilitySection so the availability grid reflects all users' bookings.
- * Subscribes to Realtime changes on the bookings table.
+ * Fetches ALL public bookings for a specific date (cross-user availability).
+ * Used by LiveAvailabilitySection, BookingWidget, and CourtDetailsPage
+ * so the availability grid accurately reflects all users' confirmed bookings and active holds.
+ *
+ * PRIVACY GUARANTEE:
+ * Returns zero personal identification information (PII). All user emails,
+ * phones, and names are stripped at the server level.
+ *
+ * SYNCHRONIZATION:
+ * 1. Subscribes to Supabase Realtime Broadcast on 'public-court-availability'.
+ * 2. Refetches on window visibility/focus.
+ * 3. 15-second heartbeat poll to avoid stale slot displays.
  */
 export function useAllBookingsForDate(date: string | null) {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -24,28 +31,13 @@ export function useAllBookingsForDate(date: string | null) {
     }
     setLoading(true);
     try {
-      const supabase = createClient();
-
-      const { data, error: fetchErr } = await supabase
-        .from('bookings')
-        .select('*')
-        .not('status', 'eq', 'Cancelled')
-        .not('status', 'eq', 'Expired')
-        .not('booking_range', 'is', null)
-        .filter('booking_range', 'ov', `["${date}T00:00:00+00", "${date}T23:59:59+00")`);
-
-      if (fetchErr) {
-        throw new Error(fetchErr.message);
+      const result = await getPublicCourtAvailabilityAction({ date });
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load court availability');
       }
 
-      const dbBookings = (data || []) as unknown as DbBooking[];
-      const courtMap = await getCourtInfoMap(dbBookings.map((b) => b.court_id));
-      const mapped: Booking[] = dbBookings.map((b) =>
-        mapDbBookingToBooking(b, courtMap.get(b.court_id))
-      );
-
       if (mountedRef.current) {
-        setBookings(mapped);
+        setBookings(result.bookings);
         setError(null);
       }
     } catch (err: unknown) {
@@ -61,14 +53,25 @@ export function useAllBookingsForDate(date: string | null) {
 
   useEffect(() => {
     mountedRef.current = true;
-    // Async IIFE avoids synchronous setState in effect body
     void (async () => {
       await fetchBookings();
     })();
 
-    // Realtime subscription for ALL bookings (no user_id filter)
     const supabase = createClient();
-    const channel = supabase
+
+    // 1. Listen for cross-user broadcast on the public availability channel
+    const broadcastChannel = supabase
+      .channel('public-court-availability')
+      .on('broadcast', { event: 'availability-change' }, (payload) => {
+        const payloadDate = payload?.payload?.date;
+        if (!payloadDate || payloadDate === 'all' || payloadDate === date) {
+          void fetchBookings();
+        }
+      })
+      .subscribe();
+
+    // 2. Also listen for direct postgres_changes (for admin contexts)
+    const dbChannel = supabase
       .channel(`all-bookings-${date}`)
       .on(
         'postgres_changes',
@@ -78,16 +81,32 @@ export function useAllBookingsForDate(date: string | null) {
           table: 'bookings',
         },
         () => {
-          void (async () => {
-            await fetchBookings();
-          })();
+          void fetchBookings();
         }
       )
       .subscribe();
 
+    // 3. Tab visibility / focus refetch
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchBookings();
+      }
+    };
+    window.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', onVisibilityChange);
+
+    // 4. Polling heartbeat every 15s for live hold expiration and fresh availability
+    const timer = setInterval(() => {
+      void fetchBookings();
+    }, 15000);
+
     return () => {
       mountedRef.current = false;
-      supabase.removeChannel(channel);
+      clearInterval(timer);
+      window.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('focus', onVisibilityChange);
+      supabase.removeChannel(broadcastChannel);
+      supabase.removeChannel(dbChannel);
     };
   }, [date, fetchBookings]);
 

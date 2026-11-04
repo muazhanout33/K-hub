@@ -40,7 +40,11 @@ describe('useNotificationStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset zustand persist state between tests
-    useNotificationStore.setState({ notifications: [], soundEnabled: true });
+    useNotificationStore.setState({
+      notifications: [],
+      soundEnabled: true,
+      pendingSoundIds: [],
+    });
   });
 
   describe('Initial State', () => {
@@ -275,6 +279,107 @@ describe('useNotificationStore', () => {
       });
 
       expect(result.current.notifications).toEqual([]);
+    });
+
+    it('also drains the pending sound queue (no stale sounds after logout)', () => {
+      const { result } = renderHook(() => useNotificationStore());
+
+      act(() => {
+        result.current.enqueueSound('n-1');
+        result.current.enqueueSound('n-2');
+      });
+      expect(result.current.pendingSoundIds).toHaveLength(2);
+
+      act(() => {
+        result.current.clearNotifications();
+      });
+
+      expect(result.current.pendingSoundIds).toEqual([]);
+    });
+  });
+
+  // ── Sound gating queue (no sound on refresh, no duplicates) ──
+  describe('pendingSoundIds queue', () => {
+    it('starts empty (refresh / initial fetch is always silent)', () => {
+      const { result } = renderHook(() => useNotificationStore());
+      expect(result.current.pendingSoundIds).toEqual([]);
+    });
+
+    it('enqueueSound adds an id once (deduped)', () => {
+      const { result } = renderHook(() => useNotificationStore());
+
+      act(() => {
+        result.current.enqueueSound('n-1');
+        result.current.enqueueSound('n-1');
+        result.current.enqueueSound('n-2');
+      });
+
+      expect(result.current.pendingSoundIds).toEqual(['n-1', 'n-2']);
+    });
+
+    it('enqueueSound ignores empty ids', () => {
+      const { result } = renderHook(() => useNotificationStore());
+
+      act(() => {
+        result.current.enqueueSound('');
+      });
+
+      expect(result.current.pendingSoundIds).toEqual([]);
+    });
+
+    it('consumePendingSounds drains the queue exactly once', () => {
+      const { result } = renderHook(() => useNotificationStore());
+
+      act(() => {
+        result.current.enqueueSound('n-1');
+        result.current.enqueueSound('n-2');
+      });
+
+      let drained: string[] = [];
+      act(() => {
+        drained = result.current.consumePendingSounds();
+      });
+
+      expect(drained).toEqual(['n-1', 'n-2']);
+      // Second drain is empty → the sound can never replay.
+      expect(result.current.consumePendingSounds()).toEqual([]);
+      expect(result.current.pendingSoundIds).toEqual([]);
+    });
+
+    it('addNotification enqueues its own optimistic id for a sound', () => {
+      const { result } = renderHook(() => useNotificationStore());
+
+      let created: { id: string } | undefined;
+      act(() => {
+        created = result.current.addNotification(
+          'booking_confirmed',
+          'Booking Confirmed',
+          'Paid',
+          'user-1'
+        );
+      });
+
+      expect(result.current.pendingSoundIds).toContain(created!.id);
+    });
+
+    it('consuming after addNotification prevents a replay', () => {
+      const { result } = renderHook(() => useNotificationStore());
+
+      act(() => {
+        result.current.addNotification(
+          'booking_confirmed',
+          'Booking Confirmed',
+          'Paid',
+          'user-1'
+        );
+      });
+
+      act(() => {
+        result.current.consumePendingSounds();
+      });
+
+      expect(result.current.pendingSoundIds).toEqual([]);
+      expect(result.current.consumePendingSounds()).toEqual([]);
     });
   });
 });

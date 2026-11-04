@@ -1,10 +1,11 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { BookingResult, CancellationResult, Booking } from '@/types';
-import { formatTstzrange, parseTstzrangeStart, mapDbBookingToBooking } from '@/lib/mappers';
+import { formatTstzrange, parseTstzrangeStart, parseTstzrange, mapDbBookingToBooking } from '@/lib/mappers';
 import { DbBooking } from '@/types/database.types';
-import { getCourtInfoForBooking, getCourtInfoMap } from '@/services/court.service';
+import { getCourtInfoForBooking, getCourtInfoMap, FALLBACK_COURT_IMAGE } from '@/services/court.service';
 import { createNotification } from '@/services/notification.service';
 import { calculateBookingPrice } from '@/lib/pricing';
 import { isSlotPast, isSlotCancellable, CANCELLATION_WINDOW_HOURS, cairoExpiryNowRange, addDaysToDateString } from '@/lib/timezone';
@@ -98,6 +99,19 @@ export async function createBookingAction(
     // ── H1: Server-side price recalculation (never trust client) ──
     const totalPrice = calculateBookingPrice(court.price_per_hour, payload.durationMinutes);
 
+    // Auto-expire any stale 'Reserved' holds older than 10 minutes before insertion
+    const holdCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    try {
+      const admin = createAdminClient();
+      await (admin.from('bookings') as any)
+        .update({ status: 'Expired' })
+        .eq('court_id', payload.courtId)
+        .eq('status', 'Reserved')
+        .lt('created_at', holdCutoff);
+    } catch {
+      // Non-fatal: if admin update fails, proceed to attempt insertion
+    }
+
     const bookingNumber = `KH-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // Insert into public.bookings table
@@ -145,6 +159,8 @@ export async function createBookingAction(
     if (!newBookingNotification.success) {
       console.error('Failed to create new_booking notification:', newBookingNotification.error);
     }
+
+    void broadcastAvailabilityChange(payload.courtId, payload.date);
 
     return { success: true, booking: newBooking };
   } catch (err: unknown) {
@@ -256,6 +272,8 @@ export async function cancelBookingAction(bookingId: string): Promise<Cancellati
     if (!cancelNotification.success) {
       console.error('Failed to create booking_cancelled notification:', cancelNotification.error);
     }
+
+    void broadcastAvailabilityChange(cancelledBooking.courtId, cancelledBooking.date);
 
     return { success: true, booking: cancelledBooking, refund: undefined };
   } catch (err: unknown) {
@@ -578,6 +596,8 @@ export async function confirmBookingStatusAction(
       console.error('Failed to create payment_successful notification:', paymentNotification.error);
     }
 
+    void broadcastAvailabilityChange(confirmed.courtId, confirmed.date);
+
     return { success: true, booking: confirmed };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to confirm booking';
@@ -727,9 +747,157 @@ export async function expireStaleBookingsAction(): Promise<{
       }
     }
 
+    if ((data?.length ?? 0) > 0) {
+      void broadcastAvailabilityChange();
+    }
+
     return { success: true, expiredCount: data?.length ?? 0 };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to expire bookings';
     return { success: false, expiredCount: 0, error: message };
+  }
+}
+
+/**
+ * Broadcast an availability change event via Supabase Realtime Broadcast.
+ * All listening clients (on all devices/browsers) receive this immediately
+ * and refresh their slot availability states.
+ */
+export async function broadcastAvailabilityChange(courtId?: string, date?: string): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const channel = admin.channel('public-court-availability');
+    await new Promise<void>((resolve) => {
+      channel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') resolve();
+      });
+      setTimeout(resolve, 1500);
+    });
+    await channel.send({
+      type: 'broadcast',
+      event: 'availability-change',
+      payload: { courtId: courtId || 'all', date: date || 'all', timestamp: Date.now() },
+    });
+    await admin.removeChannel(channel);
+  } catch (err) {
+    console.warn('Realtime availability broadcast notice failed (non-fatal):', err);
+  }
+}
+
+export interface PublicAvailabilityResult {
+  success: boolean;
+  bookings: Booking[];
+  error?: string;
+}
+
+/**
+ * Server Action: Get public availability bookings for a given date and court.
+ *
+ * PRIVACY GUARANTEE:
+ * Returns ONLY sanitized court schedule slots (courtId, date, startTime, endTime, status).
+ * All PII (user_name, user_email, user_phone, user_id, total_price, booking_number)
+ * is completely stripped / excluded.
+ *
+ * CONCURRENCY & HOLD SAFETY:
+ * 1. Checks active 'Reserved' holds. If a hold was created more than 10 minutes ago
+ *    and not confirmed, it is automatically marked 'Expired' in Supabase so the
+ *    database GiST exclusion constraint releases the slot for other players.
+ * 2. Returns all Confirmed bookings and active (<10 min) Reserved holds.
+ */
+export async function getPublicCourtAvailabilityAction(params: {
+  date: string;
+  courtId?: string;
+}): Promise<PublicAvailabilityResult> {
+  try {
+    const { date, courtId } = params;
+    if (!date) {
+      return { success: false, bookings: [], error: 'Date is required.' };
+    }
+
+    const admin = createAdminClient();
+
+    // 1. Auto-expire stale holds ('Reserved' older than 10 minutes)
+    const holdCutoff = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: expiredRows } = await (admin.from('bookings') as any)
+      .update({ status: 'Expired' })
+      .eq('status', 'Reserved')
+      .lt('created_at', holdCutoff)
+      .select('id, court_id');
+
+    if (expiredRows && expiredRows.length > 0) {
+      void broadcastAvailabilityChange(courtId, date);
+    }
+
+    // 2. Fetch active bookings (Confirmed and unexpired Reserved)
+    const nextDate = addDaysToDateString(date, 1);
+    const dayRangeFilter = `["${date}T00:00:00+00", "${nextDate}T06:00:00+00")`;
+
+    let query = admin
+      .from('bookings')
+      .select('id, court_id, booking_range, duration_minutes, status, created_at, updated_at')
+      .in('status', ['Reserved', 'Confirmed'])
+      .not('booking_range', 'is', null)
+      .filter('booking_range', 'ov', dayRangeFilter);
+
+    if (courtId) {
+      query = query.eq('court_id', courtId);
+    }
+
+    const { data: rows, error: fetchErr } = await (query as any);
+    if (fetchErr) {
+      return { success: false, bookings: [], error: fetchErr.message };
+    }
+
+    const rawRows = (rows as Array<any>) || [];
+    const sanitizedBookings: Booking[] = rawRows
+      .map((row): Booking => {
+        const parsed = parseTstzrange(row.booking_range);
+        const selectedSlotIds: string[] = [];
+        if (parsed.startTime && parsed.endTime) {
+          const [startH] = parsed.startTime.split(':').map(Number);
+          const [endH] = parsed.endTime.split(':').map(Number);
+          if (startH < endH) {
+            for (let h = startH; h < endH; h++) {
+              selectedSlotIds.push(`slot-${row.court_id}-${parsed.date}-${String(h).padStart(2, '0')}:00`);
+            }
+          } else if (endH < startH) {
+            for (let h = startH; h < 24; h++) {
+              selectedSlotIds.push(`slot-${row.court_id}-${parsed.date}-${String(h).padStart(2, '0')}:00`);
+            }
+            for (let h = 0; h < endH; h++) {
+              selectedSlotIds.push(`slot-${row.court_id}-${parsed.date}-${String(h).padStart(2, '0')}:00`);
+            }
+          }
+        }
+
+        return {
+          id: row.id,
+          bookingNumber: '',
+          courtId: row.court_id,
+          courtName: 'Court',
+          courtImage: FALLBACK_COURT_IMAGE,
+          sportType: 'Padel' as const,
+          date: parsed.date,
+          startTime: parsed.startTime,
+          endTime: parsed.endTime,
+          durationMinutes: row.duration_minutes,
+          totalPrice: 0,
+          status: row.status as 'Reserved' | 'Confirmed',
+          bookingSource: 'ONLINE' as const,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          userId: null,
+          userName: '',
+          userEmail: '',
+          userPhone: '',
+          selectedSlotIds,
+        };
+      })
+      .filter((b: Booking) => b.date === date);
+
+    return { success: true, bookings: sanitizedBookings };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Failed to retrieve availability';
+    return { success: false, bookings: [], error: message };
   }
 }

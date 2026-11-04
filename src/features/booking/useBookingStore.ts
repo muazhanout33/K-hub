@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { Booking, BookingResult, CancellationResult, CancellationPolicy, Court, TimeSlot } from '@/types';
 import { getInitialBookings, parseHour, areSlotsConsecutive } from '@/services/booking.service';
 import { getToday, MAX_BOOKING_HOURS } from '@/lib/dates';
-import { validateBookingRequest } from '@/lib/availability';
+import { validateBookingRequest, isSlotBookedByBooking } from '@/lib/availability';
 import { isBookingFullyPast, isSlotCancellable, addDaysToDateString, CANCELLATION_WINDOW_HOURS } from '@/lib/timezone';
 import { useBlockedPeriodStore } from '@/features/booking/useBlockedPeriodStore';
 import { usePaymentStore } from '@/features/payment/usePaymentStore';
@@ -78,9 +78,19 @@ function getBookedSlotIds(
 ): Set<string> {
   const ids = new Set<string>();
   for (const b of bookings) {
-    if (b.courtId === courtId && b.date === date && b.status === 'Confirmed') {
-      for (const slotId of b.selectedSlotIds) {
-        ids.add(slotId);
+    if (b.courtId === courtId && b.date === date && (b.status === 'Confirmed' || b.status === 'Reserved')) {
+      if (b.selectedSlotIds && b.selectedSlotIds.length > 0) {
+        for (const slotId of b.selectedSlotIds) {
+          ids.add(slotId);
+        }
+      } else if (b.startTime && b.endTime) {
+        const [startH] = b.startTime.split(':').map(Number);
+        const [endH] = b.endTime.split(':').map(Number);
+        if (startH < endH) {
+          for (let h = startH; h < endH; h++) {
+            ids.add(`slot-${courtId}-${date}-${String(h).padStart(2, '0')}:00`);
+          }
+        }
       }
     }
   }
@@ -171,6 +181,7 @@ export const useBookingStore = create<BookingStoreState>()(
         // Store performs the final validation — never trust the UI slot status
         const bookedIds = getBookedSlotIds(selectedCourt.id, selectedDate, bookings);
         if (bookedIds.has(slot.id)) return;
+        if (isSlotBookedByBooking(selectedCourt.id, selectedDate, slot.startTime, slot.endTime, bookings)) return;
 
         // Check if slot is blocked
         const blockedPeriods = useBlockedPeriodStore.getState().getBlockedPeriodsForCourtDate(selectedCourt.id, selectedDate);

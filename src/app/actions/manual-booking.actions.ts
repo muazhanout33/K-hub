@@ -9,6 +9,7 @@ import { calculateBookingPrice } from '@/lib/pricing';
 import { isSlotPast } from '@/lib/timezone';
 import { isWithinWorkingHours, isEndTimeWithinWorkingHours } from '@/lib/availability';
 import { MAX_BOOKING_HOURS } from '@/lib/dates';
+import { broadcastAvailabilityChange } from '@/app/actions/booking.actions';
 
 // ── Types ────────────────────────────────────────
 
@@ -370,6 +371,8 @@ export async function createManualBookingAction(
         dedupe_key: `booking_confirmed:${newBooking.id}`,
       });
     }
+
+    void broadcastAvailabilityChange(payload.courtId, payload.date);
 
     return { success: true, booking: newBooking };
   } catch (err: unknown) {

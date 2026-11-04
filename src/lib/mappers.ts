@@ -236,6 +236,24 @@ export function mapDbBlockedPeriodToBlockedPeriod(db: DbBlockedPeriod): BlockedP
 export function mapDbBookingToBooking(db: DbBooking, courtInfo?: { name: string; image: string; sportType: Court['sportType'] }): Booking {
   const { date, startTime, endTime } = parseTstzrange(db.booking_range);
 
+  const selectedSlotIds: string[] = [];
+  if (startTime && endTime) {
+    const [startH] = startTime.split(':').map(Number);
+    const [endH] = endTime.split(':').map(Number);
+    if (startH < endH) {
+      for (let h = startH; h < endH; h++) {
+        selectedSlotIds.push(`slot-${db.court_id}-${date}-${String(h).padStart(2, '0')}:00`);
+      }
+    } else if (endH < startH) {
+      for (let h = startH; h < 24; h++) {
+        selectedSlotIds.push(`slot-${db.court_id}-${date}-${String(h).padStart(2, '0')}:00`);
+      }
+      for (let h = 0; h < endH; h++) {
+        selectedSlotIds.push(`slot-${db.court_id}-${date}-${String(h).padStart(2, '0')}:00`);
+      }
+    }
+  }
+
   return {
     id: db.id,
     bookingNumber: db.booking_number,
@@ -256,7 +274,7 @@ export function mapDbBookingToBooking(db: DbBooking, courtInfo?: { name: string;
     userName: db.user_name,
     userEmail: db.user_email,
     userPhone: db.user_phone,
-    selectedSlotIds: [],
+    selectedSlotIds,
   };
 }
 

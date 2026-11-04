@@ -212,5 +212,115 @@ describe('usePaymentStore', () => {
       expect(result.current.payments).toEqual([]);
       expect(result.current.lastIdempotencyKey).toBeNull();
     });
+
+    it('also clears the durable confirmation op and lastBookingId', () => {
+      const { result } = renderHook(() => usePaymentStore());
+
+      act(() => {
+        result.current.beginConfirmation('booking-1', 'pay-1');
+      });
+
+      act(() => {
+        result.current.clearPayments();
+      });
+
+      expect(result.current.pendingConfirmation).toBeNull();
+      expect(result.current.lastBookingId).toBeNull();
+    });
+  });
+
+  // ── Durable pendingConfirmation (refresh/redirect recovery) ──
+  describe('pendingConfirmation lifecycle', () => {
+    it('begins an op and records lastBookingId', () => {
+      const { result } = renderHook(() => usePaymentStore());
+
+      act(() => {
+        result.current.beginConfirmation('booking-1', 'pay-1');
+      });
+
+      expect(result.current.pendingConfirmation).toMatchObject({
+        bookingId: 'booking-1',
+        paymentId: 'pay-1',
+        phase: 'confirming',
+        attempts: 0,
+        lastError: null,
+      });
+      expect(result.current.lastBookingId).toBe('booking-1');
+    });
+
+    it('re-beginning the SAME booking keeps attempts (idempotent)', () => {
+      const { result } = renderHook(() => usePaymentStore());
+
+      act(() => { result.current.beginConfirmation('booking-1'); });
+      act(() => { result.current.recordConfirmationAttempt(); });
+      act(() => { result.current.recordConfirmationAttempt(); });
+      expect(result.current.pendingConfirmation!.attempts).toBe(2);
+
+      // Recovery re-entry must not reset attempt history.
+      act(() => { result.current.beginConfirmation('booking-1', 'pay-9'); });
+      expect(result.current.pendingConfirmation!.attempts).toBe(2);
+      expect(result.current.pendingConfirmation!.paymentId).toBe('pay-9');
+      expect(result.current.pendingConfirmation!.phase).toBe('confirming');
+    });
+
+    it('beginning a DIFFERENT booking resets the op', () => {
+      const { result } = renderHook(() => usePaymentStore());
+
+      act(() => { result.current.beginConfirmation('booking-1'); });
+      act(() => { result.current.recordConfirmationAttempt(); });
+      act(() => { result.current.markConfirmationFailed('boom'); });
+
+      act(() => { result.current.beginConfirmation('booking-2'); });
+      expect(result.current.pendingConfirmation).toMatchObject({
+        bookingId: 'booking-2',
+        phase: 'confirming',
+        attempts: 0,
+        lastError: null,
+      });
+      expect(result.current.lastBookingId).toBe('booking-2');
+    });
+
+    it('markConfirmationFailed preserves the op for refresh recovery', () => {
+      const { result } = renderHook(() => usePaymentStore());
+
+      act(() => { result.current.beginConfirmation('booking-1'); });
+      act(() => { result.current.markConfirmationFailed('confirm failed'); });
+
+      expect(result.current.pendingConfirmation!.phase).toBe('failed');
+      expect(result.current.pendingConfirmation!.lastError).toBe('confirm failed');
+      // Booking id survives so the payment page can show the recovery UI
+      // instead of the old "No booking in progress" dead end.
+      expect(result.current.pendingConfirmation!.bookingId).toBe('booking-1');
+    });
+
+    it('clearConfirmation removes only the op, keeping lastBookingId', () => {
+      const { result } = renderHook(() => usePaymentStore());
+
+      act(() => { result.current.beginConfirmation('booking-1'); });
+      act(() => { result.current.clearConfirmation(); });
+
+      expect(result.current.pendingConfirmation).toBeNull();
+      // lastBookingId remains for the confirmation page to recover by id.
+      expect(result.current.lastBookingId).toBe('booking-1');
+    });
+
+    it('no-ops safely when there is no op', () => {
+      const { result } = renderHook(() => usePaymentStore());
+
+      act(() => { result.current.recordConfirmationAttempt(); });
+      act(() => { result.current.markConfirmationFailed('x'); });
+      act(() => { result.current.clearConfirmation(); });
+
+      expect(result.current.pendingConfirmation).toBeNull();
+    });
+
+    it('does not persist the transient _hasHydrated flag', () => {
+      const partialized = usePaymentStore.persist.getOptions().partialize?.(
+        usePaymentStore.getState() as never
+      ) as Record<string, unknown>;
+      expect(partialized).toHaveProperty('pendingConfirmation');
+      expect(partialized).toHaveProperty('lastBookingId');
+      expect(partialized).not.toHaveProperty('_hasHydrated');
+    });
   });
 });
