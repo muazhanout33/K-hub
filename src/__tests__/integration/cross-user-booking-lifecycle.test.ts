@@ -207,7 +207,7 @@ describe('Cross-User Booking Lifecycle & Availability', () => {
       const slot11am = slotsForUserB.find(s => s.startTime === '11:00');
 
       expect(slot10am).toBeDefined();
-      expect(slot10am?.status).toBe('Booked');
+      expect(slot10am?.status).toBe('Reserved');
       expect(slot11am?.status).toBe('Available');
 
       // Verify privacy: slot object exposed to public/User B contains NO private customer data

@@ -10,6 +10,8 @@ import {
   isSlotBlocked,
   validateBookingRequest,
   getSlotId,
+  isHoldActive,
+  getSlotBookingStatus,
 } from './availability';
 import { Booking, BlockedPeriod, Court, WorkingHours } from '@/types';
 
@@ -441,5 +443,271 @@ describe('isSlotBookedByBooking edge cases', () => {
       },
     ];
     expect(isSlotBookedByBooking('court-1', '2026-09-15', '11:00', '13:00', bookings)).toBe(true);
+  });
+});
+
+
+// ── Midnight Boundary Bug Regression Tests ──────────────────────────────────
+//
+// Root Cause: When a booking ends exactly at midnight (endTime = "00:00"),
+// timeToMinutes("00:00") returns 0. The overlap check `slotStart < bEnd`
+// becomes `slotStart < 0` which is ALWAYS FALSE — making the slot appear
+// Available on the frontend even though the database GiST constraint would
+// reject a booking attempt for the same slot.
+//
+// Fix: endTimeToMinutes("00:00") = 1440 (treating midnight as end-of-day).
+// ─────────────────────────────────────────────────────────────────────────────
+
+function makeBooking(overrides: Partial<Booking> = {}): Booking {
+  return {
+    id: 'b-mid',
+    bookingNumber: 'KH-MID',
+    courtId: 'court-1',
+    courtName: 'Court 1',
+    courtImage: '',
+    sportType: 'Padel',
+    date: '2099-06-15',
+    startTime: '23:00',
+    endTime: '00:00',
+    durationMinutes: 60,
+    totalPrice: 150,
+    status: 'Confirmed',
+    bookingSource: 'ONLINE',
+    createdAt: '',
+    updatedAt: '',
+    userId: 'u1',
+    userName: 'User A',
+    userEmail: 'a@test.com',
+    userPhone: '+201000000001',
+    selectedSlotIds: [],
+    ...overrides,
+  };
+}
+
+describe('isSlotBookedByBooking — midnight boundary (regression for 00:00 end-time bug)', () => {
+  // ─── Single-hour midnight booking: 23:00–00:00 ───────────────────────────
+
+  it('marks 23:00 slot as Booked when a 23:00–00:00 booking exists (THE CRITICAL BUG)', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '23:00', endTime: '00:00' })];
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '23:00', '00:00', bookings)).toBe(true);
+  });
+
+  it('does NOT mark 22:00 slot as Booked for a 23:00–00:00 booking', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '23:00', endTime: '00:00' })];
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '22:00', '23:00', bookings)).toBe(false);
+  });
+
+  // ─── Two-hour midnight booking: 22:00–00:00 ──────────────────────────────
+
+  it('marks 22:00 slot as Booked when a 22:00–00:00 booking exists', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '22:00', endTime: '00:00' })];
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '22:00', '23:00', bookings)).toBe(true);
+  });
+
+  it('marks 23:00 slot as Booked when a 22:00–00:00 booking exists', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '22:00', endTime: '00:00' })];
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '23:00', '00:00', bookings)).toBe(true);
+  });
+
+  it('does NOT mark 21:00 slot as Booked for a 22:00–00:00 booking', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '22:00', endTime: '00:00' })];
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '21:00', '22:00', bookings)).toBe(false);
+  });
+
+  // ─── Reserved status also blocked ────────────────────────────────────────
+
+  it('marks 23:00 slot as Booked for a Reserved 23:00–00:00 hold', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '23:00', endTime: '00:00', status: 'Reserved' })];
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '23:00', '00:00', bookings)).toBe(true);
+  });
+
+  // ─── Court & date isolation unaffected ────────────────────────────────────
+
+  it('does NOT affect a different court', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '23:00', endTime: '00:00', courtId: 'court-1' })];
+    expect(isSlotBookedByBooking('court-2', '2099-06-15', '23:00', '00:00', bookings)).toBe(false);
+  });
+
+  it('does NOT affect a different date', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '23:00', endTime: '00:00', date: '2099-06-15' })];
+    expect(isSlotBookedByBooking('court-1', '2099-06-16', '23:00', '00:00', bookings)).toBe(false);
+  });
+
+  // ─── Normal daytime bookings still work ───────────────────────────────────
+
+  it('still correctly detects normal 10:00–11:00 bookings', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '10:00', endTime: '11:00', date: '2099-06-15' })];
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '10:00', '11:00', bookings)).toBe(true);
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '11:00', '12:00', bookings)).toBe(false);
+  });
+
+  // ─── Back-to-back bookings at midnight boundary ───────────────────────────
+
+  it('allows back-to-back booking starting exactly at midnight (00:00–01:00) after a 23:00–00:00 booking', () => {
+    const bookings: Booking[] = [makeBooking({ startTime: '23:00', endTime: '00:00', date: '2099-06-15' })];
+    // A 00:00–01:00 slot on the NEXT session date — not the same session date, so no conflict
+    expect(isSlotBookedByBooking('court-1', '2099-06-15', '00:00', '01:00', bookings)).toBe(false);
+  });
+});
+
+describe('generateAvailabilitySlots — midnight boundary (regression for 00:00 end-time bug)', () => {
+  const court: Court = {
+    id: 'court-mid',
+    name: 'Midnight Court',
+    image: '',
+    sportType: 'Padel',
+    surface: 'Artificial Turf',
+    isIndoor: false,
+    capacity: 4,
+    pricePerHour: 150,
+    rating: 5,
+    reviewCount: 1,
+    gallery: [],
+    description: '',
+    features: [],
+    rules: [],
+    status: 'Available',
+    workingHours: { open: '07:00', close: '00:00' }, // courts that close at midnight
+    slotDurationMinutes: 60,
+  };
+
+  it('renders the 23:00 slot as Booked when a 23:00–00:00 Confirmed booking exists', () => {
+    const bookings: Booking[] = [
+      makeBooking({
+        courtId: 'court-mid',
+        date: '2099-07-20',
+        startTime: '23:00',
+        endTime: '00:00',
+        status: 'Confirmed',
+      }),
+    ];
+    const slots = generateAvailabilitySlots(court, '2099-07-20', bookings, []);
+    const slot23 = slots.find((s) => s.startTime === '23:00');
+    expect(slot23).toBeDefined();
+    expect(slot23?.status).toBe('Booked');
+  });
+
+  it('renders the 23:00 slot as Reserved when a 23:00–00:00 Reserved hold exists', () => {
+    const bookings: Booking[] = [
+      makeBooking({
+        courtId: 'court-mid',
+        date: '2099-07-20',
+        startTime: '23:00',
+        endTime: '00:00',
+        status: 'Reserved',
+      }),
+    ];
+    const slots = generateAvailabilitySlots(court, '2099-07-20', bookings, []);
+    const slot23 = slots.find((s) => s.startTime === '23:00');
+    expect(slot23?.status).toBe('Reserved');
+  });
+
+  it('renders the 22:00 slot as Available when only a 23:00–00:00 booking exists', () => {
+    const bookings: Booking[] = [
+      makeBooking({
+        courtId: 'court-mid',
+        date: '2099-07-20',
+        startTime: '23:00',
+        endTime: '00:00',
+        status: 'Confirmed',
+      }),
+    ];
+    const slots = generateAvailabilitySlots(court, '2099-07-20', bookings, []);
+    const slot22 = slots.find((s) => s.startTime === '22:00');
+    expect(slot22?.status).toBe('Available');
+  });
+});
+
+describe('Hold Expiration & getSlotBookingStatus business logic', () => {
+  const court: Court = {
+    id: 'court-hold',
+    name: 'Hold Court',
+    image: '',
+    sportType: 'Padel',
+    surface: 'Turf',
+    isIndoor: false,
+    capacity: 4,
+    pricePerHour: 100,
+    rating: 5,
+    reviewCount: 0,
+    gallery: [],
+    description: '',
+    features: [],
+    rules: [],
+    status: 'Available',
+    workingHours: { open: '08:00', close: '22:00' },
+    slotDurationMinutes: 60,
+  };
+
+  it('releases slot when a Reserved hold is older than 10 minutes (expired hold)', () => {
+    const now = Date.now();
+    const staleCreatedAt = new Date(now - 11 * 60 * 1000).toISOString(); // 11 mins ago
+    const bookings: Booking[] = [
+      makeBooking({
+        courtId: 'court-hold',
+        date: '2099-08-01',
+        startTime: '10:00',
+        endTime: '11:00',
+        status: 'Reserved',
+        createdAt: staleCreatedAt,
+      }),
+    ];
+
+    expect(isHoldActive(bookings[0], now)).toBe(false);
+    expect(getSlotBookingStatus('court-hold', '2099-08-01', '10:00', '11:00', bookings, now)).toBe(null);
+    expect(isSlotBookedByBooking('court-hold', '2099-08-01', '10:00', '11:00', bookings, now)).toBe(false);
+
+    const slots = generateAvailabilitySlots(court, '2099-08-01', bookings, []);
+    const slot = slots.find((s) => s.startTime === '10:00');
+    expect(slot?.status).toBe('Available');
+  });
+
+  it('keeps slot as Reserved when a hold was created 5 minutes ago', () => {
+    const now = Date.now();
+    const freshCreatedAt = new Date(now - 5 * 60 * 1000).toISOString(); // 5 mins ago
+    const bookings: Booking[] = [
+      makeBooking({
+        courtId: 'court-hold',
+        date: '2099-08-01',
+        startTime: '10:00',
+        endTime: '11:00',
+        status: 'Reserved',
+        createdAt: freshCreatedAt,
+      }),
+    ];
+
+    expect(isHoldActive(bookings[0], now)).toBe(true);
+    expect(getSlotBookingStatus('court-hold', '2099-08-01', '10:00', '11:00', bookings, now)).toBe('Reserved');
+    expect(isSlotBookedByBooking('court-hold', '2099-08-01', '10:00', '11:00', bookings, now)).toBe(true);
+
+    const slots = generateAvailabilitySlots(court, '2099-08-01', bookings, []);
+    const slot = slots.find((s) => s.startTime === '10:00');
+    expect(slot?.status).toBe('Reserved');
+  });
+
+  it('treats Cancelled and Expired bookings as Available', () => {
+    const bookings: Booking[] = [
+      makeBooking({
+        courtId: 'court-hold',
+        date: '2099-08-01',
+        startTime: '10:00',
+        endTime: '11:00',
+        status: 'Cancelled',
+      }),
+      makeBooking({
+        courtId: 'court-hold',
+        date: '2099-08-01',
+        startTime: '11:00',
+        endTime: '12:00',
+        status: 'Expired',
+      }),
+    ];
+
+    expect(getSlotBookingStatus('court-hold', '2099-08-01', '10:00', '11:00', bookings)).toBe(null);
+    expect(getSlotBookingStatus('court-hold', '2099-08-01', '11:00', '12:00', bookings)).toBe(null);
+
+    const slots = generateAvailabilitySlots(court, '2099-08-01', bookings, []);
+    expect(slots.find((s) => s.startTime === '10:00')?.status).toBe('Available');
+    expect(slots.find((s) => s.startTime === '11:00')?.status).toBe('Available');
   });
 });

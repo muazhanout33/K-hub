@@ -105,7 +105,6 @@ export async function createBookingAction(
       const admin = createAdminClient();
       await (admin.from('bookings') as any)
         .update({ status: 'Expired' })
-        .eq('court_id', payload.courtId)
         .eq('status', 'Reserved')
         .lt('created_at', holdCutoff);
     } catch {
@@ -135,6 +134,45 @@ export async function createBookingAction(
     if (error) {
       // Handle PostgreSQL Exclusion Constraint Violation (23P01)
       if (error.code === '23P01' || error.message.includes('prevent_double_booking')) {
+        // Double-check if conflicting row was a stale Reserved hold that expired just now
+        try {
+          const admin = createAdminClient();
+          const { data: expiredRetry } = await (admin.from('bookings') as any)
+            .update({ status: 'Expired' })
+            .eq('status', 'Reserved')
+            .lt('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString())
+            .select('id');
+
+          if (expiredRetry && expiredRetry.length > 0) {
+            // Retry insertion once after stale holds have been expired
+            const retryResult = await (supabase.from('bookings') as any)
+              .insert({
+                booking_number: bookingNumber,
+                user_id: userId,
+                court_id: payload.courtId,
+                booking_range: bookingRange,
+                duration_minutes: payload.durationMinutes,
+                total_price: totalPrice,
+                status: 'Reserved',
+                booking_source: 'ONLINE',
+                user_name: payload.userName,
+                user_email: payload.userEmail,
+                user_phone: payload.userPhone,
+              })
+              .select('*')
+              .single();
+
+            if (!retryResult.error && retryResult.data) {
+              const courtInfo = await getCourtInfoForBooking(payload.courtId);
+              const retriedBooking: Booking = mapDbBookingToBooking(retryResult.data as DbBooking, courtInfo);
+              void broadcastAvailabilityChange(payload.courtId, payload.date);
+              return { success: true, booking: retriedBooking };
+            }
+          }
+        } catch {
+          // Fall through to error response
+        }
+
         return {
           success: false,
           error: 'This court slot has already been booked by another player. Please select a different slot.',

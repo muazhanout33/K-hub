@@ -103,6 +103,80 @@ export function isEndTimeWithinWorkingHours(
   return end <= close || end >= start;
 }
 
+// ── Hold Expiration & Booking Status Helpers ───────────
+
+export const HOLD_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+
+/**
+ * Checks whether a temporary hold ('Reserved' status) is still active.
+ *
+ * A hold expires after HOLD_DURATION_MS (10 minutes).
+ * If createdAt is missing or empty (e.g. test fixtures), it is treated as active.
+ */
+export function isHoldActive(booking: Booking, nowMs: number = Date.now()): boolean {
+  if (booking.status !== 'Reserved') return false;
+  if (booking.createdAt && booking.createdAt.trim() !== '') {
+    const createdAtMs = new Date(booking.createdAt).getTime();
+    if (!isNaN(createdAtMs)) {
+      return nowMs - createdAtMs < HOLD_DURATION_MS;
+    }
+  }
+  return true;
+}
+
+/**
+ * Determines whether a slot overlaps with an active booking or hold.
+ * - Returns 'Booked' if a 'Confirmed' booking overlaps.
+ * - Returns 'Reserved' if an active 'Reserved' hold (within 10-min window) overlaps.
+ * - Returns null if no active booking or hold overlaps (or if hold has expired / is cancelled).
+ */
+export function getSlotBookingStatus(
+  courtId: string,
+  date: string,
+  startTime: string,
+  endTime: string,
+  bookings: Booking[],
+  nowMs: number = Date.now()
+): 'Booked' | 'Reserved' | null {
+  const slotStart = timeToMinutes(startTime);
+  const slotEnd = endTimeToMinutes(endTime);
+
+  let hasReserved = false;
+
+  for (const b of bookings) {
+    if (b.courtId !== courtId) continue;
+    if (b.date !== date) continue;
+
+    // Cancelled or explicitly Expired bookings never block slots
+    if (b.status === 'Cancelled' || b.status === 'Expired') continue;
+
+    // Check hold expiration for Reserved bookings
+    if (b.status === 'Reserved') {
+      if (!isHoldActive(b, nowMs)) {
+        continue; // Expired hold does not block availability
+      }
+    } else if (b.status !== 'Confirmed') {
+      continue;
+    }
+
+    const bStart = timeToMinutes(b.startTime);
+    const bEnd = endTimeToMinutes(b.endTime);
+
+    // Half-open interval overlap: slotStart < bEnd AND bStart < slotEnd
+    if (slotStart < bEnd && bStart < slotEnd) {
+      if (b.status === 'Confirmed') {
+        return 'Booked'; // Confirmed booking takes precedence
+      }
+      if (b.status === 'Reserved') {
+        hasReserved = true;
+      }
+    }
+  }
+
+  if (hasReserved) return 'Reserved';
+  return null;
+}
+
 // ── Slot Generation ────────────────────────────
 
 /**
@@ -200,10 +274,11 @@ function buildSlot(
     }
   }
 
-  // Check booked (only if not already past/blocked)
+  // Check booked / reserved (only if not already past/blocked)
   if (status === 'Available') {
-    if (isSlotBookedByBooking(courtId, date, startTime, endTime, bookings)) {
-      status = 'Booked';
+    const bookingStatus = getSlotBookingStatus(courtId, date, startTime, endTime, bookings);
+    if (bookingStatus) {
+      status = bookingStatus;
     }
   }
 
@@ -225,36 +300,52 @@ function today(): string {
 // ── Conflict Detection ─────────────────────────
 
 /**
+ * Converts an end-time "HH:mm" string to minutes-since-midnight for overlap
+ * arithmetic, with one special case:
+ *
+ *   "00:00" as an END time means exactly midnight (the boundary between two
+ *   calendar days). In isolation, timeToMinutes("00:00") = 0, which makes
+ *   the standard half-open interval check `slotStart < bEnd` always FALSE for
+ *   any slot starting after midnight — causing bookings that end exactly at
+ *   midnight to appear available on the frontend even though the database
+ *   correctly rejects them via the GiST exclusion constraint.
+ *
+ * Fix: treat an end-time of "00:00" as 1440 (= 24 × 60) so that the interval
+ * [bStart, 1440) is treated as [bStart, midnight-end-of-day).
+ *
+ * This does NOT affect start-times or any time other than "00:00" as an end.
+ */
+function endTimeToMinutes(time: string): number {
+  const mins = timeToMinutes(time);
+  // "00:00" as an endpoint represents 24:00 / midnight-end-of-day, not 00:00 start-of-day
+  return mins === 0 ? 1440 : mins;
+}
+
+/**
  * Checks if a time range overlaps with any existing booking.
  * Uses minute-level precision for accurate overlap detection.
  *
  * Two ranges [a, b) and [c, d) overlap if a < d AND c < b.
+ *
+ * IMPORTANT: end-times of "00:00" are treated as 1440 (midnight = end of day)
+ * rather than 0 (start of day). Without this, any booking whose court session
+ * ends at midnight (e.g. 23:00–00:00 or 22:00–00:00) will pass the overlap
+ * check undetected and incorrectly appear as Available to other users.
  */
 export function isSlotBookedByBooking(
   courtId: string,
   date: string,
   startTime: string,
   endTime: string,
-  bookings: Booking[]
+  bookings: Booking[],
+  nowMs: number = Date.now()
 ): boolean {
-  const slotStart = timeToMinutes(startTime);
-  const slotEnd = timeToMinutes(endTime);
-
-  return bookings.some((b) => {
-    if (b.courtId !== courtId) return false;
-    if (b.date !== date) return false;
-    if (b.status !== 'Confirmed' && b.status !== 'Reserved') return false;
-
-    const bStart = timeToMinutes(b.startTime);
-    const bEnd = timeToMinutes(b.endTime);
-
-    // Overlap: slotStart < bEnd AND bStart < slotEnd
-    return slotStart < bEnd && bStart < slotEnd;
-  });
+  return getSlotBookingStatus(courtId, date, startTime, endTime, bookings, nowMs) !== null;
 }
 
 /**
  * Checks if a time range overlaps with any blocked period.
+ * Uses endTimeToMinutes to correctly handle blocked periods ending at midnight ("00:00").
  */
 export function isSlotBlocked(
   date: string,
@@ -263,13 +354,13 @@ export function isSlotBlocked(
   blockedPeriods: BlockedPeriod[]
 ): boolean {
   const slotStart = timeToMinutes(startTime);
-  const slotEnd = timeToMinutes(endTime);
+  const slotEnd = endTimeToMinutes(endTime);
 
   return blockedPeriods.some((bp) => {
     if (bp.date !== date) return false;
 
     const bpStart = timeToMinutes(bp.startTime);
-    const bpEnd = timeToMinutes(bp.endTime);
+    const bpEnd = endTimeToMinutes(bp.endTime);
 
     return slotStart < bpEnd && bpStart < slotEnd;
   });

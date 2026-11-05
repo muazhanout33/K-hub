@@ -4,7 +4,7 @@ import { useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Users, Sun } from 'lucide-react';
+import { Users, Sun, RefreshCw } from 'lucide-react';
 import { useBookingStore } from './useBookingStore';
 import { calculateBookingPrice } from '@/lib/pricing';
 import { BookingSteps } from './BookingSteps';
@@ -12,6 +12,7 @@ import DaySelector from './DaySelector';
 import { generateTimeSlots } from '@/services/booking.service';
 import { formatDisplayDate, MAX_BOOKING_HOURS } from '@/lib/dates';
 import { to12Hour } from '@/lib/utils';
+import { isHoldActive } from '@/lib/availability';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/features/auth/useAuthStore';
@@ -34,7 +35,7 @@ export function BookingWidget() {
   const maxHoursReachedTick = useBookingStore((s) => s.maxHoursReachedTick);
 
   // Cross-user live availability from Supabase
-  const { bookings: publicBookings } = useAllBookingsForDate(selectedDate);
+  const { bookings: publicBookings, loading, error, refetch } = useAllBookingsForDate(selectedDate);
 
   const effectiveBookings = useMemo(() => {
     const map = new Map<string, Booking>();
@@ -73,12 +74,14 @@ export function BookingWidget() {
           filter: `court_id=eq.${selectedCourt.id}`,
         },
         () => {
+          void refetch();
           toast.info('Court availability updated live.', { duration: 2000 });
         }
       )
       .on('broadcast', { event: 'availability-change' }, (payload) => {
         const cId = payload?.payload?.courtId;
         if (!cId || cId === 'all' || cId === selectedCourt.id) {
+          void refetch();
           toast.info('Court availability updated live.', { duration: 2000 });
         }
       })
@@ -87,9 +90,9 @@ export function BookingWidget() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedCourt]);
+  }, [selectedCourt, refetch]);
 
-  // Deselect if another player books one of currently selected slots in real time
+  // Deselect if another player books or reserves one of currently selected slots in real time
   useEffect(() => {
     if (selectedSlots.length === 0 || !selectedCourt) return;
     const bookedSlotIds = new Set<string>();
@@ -97,10 +100,27 @@ export function BookingWidget() {
       if (
         b.courtId === selectedCourt.id &&
         b.date === selectedDate &&
-        (b.status === 'Confirmed' || b.status === 'Reserved')
+        (b.status === 'Confirmed' || (b.status === 'Reserved' && isHoldActive(b)))
       ) {
-        for (const sId of b.selectedSlotIds) {
-          bookedSlotIds.add(sId);
+        if (b.selectedSlotIds && b.selectedSlotIds.length > 0) {
+          for (const sId of b.selectedSlotIds) {
+            bookedSlotIds.add(sId);
+          }
+        } else if (b.startTime && b.endTime) {
+          const [startH] = b.startTime.split(':').map(Number);
+          const [endH] = b.endTime.split(':').map(Number);
+          if (startH < endH) {
+            for (let h = startH; h < endH; h++) {
+              bookedSlotIds.add(`slot-${selectedCourt.id}-${selectedDate}-${String(h).padStart(2, '0')}:00`);
+            }
+          } else if (endH < startH) {
+            for (let h = startH; h < 24; h++) {
+              bookedSlotIds.add(`slot-${selectedCourt.id}-${selectedDate}-${String(h).padStart(2, '0')}:00`);
+            }
+            for (let h = 0; h < endH; h++) {
+              bookedSlotIds.add(`slot-${selectedCourt.id}-${selectedDate}-${String(h).padStart(2, '0')}:00`);
+            }
+          }
         }
       }
     }
@@ -156,6 +176,8 @@ export function BookingWidget() {
     const holdResult = await store.confirmBooking();
     if (!holdResult.success) {
       toast.error(holdResult.error || 'This court slot has already been booked by another player.');
+      // Immediately refetch availability so the conflicting slot updates on screen
+      await refetch();
       return;
     }
 
@@ -238,49 +260,71 @@ export function BookingWidget() {
         <h3 className="text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-4">
           Available {formatDisplayDate(selectedDate)} {selectedSlots.length > 0 && <span className="text-green-600 dark:text-[#4ADE80]">({selectedSlots.length} selected)</span>}
         </h3>
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 w-full">
-          {displaySlots.map((slot, idx) => {
-            const selected = isSelected(idx);
-            const isBooked = slot.status === 'Booked';
-            const isPast = slot.status === 'Past';
-            const isBlocked = slot.status === 'Blocked';
+        {loading && effectiveBookings.length === 0 ? (
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 w-full">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="w-full h-12 rounded-xl bg-gray-100 dark:bg-[#171F1A] animate-pulse" />
+            ))}
+          </div>
+        ) : error && effectiveBookings.length === 0 ? (
+          <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-center space-y-2">
+            <p className="text-xs font-semibold text-red-600 dark:text-red-400">{error}</p>
+            <Button onClick={() => void refetch()} variant="outline" size="sm">
+              <RefreshCw className="w-3.5 h-3.5 mr-1" />
+              Retry
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 w-full">
+            {displaySlots.map((slot, idx) => {
+              const selected = isSelected(idx);
+              const isBooked = slot.status === 'Booked';
+              const isReserved = slot.status === 'Reserved';
+              const isPast = slot.status === 'Past';
+              const isBlocked = slot.status === 'Blocked';
+              const isUnavailable = isBooked || isReserved || isPast || isBlocked;
 
-            let btnStyle = 'slot-available';
-            if (selected) btnStyle = 'slot-selected';
-            else if (isBooked) btnStyle = 'slot-booked';
-            else if (isPast || isBlocked) btnStyle = 'slot-booked';
+              let btnStyle = 'slot-available';
+              if (selected) btnStyle = 'slot-selected';
+              else if (isBooked) btnStyle = 'slot-booked';
+              else if (isReserved) btnStyle = 'slot-reserved';
+              else if (isPast || isBlocked) btnStyle = 'slot-booked';
 
-            return (
-              <button
-                key={slot.timeRange}
-                onClick={() => handleSlotToggle(idx)}
-                disabled={isBooked || isPast || isBlocked}
-                className={`w-full py-3 rounded-xl text-[12px] font-bold transition-all text-center ${btnStyle}`}
-              >
-                {slot.timeRange}
-                {isPast && <span className="block text-[9px] mt-0.5 opacity-70">Past</span>}
-                {isBlocked && <span className="block text-[9px] mt-0.5 opacity-70">Blocked</span>}
-             </button>
-           );
-         })}
-        </div>
+              return (
+                <button
+                  key={slot.timeRange}
+                  onClick={() => handleSlotToggle(idx)}
+                  disabled={isUnavailable}
+                  aria-disabled={isUnavailable}
+                  className={`w-full py-3 rounded-xl text-[12px] font-bold transition-all text-center ${btnStyle}`}
+                >
+                  {slot.timeRange}
+                  {isReserved && <span className="block text-[9px] mt-0.5 opacity-90 uppercase font-extrabold text-amber-700 dark:text-amber-400">Reserved</span>}
+                  {isBooked && <span className="block text-[9px] mt-0.5 opacity-90 uppercase font-extrabold text-red-700 dark:text-red-400">Booked</span>}
+                  {isPast && <span className="block text-[9px] mt-0.5 opacity-70">Past</span>}
+                  {isBlocked && <span className="block text-[9px] mt-0.5 opacity-70">Blocked</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="pt-2 flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-gray-600 dark:text-[#A1ADA4]">
           <span className="flex items-center gap-1.5 leading-none">
             <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A] inline-block" /> Available
-         </span>
+          </span>
           <span className="flex items-center gap-1.5 leading-none">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> Starting Soon
-         </span>
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> Reserved (Locked)
+          </span>
           <span className="flex items-center gap-1.5 leading-none">
             <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626] inline-block" /> Booked
-         </span>
+          </span>
           <span className="flex items-center gap-1.5 leading-none">
             <span className="w-2.5 h-2.5 rounded-full bg-gray-400 inline-block" /> Past / Blocked
-         </span>
-       </div>
+          </span>
+        </div>
 
         {selectedSlots.length > 0 && (() => {
           const sorted = [...selectedSlots].sort((a, b) => a.startTime.localeCompare(b.startTime));
