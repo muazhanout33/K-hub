@@ -34,6 +34,7 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
   const [error, setError] = useState<string | null>(null);
 
   const selectCourt = useBookingStore((state) => state.selectCourt);
+  const selectDate = useBookingStore((state) => state.selectDate);
   const localBookings = useBookingStore((state) => state.bookings);
   const { bookings: publicBookings } = useAllBookingsForDate(selectedDate);
 
@@ -237,13 +238,27 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
                 <label className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider">
                   Select Date
                 </label>
-                <DaySelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+                <DaySelector
+                  selectedDate={selectedDate}
+                  onSelectDate={(newDate) => {
+                    setSelectedDate(newDate);
+                    selectDate(newDate);
+                  }}
+                />
               </div>
 
               {/* Action Button */}
               <div className="pt-4">
                 <Button
-                  render={<Link href="/book" onClick={() => selectCourt(court)} />}
+                  render={
+                    <Link
+                      href="/book"
+                      onClick={() => {
+                        selectCourt(court);
+                        selectDate(selectedDate);
+                      }}
+                    />
+                  }
                   nativeButton={false}
                   variant="primary"
                   size="lg"

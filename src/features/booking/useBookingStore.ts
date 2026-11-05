@@ -126,6 +126,8 @@ interface BookingStoreState {
   bookings: Booking[];
   /** Increments each time MAX_BOOKING_HOURS is exceeded in toggleSlot. */
   maxHoursReachedTick: number;
+  /** Increments each time a non-consecutive slot selection is rejected in toggleSlot. */
+  nonConsecutiveSlotTick: number;
   /** Whether a cancellation request is in flight — prevents duplicate clicks. */
   isCancelling: boolean;
   /** Whether Zustand has rehydrated from localStorage. */
@@ -166,6 +168,7 @@ export const useBookingStore = create<BookingStoreState>()(
       userPhone: '',
       bookings: getInitialBookings(),
       maxHoursReachedTick: 0,
+      nonConsecutiveSlotTick: 0,
       isCancelling: false,
       _hasHydrated: false,
 
@@ -201,6 +204,13 @@ export const useBookingStore = create<BookingStoreState>()(
           return;
         }
 
+        // If existing selectedSlots belong to a different court or date, clear them and start fresh
+        if (selectedSlots.some((s) => s.courtId !== slot.courtId || s.date !== slot.date)) {
+          clearPendingConfirmation();
+          set({ selectedSlots: [slot] });
+          return;
+        }
+
         const isCurrentlySelected = selectedSlots.some((s) => s.id === slot.id);
 
         if (isCurrentlySelected) {
@@ -231,6 +241,9 @@ export const useBookingStore = create<BookingStoreState>()(
           }
           clearPendingConfirmation();
           set({ selectedSlots: testSlots });
+        } else {
+          // Rejection of non-consecutive slot: increment tick so the UI notifies the user immediately
+          set({ nonConsecutiveSlotTick: get().nonConsecutiveSlotTick + 1 });
         }
       },
 
@@ -398,6 +411,8 @@ export const useBookingStore = create<BookingStoreState>()(
           return { success: true, booking: newBooking };
         }
 
+        // When booking creation fails (e.g. 23P01 slot conflict), clear the invalid selection so the store is not trapped
+        set({ selectedSlots: [] });
         return result;
       },
 

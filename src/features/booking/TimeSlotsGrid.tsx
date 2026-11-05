@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { TimeSlot } from '@/types';
 import { useBookingStore } from './useBookingStore';
 import { calculateBookingPrice } from '@/lib/pricing';
@@ -17,6 +17,13 @@ export function TimeSlotsGrid({ slots, dateLabel }: TimeSlotsGridProps) {
   const selectedSlots = useBookingStore((s) => s.selectedSlots);
   const toggleSlot = useBookingStore((s) => s.toggleSlot);
   const selectedCourt = useBookingStore((s) => s.selectedCourt);
+  const nonConsecutiveSlotTick = useBookingStore((s) => s.nonConsecutiveSlotTick);
+
+  useEffect(() => {
+    if (nonConsecutiveSlotTick > 0) {
+      toast.error('Selected time slots must be consecutive hours. Please select an adjacent slot or deselect first.');
+    }
+  }, [nonConsecutiveSlotTick]);
 
   const sortedSlots = useMemo(
     () => [...selectedSlots].sort((a, b) => a.startTime.localeCompare(b.startTime)),

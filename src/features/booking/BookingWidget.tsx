@@ -33,6 +33,7 @@ export function BookingWidget() {
   const setBookingStep = useBookingStore((s) => s.setBookingStep);
   const startTemporaryReservation = useBookingStore((s) => s.startTemporaryReservation);
   const maxHoursReachedTick = useBookingStore((s) => s.maxHoursReachedTick);
+  const nonConsecutiveSlotTick = useBookingStore((s) => s.nonConsecutiveSlotTick);
 
   // Cross-user live availability from Supabase
   const { bookings: publicBookings, loading, error, refetch } = useAllBookingsForDate(selectedDate);
@@ -62,6 +63,12 @@ export function BookingWidget() {
       toast.error(`Maximum booking duration is ${MAX_BOOKING_HOURS} hours. Please deselect a slot first.`);
     }
   }, [maxHoursReachedTick]);
+
+  useEffect(() => {
+    if (nonConsecutiveSlotTick > 0) {
+      toast.error('Selected time slots must be consecutive hours. Please select an adjacent slot or deselect first.');
+    }
+  }, [nonConsecutiveSlotTick]);
 
   // Realtime subscription for live court availability (broadcast + DB events)
   useEffect(() => {
@@ -185,6 +192,8 @@ export function BookingWidget() {
     const holdResult = await store.confirmBooking();
     if (!holdResult.success) {
       toast.error(holdResult.error || 'This court slot has already been booked by another player.');
+      // Clear conflicting slots from local store so user is not stuck with an invalid selection
+      store.clearSelectedSlots();
       // Immediately refetch availability so the conflicting slot updates on screen
       await refetch();
       return;
@@ -248,7 +257,8 @@ export function BookingWidget() {
        </div>
 
         <Button
-          onClick={() => toast.info('Selecting alternative court...')}
+          render={<Link href="/courts" />}
+          nativeButton={false}
           variant="outline"
           size="sm"
           className="shrink-0 self-start sm:self-auto"
