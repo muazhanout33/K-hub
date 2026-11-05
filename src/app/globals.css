@@ -5,7 +5,7 @@
 @variant dark (&:where(.dark, .dark *));
 
 /* ─────────────────────────────────────────────
-   K-HUB Reference Design Tokens (Phase 01 Extended)
+   WEGO Reference Design Tokens (Phase 01 Extended)
 ───────────────────────────────────────────── */
 :root {
   /* Brand & Color System extracted from Reference */
@@ -92,7 +92,7 @@
 }
 
 /* ─────────────────────────────────────────────
-   K-HUB Dark Sport Design Tokens
+   WEGO Dark Sport Design Tokens
 ───────────────────────────────────────────── */
 .dark {
   /* Surfaces & Backgrounds */
@@ -102,7 +102,7 @@
   --card-foreground: #F5F7F5;
   --elevated: #26332A;
 
-  /* Brand Accents — Preserved K-HUB Green with energetic dark-mode hover */
+  /* Brand Accents — Preserved WEGO Green with energetic dark-mode hover */
   --primary: #16A34A;
   --primary-hover: #22C55E;
   --primary-light: rgba(22, 163, 74, 0.18);
@@ -307,8 +307,7 @@
 /* ─────────────────────────────────────────────
    Form Inputs & Contact Button
 ───────────────────────────────────────────── */
-.wego-input,
-.khub-input {
+.wego-input {
   width: 100%;
   height: 44px;
   padding: 0 16px;
@@ -320,19 +319,16 @@
   font-weight: 500;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
-.wego-input:focus,
-.khub-input:focus {
+.wego-input:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
 }
-.wego-input::placeholder,
-.khub-input::placeholder {
+.wego-input::placeholder {
   color: var(--placeholder);
 }
 
-textarea.wego-input,
-textarea.khub-input {
+textarea.wego-input {
   height: auto;
   min-height: 120px;
   padding-top: 12px;

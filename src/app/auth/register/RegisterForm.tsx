@@ -91,7 +91,7 @@ export default function RegisterForm() {
               placeholder="e.g. John Smith"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full khub-input"
+              className="w-full wego-input"
             />
           </div>
 
@@ -104,7 +104,7 @@ export default function RegisterForm() {
               placeholder="john@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full khub-input"
+              className="w-full wego-input"
             />
           </div>
 
@@ -117,7 +117,7 @@ export default function RegisterForm() {
               placeholder="+1 (555) 000-0000"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full khub-input"
+              className="w-full wego-input"
             />
           </div>
 
@@ -130,7 +130,7 @@ export default function RegisterForm() {
               placeholder="Min. 6 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full khub-input"
+              className="w-full wego-input"
             />
           </div>
 
@@ -143,7 +143,7 @@ export default function RegisterForm() {
               placeholder="Re-enter your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full khub-input"
+              className="w-full wego-input"
             />
           </div>
 

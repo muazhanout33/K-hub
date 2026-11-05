@@ -85,7 +85,7 @@ export default function LoginForm() {
               placeholder="your@email.com"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setFieldError(''); }}
-              className="w-full khub-input"
+              className="w-full wego-input"
               aria-invalid={!!fieldError}
               aria-describedby="login-error"
             />
@@ -100,7 +100,7 @@ export default function LoginForm() {
               placeholder="Enter your password"
               value={password}
               onChange={(e) => { setPassword(e.target.value); setFieldError(''); }}
-              className="w-full khub-input"
+              className="w-full wego-input"
               aria-invalid={!!fieldError}
               aria-describedby="login-error"
             />

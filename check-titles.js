@@ -22,7 +22,7 @@ const routes = [
   const context = await browser.newContext();
   const BASE = 'http://localhost:3000';
 
-  const ROOT_LAYOUT_TITLE = 'K-HUB Sports Club | Premium Court Booking Platform';
+  const ROOT_LAYOUT_TITLE = 'WEGO | Premium Sports Court Booking Platform';
 
   console.log('Checking document.title for routes on localhost:3000\n');
   console.log(`${'Route'.padEnd(28)} ${'Title'.padEnd(60)} Status`);

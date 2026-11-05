@@ -66,7 +66,7 @@ export function Footer() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="khub-input text-xs"
+                className="wego-input text-xs"
               />
               <button
                 type="submit"

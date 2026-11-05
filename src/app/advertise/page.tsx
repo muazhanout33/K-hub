@@ -298,7 +298,7 @@ export default function AdvertisePage() {
                           placeholder="e.g. Acme Sports Ltd."
                           value={form.companyName}
                           onChange={updateField('companyName')}
-                          className="w-full khub-input"
+                          className="w-full wego-input"
                         />
                       </div>
                       <div>
@@ -312,7 +312,7 @@ export default function AdvertisePage() {
                           placeholder="e.g. Sara Mohamed"
                           value={form.contactName}
                           onChange={updateField('contactName')}
-                          className="w-full khub-input"
+                          className="w-full wego-input"
                         />
                       </div>
                       <div>
@@ -326,7 +326,7 @@ export default function AdvertisePage() {
                           placeholder="contact@company.com"
                           value={form.email}
                           onChange={updateField('email')}
-                          className="w-full khub-input"
+                          className="w-full wego-input"
                         />
                       </div>
                       <div>
@@ -340,7 +340,7 @@ export default function AdvertisePage() {
                           placeholder="+20 100 000 0000"
                           value={form.phone}
                           onChange={updateField('phone')}
-                          className="w-full khub-input"
+                          className="w-full wego-input"
                         />
                       </div>
                     </div>
@@ -368,7 +368,7 @@ export default function AdvertisePage() {
                             min={today}
                             value={form.startDate}
                             onChange={updateField('startDate')}
-                            className="w-full khub-input"
+                            className="w-full wego-input"
                           />
                         </div>
                         <div>
@@ -382,7 +382,7 @@ export default function AdvertisePage() {
                             min={form.startDate || today}
                             value={form.endDate}
                             onChange={updateField('endDate')}
-                            className="w-full khub-input"
+                            className="w-full wego-input"
                           />
                         </div>
                       </div>
@@ -402,7 +402,7 @@ export default function AdvertisePage() {
                         placeholder={`Base price: ${activeSpace.basePrice.toLocaleString()} EGP / ${activeSpace.billingPeriod}`}
                         value={form.proposedBudget}
                         onChange={updateField('proposedBudget')}
-                        className="w-full khub-input"
+                        className="w-full wego-input"
                       />
                       <p className="text-xs text-muted mt-1">
                         Space base rate: {activeSpace.basePrice.toLocaleString()} EGP /{' '}
@@ -422,7 +422,7 @@ export default function AdvertisePage() {
                         placeholder="e.g. https://assets.company.com/banner.png or describe your creative"
                         value={form.bannerReference}
                         onChange={updateField('bannerReference')}
-                        className="w-full khub-input"
+                        className="w-full wego-input"
                       />
                     </div>
 
@@ -437,7 +437,7 @@ export default function AdvertisePage() {
                         value={form.notes}
                         onChange={updateField('notes')}
                         rows={3}
-                        className="w-full khub-input"
+                        className="w-full wego-input"
                       />
                     </div>
 

@@ -1,5 +1,5 @@
 /**
- * Availability Engine — core business logic for the K-HUB booking platform.
+ * Availability Engine — core business logic for the WEGO booking platform.
  *
  * This module is framework-free (no React, no Next.js) and contains all
  * rules for determining whether a specific court can be booked at a

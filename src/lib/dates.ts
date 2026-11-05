@@ -1,5 +1,5 @@
 /**
- * Centralized date utility for the K-HUB booking platform.
+ * Centralized date utility for the WEGO booking platform.
  *
  * All dates use Africa/Cairo timezone (UTC+2 standard time, UTC+3 during
  * DST — last Friday of April to last Thursday of October).

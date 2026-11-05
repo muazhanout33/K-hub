@@ -31,11 +31,11 @@ function report(journey, step, pass, detail = '') {
   try {
     const res = await page.goto(BASE + '/', { timeout: NAV_TIMEOUT, waitUntil: 'domcontentloaded' });
     const title = await page.title();
-    const titleOk = /k.?hub/i.test(title) || title.length > 0;
+    const titleOk = /wego/i.test(title) || title.length > 0;
     const bodyText = await page.textContent('body');
     const mainVisible = bodyText && bodyText.trim().length > 50;
     report(1, 'Navigate to / — page loads', res && res.ok(), `status=${res?.status()}, title="${title}"`);
-    report(1, 'Title contains K-HUB/KHUB', titleOk, `title="${title}"`);
+    report(1, 'Title contains WEGO', titleOk, `title="${title}"`);
     report(1, 'Main content visible', mainVisible, `body length=${bodyText?.trim().length}`);
   } catch (e) {
     report(1, 'Navigate to /', false, e.message.split('\n')[0]);

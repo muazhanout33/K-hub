@@ -72,7 +72,7 @@ export default function ContactPage() {
                 <label htmlFor="contact-name" className="block text-xs font-extrabold text-gray-700 dark:text-[#A1ADA4] uppercase tracking-wider mb-1.5">
                   Your Full Name *
                 </label>
-                {/* Standard .khub-input height (44px) — no !h-12 override */}
+                {/* Standard .wego-input height (44px) — no !h-12 override */}
                 <input
                   id="contact-name"
                   type="text"
@@ -80,7 +80,7 @@ export default function ContactPage() {
                   placeholder="e.g. Sarah Jenkins"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="khub-input"
+                  className="wego-input"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -94,7 +94,7 @@ export default function ContactPage() {
                     placeholder="+1 (555) 000-0000"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="khub-input"
+                    className="wego-input"
                   />
                 </div>
                 <div>
@@ -108,7 +108,7 @@ export default function ContactPage() {
                     placeholder="sarah@example.com"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="khub-input"
+                    className="wego-input"
                   />
                 </div>
               </div>
@@ -123,7 +123,7 @@ export default function ContactPage() {
                   placeholder="e.g. Court booking inquiry"
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                  className="khub-input"
+                  className="wego-input"
                 />
               </div>
               <div>
@@ -137,7 +137,7 @@ export default function ContactPage() {
                   placeholder="Type your message here..."
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="khub-input resize-none"
+                  className="wego-input resize-none"
                 />
               </div>
               {/* Full-width primary button — proper Button component, no rounded-full override */}

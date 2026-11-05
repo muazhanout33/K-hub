@@ -254,7 +254,7 @@ export default function BecomeASponsorPage() {
                     placeholder="e.g. Acme Sports Ltd."
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full khub-input"
+                    className="w-full wego-input"
                   />
                 </div>
                 <div>
@@ -268,7 +268,7 @@ export default function BecomeASponsorPage() {
                     placeholder="e.g. Ahmed Hassan"
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    className="w-full khub-input"
+                    className="w-full wego-input"
                   />
                 </div>
               </div>
@@ -285,7 +285,7 @@ export default function BecomeASponsorPage() {
                     placeholder="contact@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full khub-input"
+                    className="w-full wego-input"
                   />
                 </div>
                 <div>
@@ -299,7 +299,7 @@ export default function BecomeASponsorPage() {
                     placeholder="+20 100 000 0000"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full khub-input"
+                    className="w-full wego-input"
                   />
                 </div>
               </div>
@@ -344,7 +344,7 @@ export default function BecomeASponsorPage() {
                     id="sponsor-court-id"
                     value={targetId}
                     onChange={(e) => setTargetId(e.target.value)}
-                    className="w-full khub-input"
+                    className="w-full wego-input"
                   >
                     {courts.map((court) => (
                       <option key={court.id} value={court.id}>
@@ -364,7 +364,7 @@ export default function BecomeASponsorPage() {
                     id="sponsor-area-id"
                     value={targetId}
                     onChange={(e) => setTargetId(e.target.value)}
-                    className="w-full khub-input"
+                    className="w-full wego-input"
                   >
                     {FACILITY_AREAS.map((area) => (
                       <option key={area} value={area}>
@@ -403,7 +403,7 @@ export default function BecomeASponsorPage() {
                     placeholder="e.g. 15000"
                     value={proposedAmount}
                     onChange={(e) => setProposedAmount(e.target.value)}
-                    className="w-full khub-input"
+                    className="w-full wego-input"
                   />
                 </div>
                 <div>
@@ -414,7 +414,7 @@ export default function BecomeASponsorPage() {
                     id="sponsor-pricing-type"
                     value={pricingType}
                     onChange={(e) => setPricingType(e.target.value as SponsorshipPricingType)}
-                    className="w-full khub-input"
+                    className="w-full wego-input"
                   >
                     {(Object.entries(PRICING_TYPE_LABELS) as [SponsorshipPricingType, string][]).map(([key, label]) => (
                       <option key={key} value={key}>{label}</option>
@@ -452,7 +452,7 @@ export default function BecomeASponsorPage() {
                   value={benefitInput}
                   onChange={(e) => setBenefitInput(e.target.value)}
                   onKeyDown={handleBenefitKeyDown}
-                  className="flex-1 khub-input"
+                  className="flex-1 wego-input"
                 />
                 <Button
                   type="button"
@@ -530,7 +530,7 @@ export default function BecomeASponsorPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
-                className="w-full khub-input"
+                className="w-full wego-input"
               />
             </div>
 

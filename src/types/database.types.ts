@@ -1,5 +1,5 @@
 /**
- * Raw PostgreSQL / Supabase Database Row Types & Enums for K-HUB Platform.
+ * Raw PostgreSQL / Supabase Database Row Types & Enums for WEGO Platform.
  * Mirrors the exact column names (snake_case) defined in docs/0001_supabase_schema.sql.
  */
 

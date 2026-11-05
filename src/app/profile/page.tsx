@@ -87,7 +87,7 @@ export default function ProfilePage() {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full khub-input"
+              className="w-full wego-input"
             />
           </div>
 
@@ -97,7 +97,7 @@ export default function ProfilePage() {
               type="email"
               disabled
               value={user.email}
-              className="w-full khub-input bg-gray-50 dark:bg-[#171F1A] text-gray-500 dark:text-[#8A9A8E] cursor-not-allowed"
+              className="w-full wego-input bg-gray-50 dark:bg-[#171F1A] text-gray-500 dark:text-[#8A9A8E] cursor-not-allowed"
             />
             <p className="text-[10px] text-gray-400 dark:text-[#8A9A8E] mt-1">Email cannot be changed</p>
           </div>
@@ -109,7 +109,7 @@ export default function ProfilePage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Enter phone number"
-              className="w-full khub-input"
+              className="w-full wego-input"
             />
           </div>
 
@@ -119,7 +119,7 @@ export default function ProfilePage() {
               type="text"
               disabled
               value={user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-              className="w-full khub-input bg-gray-50 dark:bg-[#171F1A] text-gray-500 dark:text-[#8A9A8E] cursor-not-allowed"
+              className="w-full wego-input bg-gray-50 dark:bg-[#171F1A] text-gray-500 dark:text-[#8A9A8E] cursor-not-allowed"
             />
           </div>
 
