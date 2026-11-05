@@ -263,7 +263,7 @@ describe('Payment page — durable confirmation recovery', () => {
     expect(pushMock).not.toHaveBeenCalledWith('/book/details');
   });
 
-  it('never drops a pending confirmation into the empty state when the booking is not local', () => {
+  it('never drops a pending confirmation into the empty state when the booking is not local', async () => {
     // Storage cleared: durable op survives but no local booking record.
     seedPaymentStore({
       pendingConfirmation: seedPending('bk-vanished', { phase: 'failed' }),
@@ -275,7 +275,8 @@ describe('Payment page — durable confirmation recovery', () => {
     expect(screen.queryByText(/No booking in progress/)).toBeNull();
     // Recovery reports a truthful, retryable error instead of pretending
     // nothing is in progress — and never attempts a blind confirmation.
-    expect(screen.getByText('Booking Confirmation Issue')).toBeTruthy();
+    // (Auto-recovery is scheduled on a macrotask, so await the panel.)
+    await waitFor(() => expect(screen.getByText('Booking Confirmation Issue')).toBeTruthy());
     expect(confirmBookingStatusActionMock).not.toHaveBeenCalled();
     expect(pushMock).not.toHaveBeenCalledWith('/book/details');
     expect(pushMock).not.toHaveBeenCalled();

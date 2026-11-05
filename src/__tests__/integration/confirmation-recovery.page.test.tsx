@@ -13,9 +13,11 @@
  *  3. Recovery failure shows truth + "Try Again" — no redirect, no fake success
  *  4. Truly nothing to show → redirect to /book (unchanged behaviour)
  *  5. Re-renders do not refetch / re-recover (single attempt per id)
+ *  6. "Try Again" performs a REAL refetch (the old state-reset-only retry
+ *     could never re-run the effect because its deps were unchanged)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 
 // next/image is not mocked globally — provide a minimal local stand-in.
 vi.mock('next/image', () => ({
@@ -207,5 +209,64 @@ describe('Confirmation page — durable recovery', () => {
     expect(getBookingStatusActionMock).toHaveBeenCalledTimes(1);
     // Still recovering — never bounced away mid-recovery.
     expect(pushMock).not.toHaveBeenCalledWith('/book');
+  });
+
+  it('"Try Again" performs a real refetch and recovers after a transient failure', async () => {
+    seedStores({ lastBookingId: 'bk-retry' });
+    // First attempt fails (e.g. network hiccup right after payment).
+    getBookingStatusActionMock.mockResolvedValueOnce({
+      success: false,
+      error: 'Unable to reach the server.',
+    });
+
+    render(<BookingConfirmationPage />);
+
+    await waitFor(() => expect(screen.getByText('Try Again')).toBeTruthy());
+    expect(getBookingStatusActionMock).toHaveBeenCalledTimes(1);
+    expect(pushMock).not.toHaveBeenCalledWith('/book');
+
+    // Server is reachable again on retry.
+    getBookingStatusActionMock.mockResolvedValue({
+      success: true,
+      booking: makeBooking('bk-retry', 'Confirmed'),
+    });
+
+    fireEvent.click(screen.getByText('Try Again'));
+
+    // A REAL refetch happens (regression: the old retry only reset local
+    // state, so the effect never re-ran and the user was stuck forever).
+    await waitFor(() =>
+      expect(screen.getByText('Booking Confirmed!')).toBeTruthy()
+    );
+    expect(getBookingStatusActionMock).toHaveBeenCalledTimes(2);
+    expect(getBookingStatusActionMock).toHaveBeenLastCalledWith('bk-retry');
+    // Never bounced to /book while a durable id exists.
+    expect(pushMock).not.toHaveBeenCalledWith('/book');
+    expect(useBookingStore.getState().bookings).toHaveLength(1);
+    expect(useBookingStore.getState().bookings[0].id).toBe('bk-retry');
+  });
+
+  it('a failed "Try Again" stays truthful — no redirect, no fake success', async () => {
+    seedStores({ lastBookingId: 'bk-retry-2' });
+    getBookingStatusActionMock.mockResolvedValue({
+      success: false,
+      error: 'Temporary outage.',
+    });
+
+    render(<BookingConfirmationPage />);
+
+    await waitFor(() => expect(screen.getByText('Try Again')).toBeTruthy());
+    expect(getBookingStatusActionMock).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByText('Try Again'));
+
+    await waitFor(() =>
+      expect(getBookingStatusActionMock).toHaveBeenCalledTimes(2)
+    );
+    await waitFor(() => expect(screen.getByText('Temporary outage.')).toBeTruthy());
+    expect(screen.queryByText('Booking Confirmed!')).toBeNull();
+    expect(pushMock).not.toHaveBeenCalledWith('/book');
+    // Retry affordance remains available for the next attempt.
+    expect(screen.getByText('Try Again')).toBeTruthy();
   });
 });

@@ -131,7 +131,7 @@ function handleVisibilityChange(): void {
     void useNotificationStore.getState().initNotifications(currentUserId);
     return;
   }
-  void syncFromServer(currentUserId);
+  void syncFromServer();
 }
 
 function installGlobalListeners(): void {
@@ -149,7 +149,7 @@ function removeGlobalListeners(): void {
 }
 
 /** Fetch the user's notifications and merge them in without sounds. */
-async function syncFromServer(userId: string): Promise<void> {
+async function syncFromServer(): Promise<void> {
   try {
     const supabase = createClient();
     const { data: authData } = await supabase.auth.getUser();
@@ -241,7 +241,7 @@ export const useNotificationStore = create<NotificationState>()(
               if (status === 'SUBSCRIBED') {
                 reconnectAttempts = 0;
                 // Silent refresh: recover any rows missed while offline.
-                void syncFromServer(userId);
+                void syncFromServer();
                 return;
               }
               if (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useBookingStore } from '@/features/booking/useBookingStore';
@@ -20,7 +20,6 @@ import {
 import Link from 'next/link';
 import { FALLBACK_COURT_IMAGE } from '@/services/court.service';
 import type { Booking } from '@/types';
-import { toast } from 'sonner';
 
 type RecoverState = 'idle' | 'loading' | 'failed';
 
@@ -44,25 +43,31 @@ export default function BookingConfirmationPage() {
   const [recoverState, setRecoverState] = useState<RecoverState>('idle');
   const [recoverError, setRecoverError] = useState<string | null>(null);
   const recoverAttemptedFor = useRef<string | null>(null);
+  /** Monotonic run id — invalidates in-flight results when superseded. */
+  const recoverRunSeq = useRef(0);
 
   const hydrating = !bookingHydrated || !paymentHydrated;
 
-  // Recover the booking from the server when the local store is empty
-  // (refresh / redirect / other device) but we still know its id.
-  useEffect(() => {
-    if (hydrating) return;
-    if (latestBooking) return;
+  /**
+   * Recover the booking from the server when the local store is empty
+   * (refresh / redirect / other device) but we still know its id.
+   *
+   * Exposed as a callable so "Try Again" performs a REAL refetch — a
+   * state-reset-only retry could never re-run the effect (its deps —
+   * hydrating / latestBooking / durableBookingId — did not change).
+   */
+  const runRecovery = useCallback(() => {
     if (!durableBookingId) return;
-    if (recoverAttemptedFor.current === durableBookingId) return;
-
     recoverAttemptedFor.current = durableBookingId;
-    let cancelled = false;
+    const seq = ++recoverRunSeq.current;
     setRecoverState('loading');
     setRecoverError(null);
 
     void (async () => {
       const result = await getBookingStatusAction(durableBookingId);
-      if (cancelled) return;
+      // Ignore superseded runs (retried again while in flight) and
+      // results that arrive after teardown.
+      if (seq !== recoverRunSeq.current) return;
       if (result.success && result.booking) {
         const recovered = result.booking;
         useBookingStore.setState((state) => ({
@@ -74,11 +79,26 @@ export default function BookingConfirmationPage() {
         setRecoverState('failed');
       }
     })();
+  }, [durableBookingId]);
+
+  // Kick off recovery once the durable id is known (never on refresh
+  // flash: gated on hydration and on the local store being empty).
+  useEffect(() => {
+    if (hydrating) return;
+    if (latestBooking) return;
+    if (!durableBookingId) return;
+    if (recoverAttemptedFor.current === durableBookingId) return;
+
+    runRecovery();
 
     return () => {
-      cancelled = true;
+      // Invalidate any in-flight run when deps change / page unmounts,
+      // and allow the next effect pass (e.g. StrictMode's remount) to
+      // start a fresh run instead of being blocked by the old guard.
+      recoverRunSeq.current += 1;
+      recoverAttemptedFor.current = null;
     };
-  }, [hydrating, latestBooking, durableBookingId]);
+  }, [hydrating, latestBooking, durableBookingId, runRecovery]);
 
   // Redirect only when there is NOTHING to recover — never when a
   // durable id exists (that was the "No booking in progress" bug).
@@ -112,11 +132,10 @@ export default function BookingConfirmationPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button
                 onClick={() => {
-                  recoverAttemptedFor.current = null;
-                  setRecoverState('idle');
-                  setRecoverError(null);
-                  // Re-trigger the recovery effect.
-                  useBookingStore.setState((s) => ({ bookings: [...s.bookings] }));
+                  // Real retry: re-fetch the durable booking. (Resetting
+                  // state alone never re-ran the recovery effect because
+                  // its dependencies were unchanged.)
+                  runRecovery();
                 }}
                 variant="primary"
                 size="md"

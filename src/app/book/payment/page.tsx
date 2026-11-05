@@ -224,8 +224,15 @@ export default function BookingPaymentPage() {
     if (!paymentHydrated || !bookingHydrated) return;
     const pending = usePaymentStore.getState().pendingConfirmation;
     if (!pending?.bookingId) return;
-    autoRecoveryRan.current = true;
-    void handleConfirm();
+    // Deferred to a macrotask so the effect body itself never triggers a
+    // synchronous setState cascade, and so an unmount (or StrictMode
+    // remount) before the timer fires simply cancels this run instead of
+    // confirming against a torn-down page.
+    const timer = setTimeout(() => {
+      autoRecoveryRan.current = true;
+      void handleConfirm();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [handleConfirm, paymentHydrated, bookingHydrated]);
 
   // ── Guards (hydration-aware so a refresh never flashes the empty state) ──
