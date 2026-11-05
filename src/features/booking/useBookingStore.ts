@@ -8,6 +8,7 @@ import { isBookingFullyPast, isSlotCancellable, addDaysToDateString, CANCELLATIO
 import { useBlockedPeriodStore } from '@/features/booking/useBlockedPeriodStore';
 import { usePaymentStore } from '@/features/payment/usePaymentStore';
 import { useAuthStore } from '@/features/auth/useAuthStore';
+import { useNotificationStore } from '@/features/notifications/useNotificationStore';
 import { createBookingAction, cancelBookingAction, confirmBookingStatusAction, expireStaleBookingsAction, getBookingStatusAction } from '@/app/actions/booking.actions';
 import { calculateBookingPrice } from '@/lib/pricing';
 
@@ -256,6 +257,11 @@ export const useBookingStore = create<BookingStoreState>()(
       },
 
       clearReservation: () => {
+        const pending = usePaymentStore.getState().pendingConfirmation;
+        if (pending?.bookingId) {
+          void cancelBookingAction(pending.bookingId);
+          usePaymentStore.getState().clearConfirmation();
+        }
         set({
           selectedSlots: [],
           reservationStartTime: null,
@@ -397,10 +403,17 @@ export const useBookingStore = create<BookingStoreState>()(
         const serverResult = await confirmBookingStatusAction(bookingId);
         const alreadyConfirmed =
           !serverResult.success &&
-          /booking is already confirmed\./i.test(serverResult.error ?? '');
+          /booking is already confirmed/i.test(serverResult.error ?? '');
 
         if (!serverResult.success && !alreadyConfirmed) {
           return serverResult;
+        }
+
+        // Deliver server notifications immediately to local store with zero delay
+        if (serverResult.notifications && serverResult.notifications.length > 0) {
+          for (const notif of serverResult.notifications) {
+            useNotificationStore.getState().addServerNotification?.(notif);
+          }
         }
 
         const { bookings } = get();

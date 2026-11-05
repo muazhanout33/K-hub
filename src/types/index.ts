@@ -162,6 +162,7 @@ export interface CancellationPolicy {
 export interface BookingResult {
   success: boolean;
   booking?: Booking;
+  notifications?: Notification[];
   error?: string;
 }
 

@@ -106,8 +106,49 @@ export async function resumeAudioContext(): Promise<boolean> {
 
 // ── Playback ──
 
+function playWebAudioChime(ctx: AudioContext): void {
+  try {
+    const now = ctx.currentTime;
+    // Pleasant dual-tone notification chime: 587.33 Hz (D5) -> 880 Hz (A5)
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(587.33, now);
+    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(880, now + 0.08);
+
+    gainNode.gain.setValueAtTime(0.2, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    osc1.start(now);
+    osc2.start(now + 0.08);
+    osc1.stop(now + 0.35);
+    osc2.stop(now + 0.35);
+  } catch {
+    // Ignore audio synth errors
+  }
+}
+
 function startPlayback(): void {
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === 'running') {
+    playWebAudioChime(ctx);
+  }
+
   const el = getAudio();
+  try {
+    el.currentTime = 0;
+  } catch {
+    // Ignore seek errors on unloaded media
+  }
   playInFlight = true;
   try {
     const playPromise = el.play();
@@ -185,6 +226,11 @@ export async function unlockAudio(): Promise<void> {
     const previousVolume = el.volume;
     try {
       el.volume = 0;
+      try {
+        el.currentTime = 0;
+      } catch {
+        // ignore
+      }
       const playPromise = el.play();
       if (playPromise && typeof playPromise.then === 'function') {
         await playPromise;
@@ -193,11 +239,21 @@ export async function unlockAudio(): Promise<void> {
       // interrupt it — only stop our own silent warm-up.
       if (!playInFlight) {
         el.pause();
+        try {
+          el.currentTime = 0;
+        } catch {
+          // ignore
+        }
       }
     } catch {
       // Warm-up blocked — harmless; next gesture will retry.
     } finally {
       el.volume = previousVolume;
+      try {
+        el.currentTime = 0;
+      } catch {
+        // ignore
+      }
     }
   } catch {
     // Never let audio problems propagate.

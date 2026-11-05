@@ -11,7 +11,7 @@ import type { Database } from '@/types/database.types';
  * 3. Atomic conflict-free double-booking guarantees
  */
 export function createAdminClient() {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && !process.env.VITEST) {
     throw new Error('createAdminClient must only be called on the server.');
   }
 

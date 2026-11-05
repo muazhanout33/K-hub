@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { BookingResult, CancellationResult, Booking } from '@/types';
+import { BookingResult, CancellationResult, Booking, Notification } from '@/types';
 import { formatTstzrange, parseTstzrangeStart, parseTstzrange, mapDbBookingToBooking } from '@/lib/mappers';
 import { DbBooking } from '@/types/database.types';
 import { getCourtInfoForBooking, getCourtInfoMap, FALLBACK_COURT_IMAGE } from '@/services/court.service';
@@ -223,17 +223,14 @@ export async function cancelBookingAction(bookingId: string): Promise<Cancellati
       }
     }
 
-    // ── 2-Hour Cancellation Window (server-side enforcement) ──
-    // Wall-clock semantics: booking_range stores Cairo wall-clock digits,
-    // so the window compares Cairo wall-clock now against the stored start.
-    // isSlotCancellable is shared with the client pre-check — the server
-    // remains authoritative (this action is the enforcement point).
+    // ── 2-Hour Cancellation Window (server-side enforcement for Confirmed bookings) ──
+    // Reserved holds can always be released immediately without the 2-hour restriction.
     const slotStart = parseTstzrangeStart(booking.booking_range);
     if (!slotStart) {
       return { success: false, error: 'Unable to parse booking time.' };
     }
 
-    if (!isSlotCancellable(slotStart.date, slotStart.time, CANCELLATION_WINDOW_HOURS)) {
+    if (booking.status === 'Confirmed' && !isSlotCancellable(slotStart.date, slotStart.time, CANCELLATION_WINDOW_HOURS)) {
       return {
         success: false,
         error: 'CANCELLATION_TOO_LATE',
@@ -242,7 +239,14 @@ export async function cancelBookingAction(bookingId: string): Promise<Cancellati
     }
 
     // Perform the update
-    const { data, error } = await (supabase.from('bookings') as any)
+    let adminSupabase: any;
+    try {
+      adminSupabase = createAdminClient();
+    } catch {
+      adminSupabase = supabase;
+    }
+
+    const { data, error } = await (adminSupabase.from('bookings') as any)
       .update({
         status: 'Cancelled',
         cancelled_at: new Date().toISOString(),
@@ -258,19 +262,19 @@ export async function cancelBookingAction(bookingId: string): Promise<Cancellati
     const cancelledCourtInfo = await getCourtInfoForBooking(data.court_id);
     const cancelledBooking: Booking = mapDbBookingToBooking(data as DbBooking, cancelledCourtInfo);
 
-    // Insert booking_cancelled notification for the booking OWNER
-    // (an admin may cancel someone else's booking — notify the owner).
-    // Failures are logged and never fail the cancellation itself.
-    const cancelNotification = await createNotification({
-      userId: cancelledBooking.userId ?? authData.user.id,
-      type: 'booking_cancelled',
-      title: 'Booking Cancelled',
-      message: `Booking ${cancelledBooking.bookingNumber} has been cancelled.`,
-      relatedBookingId: cancelledBooking.id,
-      dedupeKey: `booking_cancelled:${cancelledBooking.id}`,
-    });
-    if (!cancelNotification.success) {
-      console.error('Failed to create booking_cancelled notification:', cancelNotification.error);
+    // Insert booking_cancelled notification for Confirmed bookings
+    if (booking.status === 'Confirmed') {
+      const cancelNotification = await createNotification({
+        userId: cancelledBooking.userId ?? authData.user.id,
+        type: 'booking_cancelled',
+        title: 'Booking Cancelled',
+        message: `Booking ${cancelledBooking.bookingNumber} has been cancelled.`,
+        relatedBookingId: cancelledBooking.id,
+        dedupeKey: `booking_cancelled:${cancelledBooking.id}`,
+      });
+      if (!cancelNotification.success) {
+        console.error('Failed to create booking_cancelled notification:', cancelNotification.error);
+      }
     }
 
     void broadcastAvailabilityChange(cancelledBooking.courtId, cancelledBooking.date);
@@ -528,10 +532,16 @@ export async function confirmBookingStatusAction(
       return { success: false, error: 'Authentication required.' };
     }
 
-    // Verify ownership or admin
-    const { data: existing } = await supabase
-      .from('bookings')
-      .select('id, user_id, status')
+    let adminSupabase: any;
+    try {
+      adminSupabase = createAdminClient();
+    } catch {
+      adminSupabase = supabase;
+    }
+
+    // Verify booking exists
+    const { data: existing } = await (adminSupabase.from('bookings') as any)
+      .select('*')
       .eq('id', bookingId)
       .maybeSingle();
 
@@ -539,11 +549,9 @@ export async function confirmBookingStatusAction(
       return { success: false, error: 'Booking not found.' };
     }
 
-    const booking = existing as { id: string; user_id: string | null; status: string };
-    if (booking.status !== 'Reserved') {
-      return { success: false, error: `Booking is already ${booking.status.toLowerCase()}.` };
-    }
+    const booking = existing as DbBooking;
 
+    // Verify ownership or admin
     const isOwner = booking.user_id === authData.user.id;
     if (!isOwner) {
       const { data: profile } = await supabase
@@ -556,7 +564,33 @@ export async function confirmBookingStatusAction(
       }
     }
 
-    const { data, error } = await (supabase.from('bookings') as any)
+    // Idempotent success: if already Confirmed, return the confirmed booking
+    if (booking.status === 'Confirmed') {
+      const courtInfo = await getCourtInfoForBooking(booking.court_id);
+      const confirmed: Booking = mapDbBookingToBooking(booking, courtInfo);
+      return { success: true, booking: confirmed };
+    }
+
+    // Handle Expired: check if slot is still free so a paying user isn't stranded
+    if (booking.status === 'Expired') {
+      const { data: conflicts } = await (adminSupabase.from('bookings') as any)
+        .select('id')
+        .eq('court_id', booking.court_id)
+        .in('status', ['Confirmed', 'Reserved'])
+        .neq('id', bookingId)
+        .filter('booking_range', 'ov', booking.booking_range);
+
+      if (conflicts && conflicts.length > 0) {
+        return {
+          success: false,
+          error: 'Your booking hold expired and the court slot was taken by another player. A refund has been initiated.',
+        };
+      }
+    } else if (booking.status !== 'Reserved') {
+      return { success: false, error: `Booking is already ${booking.status.toLowerCase()}.` };
+    }
+
+    const { data, error } = await (adminSupabase.from('bookings') as any)
       .update({ status: 'Confirmed' })
       .eq('id', bookingId)
       .select('*')
@@ -568,6 +602,8 @@ export async function confirmBookingStatusAction(
 
     const courtInfo = await getCourtInfoForBooking(data.court_id);
     const confirmed: Booking = mapDbBookingToBooking(data as DbBooking, courtInfo);
+
+    const notifications: Notification[] = [];
 
     // Create booking_confirmed notification for the booking OWNER.
     // Failures are logged and never fail the confirmation itself.
@@ -581,6 +617,8 @@ export async function confirmBookingStatusAction(
     });
     if (!confirmedNotification.success) {
       console.error('Failed to create booking_confirmed notification:', confirmedNotification.error);
+    } else if (confirmedNotification.notification) {
+      notifications.push(confirmedNotification.notification);
     }
 
     // Create payment_successful notification for the booking OWNER.
@@ -594,11 +632,13 @@ export async function confirmBookingStatusAction(
     });
     if (!paymentNotification.success) {
       console.error('Failed to create payment_successful notification:', paymentNotification.error);
+    } else if (paymentNotification.notification) {
+      notifications.push(paymentNotification.notification);
     }
 
     void broadcastAvailabilityChange(confirmed.courtId, confirmed.date);
 
-    return { success: true, booking: confirmed };
+    return { success: true, booking: confirmed, notifications };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to confirm booking';
     return { success: false, error: message };
@@ -766,6 +806,7 @@ export async function expireStaleBookingsAction(): Promise<{
 export async function broadcastAvailabilityChange(courtId?: string, date?: string): Promise<void> {
   try {
     const admin = createAdminClient();
+    if (!admin || typeof admin.channel !== 'function') return;
     const channel = admin.channel('public-court-availability');
     await new Promise<void>((resolve) => {
       channel.subscribe((status) => {

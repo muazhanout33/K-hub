@@ -34,6 +34,13 @@ interface NotificationState {
     relatedBookingId?: string
   ) => Notification;
 
+  /**
+   * Directly ingest a server-confirmed notification into local state,
+   * triggering UI updates and audible chime immediately without waiting
+   * for the Supabase Realtime WebSocket round-trip.
+   */
+  addServerNotification: (notification: Notification) => void;
+
   /** Queue an ID for one sound play (dedupes existing IDs). */
   enqueueSound: (id: string) => void;
 
@@ -329,6 +336,18 @@ export const useNotificationStore = create<NotificationState>()(
         })();
 
         return notification;
+      },
+
+      addServerNotification: (notification: Notification) => {
+        if (!notification?.id) return;
+        const state = get();
+        if (state.notifications.some((n) => n.id === notification.id)) {
+          return;
+        }
+        set({
+          notifications: sortNotifications([notification, ...state.notifications]),
+          pendingSoundIds: [...state.pendingSoundIds, notification.id],
+        });
       },
 
       enqueueSound: (id) => {

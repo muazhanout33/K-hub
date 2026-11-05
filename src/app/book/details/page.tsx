@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBookingStore } from '@/features/booking/useBookingStore';
+import { usePaymentStore } from '@/features/payment/usePaymentStore';
 import { useAuthStore } from '@/features/auth/useAuthStore';
 import { BookingSteps } from '@/features/booking/BookingSteps';
 import { SiteContainer } from '@/components/layout/SiteContainer';
@@ -46,7 +47,7 @@ export default function BookingDetailsPage() {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name.trim()) {
@@ -64,6 +65,17 @@ export default function BookingDetailsPage() {
 
     setUserDetails({ userName: name.trim(), userEmail: email.trim(), userPhone: phone.trim() });
     setBookingStep(4);
+
+    // Ensure active temporary hold is confirmed before proceeding to payment
+    const pending = usePaymentStore.getState().pendingConfirmation;
+    if (!pending?.bookingId) {
+      const result = await useBookingStore.getState().confirmBooking();
+      if (!result.success) {
+        toast.error(result.error || 'Failed to hold court slot. Please try again.');
+        return;
+      }
+    }
+
     router.push('/book/payment');
   };
 

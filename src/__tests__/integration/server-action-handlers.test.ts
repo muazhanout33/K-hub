@@ -57,7 +57,7 @@ vi.mock('@/lib/mappers', async (importOriginal) => {
       endTime: '11:00',
       durationMinutes: 60,
       totalPrice: 200,
-      status: 'Reserved',
+      status: _b?.status || 'Reserved',
       bookingSource: 'ONLINE',
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
@@ -219,16 +219,28 @@ describe('confirmBookingStatusAction', () => {
     expect(result.error).toContain('not found');
   });
 
-  it('returns error when booking is not Reserved', async () => {
+  it('handles already Confirmed booking idempotently (returns success without error)', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
     supabaseChain.maybeSingle = vi.fn(() => Promise.resolve({
-      data: { id: 'booking-1', user_id: 'user-1', status: 'Confirmed' },
+      data: { id: 'booking-1', user_id: 'user-1', status: 'Confirmed', total_price: 150 },
+      error: null,
+    }));
+
+    const result = await confirmBookingStatusAction('booking-1');
+    expect(result.success).toBe(true);
+    expect(result.booking?.status).toBe('Confirmed');
+  });
+
+  it('returns error when booking is Cancelled', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    supabaseChain.maybeSingle = vi.fn(() => Promise.resolve({
+      data: { id: 'booking-1', user_id: 'user-1', status: 'Cancelled' },
       error: null,
     }));
 
     const result = await confirmBookingStatusAction('booking-1');
     expect(result.success).toBe(false);
-    expect(result.error).toContain('already confirmed');
+    expect(result.error).toContain('cancelled');
   });
 
   it('returns error when non-owner non-admin tries to confirm', async () => {

@@ -129,7 +129,7 @@ export function BookingWidget() {
     toggleSlot(slot);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (selectedSlots.length === 0) {
       toast.error('Please select at least one time slot before continuing.');
       return;
@@ -139,6 +139,23 @@ export function BookingWidget() {
     if (!user) {
       toast.info('Please sign in to book a court.');
       router.push('/auth/login');
+      return;
+    }
+
+    // Pre-populate user details from auth profile if not already set
+    const store = useBookingStore.getState();
+    if (!store.userName && user.name) {
+      store.setUserDetails({
+        userName: user.name,
+        userEmail: user.email,
+        userPhone: user.phone || '',
+      });
+    }
+
+    // Establish active temporary hold in Supabase so other users immediately see the slot as unavailable
+    const holdResult = await store.confirmBooking();
+    if (!holdResult.success) {
+      toast.error(holdResult.error || 'This court slot has already been booked by another player.');
       return;
     }
 
