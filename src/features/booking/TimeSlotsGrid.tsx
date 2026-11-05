@@ -25,11 +25,11 @@ export function TimeSlotsGrid({ slots, dateLabel }: TimeSlotsGridProps) {
 
   const handleSlotClick = (slot: TimeSlot) => {
     if (slot.status === 'Booked') {
-      toast.error('This slot has already been booked by another member.');
+      toast.error(slot.isOwn ? 'You have already booked this slot.' : 'This slot has already been booked by another member.');
       return;
     }
     if (slot.status === 'Reserved') {
-      toast.error('This time slot is temporarily locked by another user.');
+      toast.error(slot.isOwn ? 'You have already reserved this slot.' : 'This time slot is temporarily locked by another user.');
       return;
     }
     if (slot.status === 'Past') {
@@ -115,6 +115,16 @@ export function TimeSlotsGrid({ slots, dateLabel }: TimeSlotsGridProps) {
               <span className="text-[11px] font-sans font-bold mt-0.5">
                 EGP {slot.price}
               </span>
+              {isReserved && (
+                <span className="text-[9px] font-sans font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400 mt-0.5">
+                  {slot.isOwn ? 'Reserved by You' : 'Reserved'}
+                </span>
+              )}
+              {isBooked && (
+                <span className="text-[9px] font-sans font-extrabold uppercase tracking-wider text-red-700 dark:text-red-400 mt-0.5">
+                  {slot.isOwn ? 'Booked by You' : 'Booked'}
+                </span>
+              )}
               {(isPast || isBlocked) && (
                 <span className="text-[9px] font-sans opacity-70 mt-0.5">
                   {isPast ? 'Past' : 'Blocked'}

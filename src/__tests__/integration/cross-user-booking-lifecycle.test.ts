@@ -201,14 +201,21 @@ describe('Cross-User Booking Lifecycle & Availability', () => {
       };
 
       // User B inspects available slots for that court & date
-      const slotsForUserB = generateAvailabilitySlots(court, testDate, [activeHold], []);
+      const slotsForUserB = generateAvailabilitySlots(court, testDate, [activeHold], [], userB.id);
 
       const slot10am = slotsForUserB.find(s => s.startTime === '10:00');
       const slot11am = slotsForUserB.find(s => s.startTime === '11:00');
 
       expect(slot10am).toBeDefined();
       expect(slot10am?.status).toBe('Reserved');
+      expect(slot10am?.isOwn).toBe(false);
       expect(slot11am?.status).toBe('Available');
+
+      // User A inspects available slots: sees their own hold labeled as isOwn
+      const slotsForUserA = generateAvailabilitySlots(court, testDate, [activeHold], [], userA.id);
+      const slot10amForUserA = slotsForUserA.find(s => s.startTime === '10:00');
+      expect(slot10amForUserA?.status).toBe('Reserved');
+      expect(slot10amForUserA?.isOwn).toBe(true);
 
       // Verify privacy: slot object exposed to public/User B contains NO private customer data
       expect((slot10am as any).userName).toBeUndefined();

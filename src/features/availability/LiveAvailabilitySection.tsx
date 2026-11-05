@@ -7,6 +7,7 @@ import { CalendarDays, CalendarCheck, ChevronDown } from 'lucide-react';
 import { getCourtsFromSupabase } from '@/services/court.service';
 import { generateTimeSlots } from '@/services/booking.service';
 import { useBookingStore } from '@/features/booking/useBookingStore';
+import { useAuthStore } from '@/features/auth/useAuthStore';
 import { useAllBookingsForDate } from '@/hooks/useAllBookingsForDate';
 import {
   getToday,
@@ -37,6 +38,7 @@ export function LiveAvailabilitySection() {
   const toggleSlot = useBookingStore((state) => state.toggleSlot);
   const selectedSlots = useBookingStore((state) => state.selectedSlots);
   const { bookings } = useAllBookingsForDate(selectedDate);
+  const user = useAuthStore((state) => state.user);
   const router = useRouter();
 
   useEffect(() => {
@@ -70,10 +72,10 @@ export function LiveAvailabilitySection() {
   const courtSlots = useMemo(() => {
     const map: Record<string, ReturnType<typeof generateTimeSlots>> = {};
     for (const court of filteredCourts) {
-      map[court.id] = generateTimeSlots(court, selectedDate, court.pricePerHour, bookings);
+      map[court.id] = generateTimeSlots(court, selectedDate, court.pricePerHour, bookings, user?.id);
     }
     return map;
-  }, [filteredCourts, selectedDate, bookings]);
+  }, [filteredCourts, selectedDate, bookings, user?.id]);
 
   const freeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -360,7 +362,11 @@ export function LiveAvailabilitySection() {
                               </span>
                               {isUnavailable && (
                                 <span className="text-[9px] font-sans font-extrabold uppercase tracking-wider opacity-80">
-                                  {isBooked ? 'Booked' : isReserved ? 'Reserved' : isPast ? 'Past' : 'Blocked'}
+                                  {isBooked
+                                    ? slot.isOwn ? 'Booked by You' : 'Booked'
+                                    : isReserved
+                                      ? slot.isOwn ? 'Reserved by You' : 'Reserved'
+                                      : isPast ? 'Past' : 'Blocked'}
                                 </span>
                               )}
                             </button>

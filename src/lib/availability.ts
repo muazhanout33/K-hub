@@ -124,24 +124,33 @@ export function isHoldActive(booking: Booking, nowMs: number = Date.now()): bool
   return true;
 }
 
+export interface SlotBookingMatch {
+  status: 'Booked' | 'Reserved';
+  isOwn: boolean;
+  bookingId?: string;
+}
+
 /**
- * Determines whether a slot overlaps with an active booking or hold.
- * - Returns 'Booked' if a 'Confirmed' booking overlaps.
- * - Returns 'Reserved' if an active 'Reserved' hold (within 10-min window) overlaps.
+ * Determines whether a slot overlaps with an active booking or hold,
+ * including ownership attribution for the viewing user.
+ * - Returns status 'Booked' if a 'Confirmed' booking overlaps.
+ * - Returns status 'Reserved' if an active 'Reserved' hold (within 10-min window) overlaps.
  * - Returns null if no active booking or hold overlaps (or if hold has expired / is cancelled).
+ * - Identifies isOwn: true if the booking belongs to the current user (via b.isOwn or userId match).
  */
-export function getSlotBookingStatus(
+export function getSlotBookingDetails(
   courtId: string,
   date: string,
   startTime: string,
   endTime: string,
   bookings: Booking[],
+  currentUserId?: string | null,
   nowMs: number = Date.now()
-): 'Booked' | 'Reserved' | null {
+): SlotBookingMatch | null {
   const slotStart = timeToMinutes(startTime);
   const slotEnd = endTimeToMinutes(endTime);
 
-  let hasReserved = false;
+  let reservedMatch: { isOwn: boolean; bookingId?: string } | null = null;
 
   for (const b of bookings) {
     if (b.courtId !== courtId) continue;
@@ -164,17 +173,41 @@ export function getSlotBookingStatus(
 
     // Half-open interval overlap: slotStart < bEnd AND bStart < slotEnd
     if (slotStart < bEnd && bStart < slotEnd) {
+      const isOwnBooking = !!b.isOwn || (currentUserId != null && b.userId === currentUserId);
       if (b.status === 'Confirmed') {
-        return 'Booked'; // Confirmed booking takes precedence
+        return { status: 'Booked', isOwn: isOwnBooking, bookingId: b.id };
       }
       if (b.status === 'Reserved') {
-        hasReserved = true;
+        // Confirmed takes priority over Reserved; if multiple holds, own hold takes display precedence
+        if (!reservedMatch || isOwnBooking) {
+          reservedMatch = { isOwn: isOwnBooking, bookingId: b.id };
+        }
       }
     }
   }
 
-  if (hasReserved) return 'Reserved';
+  if (reservedMatch) {
+    return { status: 'Reserved', isOwn: reservedMatch.isOwn, bookingId: reservedMatch.bookingId };
+  }
   return null;
+}
+
+/**
+ * Determines whether a slot overlaps with an active booking or hold.
+ * - Returns 'Booked' if a 'Confirmed' booking overlaps.
+ * - Returns 'Reserved' if an active 'Reserved' hold (within 10-min window) overlaps.
+ * - Returns null if no active booking or hold overlaps (or if hold has expired / is cancelled).
+ */
+export function getSlotBookingStatus(
+  courtId: string,
+  date: string,
+  startTime: string,
+  endTime: string,
+  bookings: Booking[],
+  nowMs: number = Date.now()
+): 'Booked' | 'Reserved' | null {
+  const match = getSlotBookingDetails(courtId, date, startTime, endTime, bookings, null, nowMs);
+  return match ? match.status : null;
 }
 
 // ── Slot Generation ────────────────────────────
@@ -196,7 +229,8 @@ export function generateAvailabilitySlots(
   court: Court,
   date: string,
   bookings: Booking[],
-  blockedPeriods: BlockedPeriod[]
+  blockedPeriods: BlockedPeriod[],
+  currentUserId?: string | null
 ): TimeSlot[] {
   const wh = court.workingHours;
   const duration = court.slotDurationMinutes || DEFAULT_SLOT_DURATION;
@@ -216,7 +250,7 @@ export function generateAvailabilitySlots(
     for (let t = openMinutes; t + duration <= closeMinutes; t += duration) {
       const startTime = minutesToTime(t);
       const endTime = minutesToTime(t + duration);
-      const slot = buildSlot(court.id, date, startTime, endTime, court.pricePerHour, isToday, currentMinutes, bookings, blockedPeriods);
+      const slot = buildSlot(court.id, date, startTime, endTime, court.pricePerHour, isToday, currentMinutes, bookings, blockedPeriods, currentUserId);
       slots.push(slot);
     }
   } else {
@@ -225,14 +259,14 @@ export function generateAvailabilitySlots(
     for (let t = openMinutes; t + duration <= 1440; t += duration) {
       const startTime = minutesToTime(t);
       const endTime = minutesToTime(t + duration);
-      const slot = buildSlot(court.id, date, startTime, endTime, court.pricePerHour, isToday, currentMinutes, bookings, blockedPeriods);
+      const slot = buildSlot(court.id, date, startTime, endTime, court.pricePerHour, isToday, currentMinutes, bookings, blockedPeriods, currentUserId);
       slots.push(slot);
     }
     // Part 2: from 00:00 to close
     for (let t = 0; t + duration <= closeMinutes; t += duration) {
       const startTime = minutesToTime(t);
       const endTime = minutesToTime(t + duration);
-      const slot = buildSlot(court.id, date, startTime, endTime, court.pricePerHour, isToday, currentMinutes, bookings, blockedPeriods);
+      const slot = buildSlot(court.id, date, startTime, endTime, court.pricePerHour, isToday, currentMinutes, bookings, blockedPeriods, currentUserId);
       slots.push(slot);
     }
   }
@@ -249,11 +283,13 @@ function buildSlot(
   isToday: boolean,
   currentMinutes: number,
   bookings: Booking[],
-  blockedPeriods: BlockedPeriod[]
+  blockedPeriods: BlockedPeriod[],
+  currentUserId?: string | null
 ): TimeSlot {
   const slotId = `slot-${courtId}-${date}-${startTime}`;
 
   let status: SlotStatus = 'Available';
+  let isOwn = false;
 
   // Check past
   if (isToday) {
@@ -276,9 +312,10 @@ function buildSlot(
 
   // Check booked / reserved (only if not already past/blocked)
   if (status === 'Available') {
-    const bookingStatus = getSlotBookingStatus(courtId, date, startTime, endTime, bookings);
-    if (bookingStatus) {
-      status = bookingStatus;
+    const bookingDetails = getSlotBookingDetails(courtId, date, startTime, endTime, bookings, currentUserId);
+    if (bookingDetails) {
+      status = bookingDetails.status;
+      isOwn = bookingDetails.isOwn;
     }
   }
 
@@ -290,6 +327,8 @@ function buildSlot(
     endTime,
     price: pricePerHour,
     status,
+    isOwn,
+    reservedByUserId: isOwn ? (currentUserId ?? undefined) : undefined,
   };
 }
 

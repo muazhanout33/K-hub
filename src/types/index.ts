@@ -123,6 +123,7 @@ export interface TimeSlot {
   status: SlotStatus;
   reservedUntil?: number; // timestamp
   reservedByUserId?: string;
+  isOwn?: boolean;
 }
 
 export interface Booking {
@@ -148,6 +149,7 @@ export interface Booking {
   userEmail: string;
   userPhone: string;
   selectedSlotIds: string[];
+  isOwn?: boolean;
 }
 
 /**

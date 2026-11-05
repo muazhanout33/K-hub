@@ -12,6 +12,7 @@ import {
   getSlotId,
   isHoldActive,
   getSlotBookingStatus,
+  getSlotBookingDetails,
 } from './availability';
 import { Booking, BlockedPeriod, Court, WorkingHours } from '@/types';
 
@@ -709,5 +710,74 @@ describe('Hold Expiration & getSlotBookingStatus business logic', () => {
     const slots = generateAvailabilitySlots(court, '2099-08-01', bookings, []);
     expect(slots.find((s) => s.startTime === '10:00')?.status).toBe('Available');
     expect(slots.find((s) => s.startTime === '11:00')?.status).toBe('Available');
+  });
+
+  it('correctly attributes ownership: isOwn true for user who created hold, false for other user', () => {
+    const userA = 'user-a-123';
+    const userB = 'user-b-456';
+    const bookings: Booking[] = [
+      makeBooking({
+        courtId: 'court-hold',
+        date: '2099-08-01',
+        startTime: '14:00',
+        endTime: '15:00',
+        status: 'Reserved',
+        userId: userA,
+      }),
+      makeBooking({
+        courtId: 'court-hold',
+        date: '2099-08-01',
+        startTime: '16:00',
+        endTime: '17:00',
+        status: 'Confirmed',
+        userId: userA,
+      }),
+    ];
+
+    // Details check
+    const holdDetailsA = getSlotBookingDetails('court-hold', '2099-08-01', '14:00', '15:00', bookings, userA);
+    const holdDetailsB = getSlotBookingDetails('court-hold', '2099-08-01', '14:00', '15:00', bookings, userB);
+    expect(holdDetailsA).toEqual({ status: 'Reserved', isOwn: true, bookingId: 'b-mid' });
+    expect(holdDetailsB).toEqual({ status: 'Reserved', isOwn: false, bookingId: 'b-mid' });
+
+    // Grid slots for User A
+    const slotsA = generateAvailabilitySlots(court, '2099-08-01', bookings, [], userA);
+    const slot14A = slotsA.find((s) => s.startTime === '14:00');
+    const slot16A = slotsA.find((s) => s.startTime === '16:00');
+    expect(slot14A?.status).toBe('Reserved');
+    expect(slot14A?.isOwn).toBe(true);
+    expect(slot16A?.status).toBe('Booked');
+    expect(slot16A?.isOwn).toBe(true);
+
+    // Grid slots for User B
+    const slotsB = generateAvailabilitySlots(court, '2099-08-01', bookings, [], userB);
+    const slot14B = slotsB.find((s) => s.startTime === '14:00');
+    const slot16B = slotsB.find((s) => s.startTime === '16:00');
+    expect(slot14B?.status).toBe('Reserved');
+    expect(slot14B?.isOwn).toBe(false);
+    expect(slot16B?.status).toBe('Booked');
+    expect(slot16B?.isOwn).toBe(false);
+  });
+
+  it('correctly handles partial overlaps without blocking adjacent slots', () => {
+    // Booking spans 10:30 to 12:30 (e.g. 2 hours starting on half-hour)
+    const bookings: Booking[] = [
+      makeBooking({
+        courtId: 'court-hold',
+        date: '2099-08-01',
+        startTime: '10:30',
+        endTime: '12:30',
+        status: 'Confirmed',
+      }),
+    ];
+
+    // Slots: 09:00-10:00 (free), 10:00-11:00 (overlaps 10:30-11:00 -> blocked),
+    // 11:00-12:00 (overlaps -> blocked), 12:00-13:00 (overlaps 12:00-12:30 -> blocked),
+    // 13:00-14:00 (free)
+    expect(isSlotBookedByBooking('court-hold', '2099-08-01', '09:00', '10:00', bookings)).toBe(false);
+    expect(isSlotBookedByBooking('court-hold', '2099-08-01', '10:00', '11:00', bookings)).toBe(true);
+    expect(isSlotBookedByBooking('court-hold', '2099-08-01', '11:00', '12:00', bookings)).toBe(true);
+    expect(isSlotBookedByBooking('court-hold', '2099-08-01', '12:00', '13:00', bookings)).toBe(true);
+    expect(isSlotBookedByBooking('court-hold', '2099-08-01', '13:00', '14:00', bookings)).toBe(false);
   });
 });

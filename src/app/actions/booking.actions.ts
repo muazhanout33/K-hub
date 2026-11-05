@@ -893,6 +893,16 @@ export async function getPublicCourtAvailabilityAction(params: {
       return { success: false, bookings: [], error: 'Date is required.' };
     }
 
+    // Determine calling user (if authenticated) to securely flag their own reservations
+    let currentUserId: string | null = null;
+    try {
+      const supabase = await createClient();
+      const { data: authData } = await supabase.auth.getUser();
+      currentUserId = authData?.user?.id ?? null;
+    } catch {
+      // Unauthenticated caller is expected for public guest browsing
+    }
+
     const admin = createAdminClient();
 
     // 1. Auto-expire stale holds ('Reserved' older than 10 minutes)
@@ -909,14 +919,15 @@ export async function getPublicCourtAvailabilityAction(params: {
 
     // 2. Fetch active bookings (Confirmed and unexpired Reserved)
     const nextDate = addDaysToDateString(date, 1);
-    const dayRangeFilter = `["${date}T00:00:00+00", "${nextDate}T06:00:00+00")`;
+    const dayRangeFilter = `["${date} 00:00:00+00", "${nextDate} 06:00:00+00")`;
 
     let query = admin
       .from('bookings')
-      .select('id, court_id, booking_range, duration_minutes, status, created_at, updated_at')
+      .select('id, user_id, court_id, booking_range, duration_minutes, status, created_at, updated_at')
       .in('status', ['Reserved', 'Confirmed'])
       .not('booking_range', 'is', null)
-      .filter('booking_range', 'ov', dayRangeFilter);
+      .filter('booking_range', 'ov', dayRangeFilter)
+      .limit(1000);
 
     if (courtId) {
       query = query.eq('court_id', courtId);
@@ -949,6 +960,8 @@ export async function getPublicCourtAvailabilityAction(params: {
           }
         }
 
+        const isOwn = currentUserId != null && row.user_id === currentUserId;
+
         return {
           id: row.id,
           bookingNumber: '',
@@ -965,11 +978,12 @@ export async function getPublicCourtAvailabilityAction(params: {
           bookingSource: 'ONLINE' as const,
           createdAt: row.created_at,
           updatedAt: row.updated_at,
-          userId: null,
+          userId: isOwn ? currentUserId : null,
           userName: '',
           userEmail: '',
           userPhone: '',
           selectedSlotIds,
+          isOwn,
         };
       })
       .filter((b: Booking) => b.date === date);

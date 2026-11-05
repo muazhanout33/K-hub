@@ -307,7 +307,8 @@ export const GENERATE_TIME_SLOTS = (
   courtOrId: string | Court,
   date: string,
   pricePerHour: number,
-  bookings: Booking[] = []
+  bookings: Booking[] = [],
+  currentUserId?: string | null
 ): TimeSlot[] => {
   const court = typeof courtOrId === 'object'
     ? courtOrId
@@ -315,7 +316,7 @@ export const GENERATE_TIME_SLOTS = (
   if (!court) return [];
 
   const blockedPeriods = useBlockedPeriodStore.getState().getBlockedPeriodsForCourtDate(court.id, date);
-  return generateAvailabilitySlots(court, date, bookings, blockedPeriods);
+  return generateAvailabilitySlots(court, date, bookings, blockedPeriods, currentUserId);
 };
 
 export const INITIAL_USER_BOOKINGS: Booking[] = [];

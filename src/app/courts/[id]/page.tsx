@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { getCourtByIdFromSupabase, FALLBACK_COURT_IMAGE } from '@/services/court.service';
 import { generateTimeSlots } from '@/services/booking.service';
 import { useBookingStore } from '@/features/booking/useBookingStore';
+import { useAuthStore } from '@/features/auth/useAuthStore';
 import { TimeSlotsGrid } from '@/features/booking/TimeSlotsGrid';
 import { BookingCountdown } from '@/features/booking/BookingCountdown';
 import DaySelector from '@/features/booking/DaySelector';
@@ -36,18 +37,25 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
   const localBookings = useBookingStore((state) => state.bookings);
   const { bookings: publicBookings } = useAllBookingsForDate(selectedDate);
 
+  const user = useAuthStore((s) => s.user);
+
   const effectiveBookings = useMemo(() => {
     const map = new Map<string, Booking>();
     for (const b of publicBookings) {
       map.set(b.id, b);
     }
     for (const b of localBookings) {
-      if (!map.has(b.id)) {
-        map.set(b.id, b);
+      const existing = map.get(b.id);
+      if (existing) {
+        if (b.userId && (!existing.userId || existing.userId === b.userId)) {
+          map.set(b.id, { ...existing, userId: b.userId, isOwn: true });
+        }
+      } else {
+        map.set(b.id, { ...b, isOwn: user?.id ? b.userId === user.id : false });
       }
     }
     return Array.from(map.values());
-  }, [publicBookings, localBookings]);
+  }, [publicBookings, localBookings, user?.id]);
 
   const fetchCourt = useCallback(async () => {
     setLoading(true);
@@ -72,8 +80,8 @@ export default function CourtDetailsPage({ params }: { params: Promise<{ id: str
   }, [fetchCourt]);
 
   const timeSlots = useMemo(
-    () => (court ? generateTimeSlots(court, selectedDate, court.pricePerHour, effectiveBookings) : []),
-    [court, selectedDate, effectiveBookings]
+    () => (court ? generateTimeSlots(court, selectedDate, court.pricePerHour, effectiveBookings, user?.id) : []),
+    [court, selectedDate, effectiveBookings, user?.id]
   );
 
   if (loading || !court) {

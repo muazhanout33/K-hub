@@ -43,14 +43,19 @@ export function BookingWidget() {
     for (const b of publicBookings) {
       map.set(b.id, b);
     }
-    // 2. Add local store bookings
+    // 2. Add or merge local store bookings
     for (const b of bookings) {
-      if (!map.has(b.id)) {
-        map.set(b.id, b);
+      const existing = map.get(b.id);
+      if (existing) {
+        if (b.userId && (!existing.userId || existing.userId === b.userId)) {
+          map.set(b.id, { ...existing, userId: b.userId, isOwn: true });
+        }
+      } else {
+        map.set(b.id, { ...b, isOwn: user?.id ? b.userId === user.id : false });
       }
     }
     return Array.from(map.values());
-  }, [publicBookings, bookings]);
+  }, [publicBookings, bookings, user?.id]);
 
   useEffect(() => {
     if (maxHoursReachedTick > 0) {
@@ -136,11 +141,15 @@ export function BookingWidget() {
 
   const rawSlots = useMemo(() => {
     if (!selectedCourt) return [];
-    return generateTimeSlots(selectedCourt, selectedDate, selectedCourt.pricePerHour, effectiveBookings);
-  }, [selectedCourt, selectedDate, effectiveBookings]);
+    return generateTimeSlots(selectedCourt, selectedDate, selectedCourt.pricePerHour, effectiveBookings, user?.id);
+  }, [selectedCourt, selectedDate, effectiveBookings, user?.id]);
 
   const displaySlots = useMemo(
-    () => rawSlots.map((s) => ({ timeRange: `${to12Hour(s.startTime)} – ${to12Hour(s.endTime)}`, status: s.status })),
+    () => rawSlots.map((s) => ({
+      timeRange: `${to12Hour(s.startTime)} – ${to12Hour(s.endTime)}`,
+      status: s.status,
+      isOwn: s.isOwn,
+    })),
     [rawSlots]
   );
 
@@ -299,8 +308,16 @@ export function BookingWidget() {
                   className={`w-full py-3 rounded-xl text-[12px] font-bold transition-all text-center ${btnStyle}`}
                 >
                   {slot.timeRange}
-                  {isReserved && <span className="block text-[9px] mt-0.5 opacity-90 uppercase font-extrabold text-amber-700 dark:text-amber-400">Reserved</span>}
-                  {isBooked && <span className="block text-[9px] mt-0.5 opacity-90 uppercase font-extrabold text-red-700 dark:text-red-400">Booked</span>}
+                  {isReserved && (
+                    <span className="block text-[9px] mt-0.5 opacity-90 uppercase font-extrabold text-amber-700 dark:text-amber-400">
+                      {slot.isOwn ? 'Reserved by You' : 'Reserved'}
+                    </span>
+                  )}
+                  {isBooked && (
+                    <span className="block text-[9px] mt-0.5 opacity-90 uppercase font-extrabold text-red-700 dark:text-red-400">
+                      {slot.isOwn ? 'Booked by You' : 'Booked'}
+                    </span>
+                  )}
                   {isPast && <span className="block text-[9px] mt-0.5 opacity-70">Past</span>}
                   {isBlocked && <span className="block text-[9px] mt-0.5 opacity-70">Blocked</span>}
                 </button>

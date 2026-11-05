@@ -18,9 +18,10 @@ export function generateTimeSlots(
   courtOrId: string | Court,
   date: string,
   pricePerHour: number,
-  bookings: Booking[] = []
+  bookings: Booking[] = [],
+  currentUserId?: string | null
 ): TimeSlot[] {
-  return GENERATE_TIME_SLOTS(courtOrId, date, pricePerHour, bookings);
+  return GENERATE_TIME_SLOTS(courtOrId, date, pricePerHour, bookings, currentUserId);
 }
 
 // ── Helpers exported for useBookingStore & components ──
