@@ -83,6 +83,7 @@ export default function BookingPaymentPage() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [confirmationError, setConfirmationError] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
 
   // Durable booking context: survives a refresh/redirect even when the
   // local selection is gone (the pending confirmation is persisted).
@@ -100,109 +101,118 @@ export default function BookingPaymentPage() {
     : (pendingBooking?.totalPrice ?? 0);
 
   const handleConfirm = useCallback(async () => {
+    // Prevent duplicate in-flight clicks (synchronous ref + async state)
+    if (isSubmittingRef.current || isProcessing) return;
+    isSubmittingRef.current = true;
+
     setIsProcessing(true);
     setConfirmationError(null);
 
-    // Step 1: obtain the booking (create once, reuse on every retry).
-    let bookingId: string;
-    if (hasSelection) {
-      // confirmBooking() itself reuses a pending confirmation's booking
-      // instead of creating a duplicate reservation.
-      const bookingResult = await confirmBooking();
-      if (!bookingResult.success || !bookingResult.booking) {
-        const msg = bookingResult.error || 'Failed to create booking. Please try again.';
-        setConfirmationError(msg);
-        toast.error(msg);
-        setIsProcessing(false);
+    try {
+      // Step 1: obtain the booking (create once, reuse on every retry).
+      let bookingId: string;
+      if (hasSelection) {
+        // confirmBooking() itself reuses a pending confirmation's booking
+        // instead of creating a duplicate reservation.
+        const bookingResult = await confirmBooking();
+        if (!bookingResult.success || !bookingResult.booking) {
+          const msg = bookingResult.error || 'Failed to create booking. Please try again.';
+          setConfirmationError(msg);
+          toast.error(msg);
+          return;
+        }
+        bookingId = bookingResult.booking.id;
+      } else if (hasPendingConfirmation) {
+        // Recovery path: no local selection, but a durable confirmation op
+        // exists — continue it instead of showing "No booking in progress".
+        bookingId = pendingConfirmation!.bookingId;
+      } else {
+        setConfirmationError('No booking in progress. Please select a court and time first.');
         return;
       }
-      bookingId = bookingResult.booking.id;
-    } else if (hasPendingConfirmation) {
-      // Recovery path: no local selection, but a durable confirmation op
-      // exists — continue it instead of showing "No booking in progress".
-      bookingId = pendingConfirmation!.bookingId;
-    } else {
-      setConfirmationError('No booking in progress. Please select a court and time first.');
-      setIsProcessing(false);
-      return;
-    }
 
-    // Register/refresh the durable op for this booking.
-    usePaymentStore.getState().beginConfirmation?.(bookingId);
+      // Register/refresh the durable op for this booking.
+      usePaymentStore.getState().beginConfirmation?.(bookingId);
 
-    // Step 2: amount in the smallest currency unit (piastres) for the
-    // Payment domain. Fall back to the recovered booking's total.
-    const amountBooking =
-      useBookingStore.getState().bookings.find((b) => b.id === bookingId) ??
-      pendingBooking;
-    const amountEgp = amountBooking?.totalPrice ?? totalPrice;
-    const paymentAmount = Math.round(amountEgp * 100);
-    if (!Number.isInteger(paymentAmount) || paymentAmount <= 0) {
-      const msg = 'Booking amount could not be determined. Please go back and review your booking.';
-      setConfirmationError(msg);
-      toast.error(msg);
-      setIsProcessing(false);
-      return;
-    }
-
-    // Step 3: create/reuse payment and process it (never twice).
-    const payment = ensurePaidPayment(bookingId, paymentAmount);
-    if (!payment) {
-      const msg = 'Payment could not be completed. Please try again — you will not be charged twice.';
-      setConfirmationError(msg);
-      toast.error(msg);
-      setIsProcessing(false);
-      return;
-    }
-    usePaymentStore.getState().beginConfirmation?.(bookingId, payment.paymentId);
-
-    // Step 4: confirm booking after payment — with retry and server-state
-    // verification. Each retry is idempotent:
-    // - booking already Confirmed → treated as success
-    // - booking still Reserved    → promotion is safe to retry
-    // Never auto-refund. Never create duplicate bookings or payments.
-    const succeed = () => {
-      usePaymentStore.getState().clearConfirmation();
-      clearSelectedSlots();
-      toast.success('Booking confirmed!');
-      router.push('/book/confirmation');
-    };
-
-    usePaymentStore.getState().recordConfirmationAttempt?.();
-    let confirmResult = await confirmBookingAfterPayment(bookingId);
-
-    for (let retry = 0; retry < MAX_CONFIRMATION_RETRIES && !confirmResult.success; retry++) {
-      // The error text already distinguishes "already confirmed" (success)
-      // from real failures inside confirmBookingAfterPayment — this is a
-      // belt-and-braces check for older call paths.
-      if (/already confirmed/i.test(confirmResult.error ?? '')) {
-        confirmResult = { success: true };
-        break;
+      // Step 2: amount in the smallest currency unit (piastres) for the
+      // Payment domain. Fall back to the recovered booking's total.
+      const amountBooking =
+        useBookingStore.getState().bookings.find((b) => b.id === bookingId) ??
+        pendingBooking;
+      const amountEgp = amountBooking?.totalPrice ?? totalPrice;
+      const paymentAmount = Math.round(amountEgp * 100);
+      if (!Number.isInteger(paymentAmount) || paymentAmount <= 0) {
+        const msg = 'Booking amount could not be determined. Please go back and review your booking.';
+        setConfirmationError(msg);
+        toast.error(msg);
+        return;
       }
-      toast.info(`Retrying confirmation (attempt ${retry + 1}/${MAX_CONFIRMATION_RETRIES})...`);
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+
+      // Step 3: create/reuse payment and process it (never twice).
+      const payment = ensurePaidPayment(bookingId, paymentAmount);
+      if (!payment) {
+        const msg = 'Payment could not be completed. Please try again — you will not be charged twice.';
+        setConfirmationError(msg);
+        toast.error(msg);
+        return;
+      }
+      usePaymentStore.getState().beginConfirmation?.(bookingId, payment.paymentId);
+
+      // Step 4: confirm booking after payment — with retry and server-state
+      // verification. Each retry is idempotent:
+      // - booking already Confirmed → treated as success
+      // - booking still Reserved    → promotion is safe to retry
+      // Never auto-refund. Never create duplicate bookings or payments.
+      const succeed = () => {
+        usePaymentStore.getState().clearConfirmation();
+        clearSelectedSlots();
+        toast.success('Booking confirmed!');
+        router.push('/book/confirmation');
+      };
+
       usePaymentStore.getState().recordConfirmationAttempt?.();
-      confirmResult = await confirmBookingAfterPayment(bookingId);
+      let confirmResult = await confirmBookingAfterPayment(bookingId);
+
+      for (let retry = 0; retry < MAX_CONFIRMATION_RETRIES && !confirmResult.success; retry++) {
+        // The error text already distinguishes "already confirmed" (success)
+        // from real failures inside confirmBookingAfterPayment — this is a
+        // belt-and-braces check for older call paths.
+        if (/already confirmed/i.test(confirmResult.error ?? '')) {
+          confirmResult = { success: true };
+          break;
+        }
+        toast.info(`Retrying confirmation (attempt ${retry + 1}/${MAX_CONFIRMATION_RETRIES})...`);
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+        usePaymentStore.getState().recordConfirmationAttempt?.();
+        confirmResult = await confirmBookingAfterPayment(bookingId);
+      }
+
+      if (confirmResult.success) {
+        succeed();
+        return;
+      }
+
+      // All retries exhausted — persist the failure so a refresh can still
+      // recover it, and report the truthful state.
+      const finalPayment = usePaymentStore.getState().getPaymentByBookingId(bookingId);
+      const errorMessage =
+        finalPayment?.status === 'Paid'
+          ? 'Your payment was received but booking confirmation failed. Retry the confirmation below — you will not be charged again.'
+          : 'Booking confirmation failed. Your booking may still be pending. Please try again or contact support.';
+
+      usePaymentStore.getState().markConfirmationFailed?.(errorMessage);
+      setConfirmationError(errorMessage);
+      toast.error(errorMessage);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'An unexpected error occurred during confirmation.';
+      setConfirmationError(msg);
+      toast.error(msg);
+    } finally {
+      isSubmittingRef.current = false;
+      setIsProcessing(false);
     }
-
-    if (confirmResult.success) {
-      succeed();
-      return;
-    }
-
-    // All retries exhausted — persist the failure so a refresh can still
-    // recover it, and report the truthful state.
-    const finalPayment = usePaymentStore.getState().getPaymentByBookingId(bookingId);
-    const errorMessage =
-      finalPayment?.status === 'Paid'
-        ? 'Your payment was received but booking confirmation failed. Retry the confirmation below — you will not be charged again.'
-        : 'Booking confirmation failed. Your booking may still be pending. Please try again or contact support.';
-
-    usePaymentStore.getState().markConfirmationFailed?.(errorMessage);
-    setConfirmationError(errorMessage);
-    toast.error(errorMessage);
-    setIsProcessing(false);
   }, [
+    isProcessing,
     hasSelection,
     hasPendingConfirmation,
     pendingConfirmation,
@@ -215,19 +225,21 @@ export default function BookingPaymentPage() {
   ]);
 
   // Auto-recovery: if a durable pending confirmation exists on mount
-  // (e.g. the user was redirected back from payment, or refreshed the
-  // page mid-confirmation), resume it exactly once — confirm-only, no
-  // second payment, no duplicate booking.
+  // AND an attempt was already in-flight (e.g. redirected back from payment,
+  // or refreshed mid-confirmation), resume it exactly once.
+  // Never automatically run for a fresh checkout that hasn't attempted confirmation yet.
   const autoRecoveryRan = useRef(false);
   useEffect(() => {
     if (autoRecoveryRan.current) return;
     if (!paymentHydrated || !bookingHydrated) return;
     const pending = usePaymentStore.getState().pendingConfirmation;
     if (!pending?.bookingId) return;
-    // Deferred to a macrotask so the effect body itself never triggers a
-    // synchronous setState cascade, and so an unmount (or StrictMode
-    // remount) before the timer fires simply cancels this run instead of
-    // confirming against a torn-down page.
+
+    // A fresh checkout has attempts === 0 and no paymentId.
+    // It must wait for the user's intentional click on "Confirm & Pay".
+    const isInFlightConfirmation = pending.attempts > 0 || !!pending.paymentId;
+    if (!isInFlightConfirmation) return;
+
     const timer = setTimeout(() => {
       autoRecoveryRan.current = true;
       void handleConfirm();
@@ -291,7 +303,7 @@ export default function BookingPaymentPage() {
         <div className="max-w-2xl mx-auto space-y-6">
           <BookingSteps />
 
-          {hasPendingConfirmation && (
+          {hasPendingConfirmation && (pendingConfirmation?.attempts > 0 || !!pendingConfirmation?.paymentId) && (
             <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/40 rounded-[24px] p-4 flex items-start gap-2">
               <RefreshCw className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
               <p className="text-[11px] text-blue-700 dark:text-blue-300 font-medium">
