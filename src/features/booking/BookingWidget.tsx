@@ -109,6 +109,11 @@ export function BookingWidget() {
     if (selectedSlots.length === 0 || !selectedCourt) return;
     const bookedSlotIds = new Set<string>();
     for (const b of effectiveBookings) {
+      // Ignore the current user's own bookings and holds — only another player's booking is a conflict
+      if (b.isOwn || (user?.id && b.userId === user.id)) {
+        continue;
+      }
+
       if (
         b.courtId === selectedCourt.id &&
         b.date === selectedDate &&
@@ -144,7 +149,7 @@ export function BookingWidget() {
       }
       toast.error('A slot you selected was just booked by another player.');
     }
-  }, [effectiveBookings, selectedCourt, selectedDate, selectedSlots, toggleSlot]);
+  }, [effectiveBookings, selectedCourt, selectedDate, selectedSlots, toggleSlot, user?.id]);
 
   const rawSlots = useMemo(() => {
     if (!selectedCourt) return [];
